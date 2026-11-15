@@ -1,0 +1,30 @@
+# Build & output artifacts
+build/
+bin/
+*.asi
+*.dll
+*.exe
+*.pdb
+*.lib
+*.exp
+*.obj
+*.ilk
+*.log
+
+# IDE & user files
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln
+*.vcxproj*
+
+# IDA databases & reverse engineering dumps
+docs/
+*.idb
+*.i64
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
