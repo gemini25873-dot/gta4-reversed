@@ -39,7 +39,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
 | Game | `source/Game/Weather.cpp` | 4 | 9 | |
-| Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` temporarily disabled (prop collision WIP) |
+| Game | `source/Game/World.cpp` | 4 | 3 | |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
 | Rage | `source/Rage/phBound.cpp` | 4 | 0 | Pure C++ |
@@ -53,7 +53,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 
 ---
 
-## Compatibility Features (`dllmain.cpp` & `Core/`)
+## Compatibility Features (`dllmain.cpp`)
 
 - **Complete Edition Compatibility on `1.0.7.0`:**
   - Multi-WTD DLC radio HUD logo fix
@@ -95,9 +95,9 @@ The compiled output is written to:
 - `bin/Release/gta4_reversed.pdb`
 
 ### Running in Game
-1. Make sure you have an ASI loader (e.g., Ultimate ASI Loader) installed in your legitimate GTA IV `1.0.7.0` directory.
+1. Make sure you have a working, legitimate GTA IV `1.0.7.0` installation with an ASI loader (e.g., Ultimate ASI Loader) and **ZolikaPatch** installed. In `ZolikaPatch.ini`, **only enable `LaunchWithPlayGTAIV=1` and `SkipLauncher=1`** (keep other optional patches disabled to avoid hook conflicts with `gta4_reversed.asi`).
 2. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
-3. Launch `GTAIV.exe` and check `gta4_reversed.log` for initialization and any VEH diagnostics.
+3. Launch the game (`PlayGTAIV.exe` / `GTAIV.exe`) and check `gta4_reversed.log` for initialization and any VEH diagnostics.
 
 ---
 
