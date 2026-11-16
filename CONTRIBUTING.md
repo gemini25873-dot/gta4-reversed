@@ -25,7 +25,7 @@ Thank you for helping reverse engineer and reimplement GTA IV (`1.0.7.0`)!
    - If a helper is small or already understood, implement it in C++ directly instead of adding another `Call` wrapper.
 
 4. **Test Incrementally**
-   - Build in Release (`x86`) and test in-game with a legitimate, Steam-owned `GTAIV.exe 1.0.7.0` installation (with the Steam client running so `SteamAuth` verification succeeds).
+   - Build in Release (`x86`) and test in-game with a legitimate `GTAIV.exe 1.0.7.0` installation.
    - Verify both normal gameplay (spawning, driving, physics collisions, weapon firing, camera movement) and `gta4_reversed.log` for any VEH exceptions.
    - If a new hook introduces a regression, isolate the class/function before committing.
 

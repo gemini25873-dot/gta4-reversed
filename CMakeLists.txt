@@ -12,7 +12,6 @@ add_library(gta4_reversed SHARED
     source/dllmain.cpp
     source/Core/Hook.cpp
     source/Core/Log.cpp
-    source/Core/SteamAuth.cpp
     source/Core/Vector.cpp
     source/Core/Matrix.cpp
     source/Core/Pool.cpp
@@ -72,9 +71,4 @@ target_compile_options(gta4_reversed PRIVATE
 
 target_link_options(gta4_reversed PRIVATE
     /DEBUG
-)
-
-target_link_libraries(gta4_reversed PRIVATE
-    wintrust
-    crypt32
 )

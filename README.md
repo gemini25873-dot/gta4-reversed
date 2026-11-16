@@ -55,9 +55,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 
 ## Compatibility Features (`dllmain.cpp` & `Core/`)
 
-- **Steamworks Ownership Gate (`SteamAuth`):** Verifies a Valve-signed `steamclient.dll` via `WinVerifyTrust` (`FILE_SHARE_READ`) and checks `ISteamApps::BIsSubscribedApp(12210)` before enabling gated compatibility features.
 - **Complete Edition Compatibility on `1.0.7.0`:**
-  - Local `TLAD` / `TBoGT` DLC mounting (active when Steam ownership is verified)
   - Multi-WTD DLC radio HUD logo fix
   - Stubbing missing Complete Edition script natives (e.g., `0x2C89A1F9` / `SCRT70`)
 
@@ -67,7 +65,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 
 ```text
 source/
-├── Core/        # Hook engine, logging, Steamworks ownership gate (steamclient.dll), math (Vector/Matrix), Pool helpers
+├── Core/        # Hook engine, logging, math (Vector/Matrix), Pool helpers
 ├── Game/        # GTA IV game classes (CEntity, CPed, CVehicle, CCam, CWeaponInfo, CWorld, ...)
 ├── Rage/        # RAGE physics engine (phBound*, phArchetype, phInst, phCollider*, phLevelNew, ...)
 └── dllmain.cpp  # ASI entry point, VEH crash logger, compatibility & hook registration
@@ -98,9 +96,8 @@ The compiled output is written to:
 
 ### Running in Game
 1. Make sure you have an ASI loader (e.g., Ultimate ASI Loader) installed in your legitimate GTA IV `1.0.7.0` directory.
-2. Make sure the **Steam client is running** and logged into an account that owns GTA IV (`AppID 12210`), as `SteamAuth` verifies `steamclient.dll` and app ownership.
-3. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
-4. Launch `GTAIV.exe` and check `gta4_reversed.log` for initialization and any VEH diagnostics.
+2. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
+3. Launch `GTAIV.exe` and check `gta4_reversed.log` for initialization and any VEH diagnostics.
 
 ---
 

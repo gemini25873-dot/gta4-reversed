@@ -1,7 +1,6 @@
-#include "StdInc.h"
+﻿#include "StdInc.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
-#include "Core/SteamAuth.h"
 #include "Core/Vector.h"
 #include "Core/Matrix.h"
 #include "Core/Pool.h"
@@ -195,55 +194,12 @@ static char __fastcall HookedLoadRadioNonColoredLogo(uint8* self) {
     return 1;
 }
 
-// Complete Edition local DLC mounting (0x813F30, __thiscall): mounts TLAD & TBoGT folders directly
-static void MountLocalDlcFolder(uint8* self, const char* folder, const char* listFile, char episodeFlag, uintptr_t guidIdaAddr) {
-    char checkPath[MAX_PATH]{};
-    std::snprintf(checkPath, sizeof(checkPath), "%s\\%s", folder, listFile);
-    if (GetFileAttributesA(checkPath) == INVALID_FILE_ATTRIBUTES) {
-        return;
-    }
-
-    uint8 entry[360]{};
-    std::strcpy(reinterpret_cast<char*>(entry), folder);
-    if (Core::Hook::CallStdcall<char>(0x813480, episodeFlag, entry, 1)) {
-        const int slot = Core::Hook::CallMethod<int>(0x813E20, self, entry);
-        auto* guidDst = reinterpret_cast<uint8*>(Core::Rebase(0x11A32D8) + 32 * slot);
-        std::memset(guidDst, 0, 32);
-        std::memcpy(guidDst + 12, reinterpret_cast<const void*>(Core::Rebase(guidIdaAddr)), 16);
-        Core::Log::Info("Mounted local DLC: %s (slot=%d)", folder, slot);
-    }
-}
-
-static int __fastcall HookedLoadDLCs(uint8* self) {
-    const uint16 count = *reinterpret_cast<const uint16*>(self + 336);
-    for (uint16 i = 0; i < count; ++i) {
-        Core::Hook::CallMethod<int>(0x8137A0, self, static_cast<int>(i));
-    }
-
-    Core::Hook::Call<void>(0x5AC2C0);
-    Core::Hook::Call<void>(0x5AADE0);
-
-    if (Core::SteamAuth::IsVerified()) {
-        MountLocalDlcFolder(self, "TLAD", "E1_List.txt", 2, 0xF1CAC4);
-        MountLocalDlcFolder(self, "TBoGT", "E2_List.txt", 4, 0xF1CAD8);
-    } else {
-        Core::Log::Info("[SteamAuth] Skipping local DLC mount (ownership not verified).");
-    }
-
-    self[358] = 0;
-    const int res = Core::Hook::CallMethod<int>(0x813BD0, self);
-    self[358] = 0;
-    return res;
-}
-
 static void InstallCompatibilityHooks() {
-    Core::Hook::Install(0x813F30, &HookedLoadDLCs);
     Core::Hook::Install(0x821500, &HookedLoadRadioColoredLogo);
     Core::Hook::Install(0x821520, &HookedLoadRadioNonColoredLogo);
     Core::Hook::Install(0x5A76D0, &HookedLookupNative);
 
-    Core::Log::Info("Complete Edition compatibility hooks installed (Steam verification: %s)",
-        Core::SteamAuth::IsVerified() ? "VERIFIED" : "FAILED");
+    Core::Log::Info("Complete Edition compatibility hooks installed");
 }
 
 static void InitPlugin() {
@@ -256,10 +212,6 @@ static void InitPlugin() {
     Core::Log::Info("GTAIV.exe Base: 0x%08X (ASLR delta: 0x%08X)",
         static_cast<uint32>(base),
         static_cast<uint32>(base - 0x400000u));
-
-    const bool steamOk = Core::SteamAuth::VerifyOwnership();
-    Core::Log::Info("[SteamAuth] Result: %s",
-        steamOk ? "AppID 12210 ownership verified" : "Ownership not verified");
 
     InstallCompatibilityHooks();
 
