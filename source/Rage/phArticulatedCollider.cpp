@@ -49,10 +49,10 @@ namespace rage
         Core::Hook::Install(0x7029D0, &phArticulatedCollider::GetMatrix3x3_7029D0);
         Core::Hook::Install(0x702A60, &phArticulatedCollider::GetMatrix3x3_702A60);
 
-        Core::Log::Info("rage::phArticulatedCollider hooks yuklendi (4 fonksiyon)");
+        Core::Log::Info("rage::phArticulatedCollider hooks installed (4 functions)");
     }
 
-    // 0x6FE9E0 (__usercall esi = this) saf C++'a cevrildi
+    // 0x6FE9E0 (__usercall esi = this) rewritten in pure C++
     void phArticulatedCollider::Dtor()
     {
         FreeArticulatedArray(m_aUnk2DC);

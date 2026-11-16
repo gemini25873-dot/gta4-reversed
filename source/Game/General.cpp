@@ -12,7 +12,7 @@ void CGeneral::InjectHooks()
     Core::Hook::Install(0x404B80, &CGeneral::Sqrt);
     Core::Hook::Install(0x42F540, &CGeneral::InvSqrt);
 
-    Core::Log::Info("CGeneral hooks yuklendi (4 fonksiyon)");
+    Core::Log::Info("CGeneral hooks installed (4 functions)");
 }
 
 int32 __cdecl CGeneral::GetRandomNumberInRange(int32 min, int32 max)

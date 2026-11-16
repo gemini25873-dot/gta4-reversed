@@ -23,7 +23,7 @@ void CDynamicEntity::InjectHooks()
     Core::Hook::Install(0x9E0660, &CDynamicEntity::GetBoundCentre);
     Core::Hook::Install(0x9E0690, &CDynamicEntity::GetBoundBoxMin);
 
-    Core::Log::Info("CDynamicEntity hooks yuklendi (7 fonksiyon)");
+    Core::Log::Info("CDynamicEntity hooks installed (7 functions)");
 }
 
 CDynamicEntity* __thiscall CDynamicEntity::Ctor()

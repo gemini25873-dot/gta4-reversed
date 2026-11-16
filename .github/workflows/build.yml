@@ -1,0 +1,41 @@
+name: Build ASI (x86)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC x86 environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Ensure Ninja is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+            choco install ninja -y
+          }
+
+      - name: Configure CMake
+        run: cmake -S . -B build/Release -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Release x86
+        run: cmake --build build/Release
+
+      - name: Verify output binary
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "bin/Release/gta4_reversed.asi")) {
+            Write-Error "gta4_reversed.asi was not produced!"
+            exit 1
+          }

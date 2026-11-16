@@ -85,7 +85,7 @@ namespace rage
         phBoundCapsule::InjectHooks();
         phBoundBox::InjectHooks();
 
-        Core::Log::Info("rage::phBound hooks yuklendi (4 fonksiyon)");
+        Core::Log::Info("rage::phBound hooks installed (4 functions)");
     }
 
     void phBound::InitBase()

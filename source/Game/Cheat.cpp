@@ -100,7 +100,7 @@ void CCheat::InjectHooks()
     Core::Hook::Install(0x96FA00, &CCheat::ToggleExtraCheat);
     Core::Hook::Install(0x96FA30, &CCheat::ActivateCheat);
 
-    Core::Log::Info("CCheat hooks yuklendi (12 fonksiyon)");
+    Core::Log::Info("CCheat hooks installed (12 functions)");
 }
 
 void __cdecl CCheat::Reset()

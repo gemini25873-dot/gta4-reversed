@@ -7,7 +7,7 @@ void CMatrix::InjectHooks()
 {
     Core::Hook::Install(0x42F680, &CMatrix::Multiply);
 
-    Core::Log::Info("CMatrix hooks yuklendi (1 fonksiyon)");
+    Core::Log::Info("CMatrix hooks installed (1 function)");
 }
 
 const CMatrix* __thiscall CMatrix::Multiply(const CMatrix* a, const CMatrix* b)

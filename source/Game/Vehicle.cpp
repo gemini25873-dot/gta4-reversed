@@ -10,7 +10,7 @@ void CVehicle::InjectHooks()
     Core::Hook::Install(0x9C6D70, &CVehicle::SeatToPassengerIndex);
     Core::Hook::Install(0x9C6DB0, &CVehicle::PassengerIndexToSeat);
 
-    Core::Log::Info("CVehicle hooks yuklendi (4 fonksiyon)");
+    Core::Log::Info("CVehicle hooks installed (4 functions)");
 }
 
 CVehicle* __thiscall CVehicle::Ctor(uint8 createdBy)

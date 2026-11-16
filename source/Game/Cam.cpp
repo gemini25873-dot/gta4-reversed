@@ -12,16 +12,16 @@ void CCam::InjectHooks()
     Core::Hook::Install(0x9AD380, &CCam::UpdateChildren);
     Core::Hook::Install(0x9AD3B0, &CCam::UpdateNearFarClip);
 
-    // Atlanan fonksiyonlar (guvenli olmayan / belirsiz IDA callee'ler nedeniyle):
-    // - 0x9AD030 (Dtor): sub_9ACF10() __thiscall argumani (this) belirsiz
-    // - 0x9AD060: sub_D1112B (__usercall@<xmm0>) ve sub_9F03A0/sub_9F0710 eksik this argumani
-    // - 0x9AD1F0: sub_9AC9D0/sub_9ACA80 arguman uyusmazligi ve baslatilmamis v2
-    // - 0x9AD2D0: sub_9ACC20() __thiscall cagrisinda this argumani eksik
-    // - 0x9AD350: sub_91F510() __thiscall cagrisinda this argumani eksik
-    // - 0x9AD4C0: sub_874640/sub_9F03A0/sub_BE0440 eksik this ve 0x9AD060 (__usercall) cagrisi
-    // - 0x9AD740 (ScalarDeletingDtor): sub_9AD030() ve sub_C79660() eksik arguman
+    // Skipped functions (due to unsafe / ambiguous IDA callees):
+    // - 0x9AD030 (Dtor): sub_9ACF10() __thiscall argument (this) is ambiguous
+    // - 0x9AD060: sub_D1112B (__usercall@<xmm0>) and sub_9F03A0/sub_9F0710 missing this argument
+    // - 0x9AD1F0: sub_9AC9D0/sub_9ACA80 argument mismatch and uninitialized v2
+    // - 0x9AD2D0: missing this argument in sub_9ACC20() __thiscall call
+    // - 0x9AD350: missing this argument in sub_91F510() __thiscall call
+    // - 0x9AD4C0: sub_874640/sub_9F03A0/sub_BE0440 missing this and 0x9AD060 (__usercall) call
+    // - 0x9AD740 (ScalarDeletingDtor): sub_9AD030() and sub_C79660() missing arguments
 
-    Core::Log::Info("CCam hooks yuklendi (6/13 fonksiyon)");
+    Core::Log::Info("CCam hooks installed (6/13 functions)");
 }
 
 CCam* __thiscall CCam::Ctor()

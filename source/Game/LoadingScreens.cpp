@@ -33,7 +33,7 @@ void CLoadingScreens::InjectHooks()
 {
     Core::Hook::Install(0x4240E0, &CLoadingScreens::ResetScreenAnimations);
 
-    Core::Log::Info("CLoadingScreens hooks yuklendi (1 fonksiyon, intro skip aktif)");
+    Core::Log::Info("CLoadingScreens hooks installed (1 function, intro skip enabled)");
 }
 
 int32* __cdecl CLoadingScreens::ResetScreenAnimations()

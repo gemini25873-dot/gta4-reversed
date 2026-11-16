@@ -11,7 +11,7 @@ void CPed::InjectHooks()
     Core::Hook::Install(0x8A9030, &CPed::IsValidOrPlayer);
     Core::Hook::Install(0x8A92C0, &CPed::SetPedState);
 
-    Core::Log::Info("CPed hooks yuklendi (4 fonksiyon)");
+    Core::Log::Info("CPed hooks installed (4 functions)");
 }
 
 CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)

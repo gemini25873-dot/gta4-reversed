@@ -49,7 +49,7 @@ namespace rage
         phRopeConstraint::InjectHooks();
         phRope::InjectHooks();
 
-        Core::Log::Info("rage::phConstraint hooks yuklendi (5 fonksiyon)");
+        Core::Log::Info("rage::phConstraint hooks installed (5 functions)");
     }
 
     // 0x6F8640 (retn 4)

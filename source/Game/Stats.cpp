@@ -49,7 +49,7 @@ void CStats::InjectHooks()
     Core::Hook::Install(0x963D70, &CStats::SetStatString);
     Core::Hook::Install(0x963DB0, &CStats::SetStatMinValue);
 
-    Core::Log::Info("CStats hooks yuklendi (19 fonksiyon)");
+    Core::Log::Info("CStats hooks installed (19 functions)");
 }
 
 void __cdecl CStats::ResetCounters()

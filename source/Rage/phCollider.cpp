@@ -30,7 +30,7 @@ namespace rage
         Core::Hook::Install(0x69EF20, &phCollider::Unk69EF20);
         Core::Hook::Install(0x69F650, &phCollider::GetInvMassMatrix);
 
-        Core::Log::Info("rage::phCollider hooks yuklendi (8 fonksiyon)");
+        Core::Log::Info("rage::phCollider hooks installed (8 functions)");
     }
 
     // 0x69C730 (retn)
@@ -87,7 +87,7 @@ namespace rage
         return result;
     }
 
-    // 0x69D450 (retn 4) - sub_69B280 (phSleep::Update) saf C++'a cevrildi
+    // 0x69D450 (retn 4) - sub_69B280 (phSleep::Update) rewritten in pure C++
     int32 __thiscall phCollider::SetUnk69D450(float dt)
     {
         auto* sleepObj = reinterpret_cast<int32*>(static_cast<uintptr_t>(m_nUnk18));
@@ -131,7 +131,7 @@ namespace rage
         return 0.0;
     }
 
-    // 0x69EF20 (retn 8) - sub_732110 (R * diag(m_vInvAngInertia) * R^T) saf C++'a cevrildi
+    // 0x69EF20 (retn 8) - sub_732110 (R * diag(m_vInvAngInertia) * R^T) rewritten in pure C++
     int32 __thiscall phCollider::Unk69EF20(int32 a2, int32 /*a3*/)
     {
         float* a1 = reinterpret_cast<float*>(static_cast<uintptr_t>(a2));

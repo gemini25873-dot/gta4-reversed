@@ -28,8 +28,8 @@ namespace
 
 void CWeaponInfo::InjectHooks()
 {
-    // 0x81DB10 atlandi: icerisinde sub_75D510 (__thiscall, 2 arg) cagrisinda
-    // IDA decompile'da ECX/this argumani belirsiz ve byte_11D51D0 boyutu bilinmiyor.
+    // 0x81DB10 skipped: inside sub_75D510 (__thiscall, 2 args) call,
+    // ECX/this argument is ambiguous in IDA decompile and byte_11D51D0 size is unknown.
     Core::Hook::Install(0x81DBE0, &CWeaponInfo::RecordEventByIndex);
     Core::Hook::Install(0x81DC60, &CWeaponInfo::RecordEvent9);
     Core::Hook::Install(0x81DCA0, &CWeaponInfo::RecordEvent10);
@@ -44,7 +44,7 @@ void CWeaponInfo::InjectHooks()
     Core::Hook::Install(0x81DF90, &CWeaponInfo::RecordEvent18);
     Core::Hook::Install(0x81DFF0, &CWeaponInfo::RecordEvent19);
 
-    Core::Log::Info("CWeaponInfo hooks yuklendi (13 fonksiyon, 0x81DB10 atlandi)");
+    Core::Log::Info("CWeaponInfo hooks installed (13 functions, 0x81DB10 skipped)");
 }
 
 void __cdecl CWeaponInfo::RecordEventByIndex(int32 index)

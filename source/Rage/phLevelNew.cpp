@@ -57,7 +57,7 @@ namespace rage
         return this;
     }
 
-    // 0x6D75E0 (__usercall: esi = this) - saf C++
+    // 0x6D75E0 (__usercall: esi = this) - pure C++
     int32 phLevelBase::AllocInstanceStates()
     {
         m_pInstanceStates = static_cast<uint8*>(RageAlloc(m_nMaxInstances, 16, 0));
@@ -81,7 +81,7 @@ namespace rage
         Core::Hook::Install(0x6A2480, &phLevelNew::Ctor);
         Core::Hook::Install(0x6A2AF0, &phLevelNew::Shutdown);
 
-        Core::Log::Info("rage::phLevelNew hooks yuklendi (3 fonksiyon)");
+        Core::Log::Info("rage::phLevelNew hooks installed (3 functions)");
     }
 
     // 0x6A2480 (retn)

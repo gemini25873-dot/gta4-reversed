@@ -11,7 +11,7 @@ void CWeather::InjectHooks() {
     Core::Hook::Install(0x9E4250, &CWeather::GetWeatherCycle);
     Core::Hook::Install(0x9E4270, &CWeather::ProcessPlayerWetness);
     Core::Hook::Install(0x9E4490, &CWeather::Update);
-    Core::Log::Info("CWeather hooks yuklendi.");
+    Core::Log::Info("CWeather hooks installed.");
 }
 
 // 0x9E4100

@@ -25,12 +25,12 @@ public:
     // 0x51A0E0 (__thiscall, retn 4)
     int32 __thiscall GetComponentData(int32 a2);
 
-    // Atlanan __thiscall fonksiyonlar (guvensiz / belirsiz callee imzalari):
-    // - 0x518180: 0x6A4470 (__thiscall, retn 0Ch) cagrisinda implicit ECX (this) bilinmiyor
-    // - 0x51A090: 0x536140 (__thiscall, retn 4) cagrisinda a2 parametresi IDA'da eksik
-    // - 0x51A390: 0x53B2C0 (__userpurge) cagiriyor
-    // - 0x51A700: 0x51A720 (__usercall) cagiriyor
-    // - 0x51A960: 0x63DD40 (__thiscall, retn 8) ve 0x51B0B0 (__thiscall, retn 0Ch) cagrilarinda ECX (this) bilinmiyor
+    // Skipped __thiscall functions (unsafe / ambiguous callee signatures):
+    // - 0x518180: implicit ECX (this) unknown in 0x6A4470 (__thiscall, retn 0Ch) call
+    // - 0x51A090: a2 parameter missing in IDA for 0x536140 (__thiscall, retn 4) call
+    // - 0x51A390: calls 0x53B2C0 (__userpurge)
+    // - 0x51A700: calls 0x51A720 (__usercall)
+    // - 0x51A960: ECX (this) unknown in 0x63DD40 (__thiscall, retn 8) and 0x51B0B0 (__thiscall, retn 0Ch) calls
 };
 
 VALIDATE_SIZE(CPhysicsWorld, 0x70);

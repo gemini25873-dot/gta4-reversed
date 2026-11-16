@@ -153,7 +153,7 @@ namespace rage
         Core::Hook::Install(0x6B8C50, &phBoundGeometry::GetUnkD8);
         Core::Hook::Install(0x6BA400, &phBoundGeometry::ShiftCentroidOffset);
 
-        Core::Log::Info("rage::phBoundGeometry hooks yuklendi (5 fonksiyon)");
+        Core::Log::Info("rage::phBoundGeometry hooks installed (5 functions)");
     }
 
     // 0x6B8D00 (__thiscall, retn)
@@ -237,7 +237,7 @@ namespace rage
         Core::Hook::Install(0x6C05B0, &phBoundBVH::Dtor);
         Core::Hook::Install(0x6C0580, &phBoundBVH::DeletingDtor);
 
-        Core::Log::Info("rage::phBoundBVH hooks yuklendi (3 fonksiyon)");
+        Core::Log::Info("rage::phBoundBVH hooks installed (3 functions)");
     }
 
     // 0x6C04F0 (__thiscall, retn)

@@ -10,12 +10,12 @@ void CPhysicsWorld::InjectHooks()
     Core::Hook::Install(0x518C10, &CPhysicsWorld::ApplyScaledImpulse);
     Core::Hook::Install(0x51A0E0, &CPhysicsWorld::GetComponentData);
 
-    Core::Log::Info("CPhysicsWorld hooks yuklendi (4 fonksiyon; 5 fonksiyon guvensiz callee nedeniyle atlandi)");
+    Core::Log::Info("CPhysicsWorld hooks installed (4 functions; 5 functions skipped due to unsafe callees)");
 }
 
 void CWorld::InjectHooks()
 {
-    // Izolasyon testi: kirilabilir/hareketli nesnelerin duvar gibi davranmasi CPhysicsWorld'den mi kontrol ediliyor
+    // Isolation test: checking if breakable/movable props acting like walls is caused by CPhysicsWorld
     // CPhysicsWorld::InjectHooks();
 }
 

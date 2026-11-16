@@ -1,5 +1,5 @@
 # gta4-reversed
-
+[![Build ASI (x86)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml/badge.svg)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml)
 An open-source C++20 reverse engineering and compatibility project targeting **Grand Theft Auto IV (`1.0.7.0` x86)**.
 
 The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and game classes at runtime, allowing incremental replacement and verification inside a real copy of `GTAIV.exe` without modifying original game files.

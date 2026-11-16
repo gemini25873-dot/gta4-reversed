@@ -12,7 +12,7 @@ void CPhysical::InjectHooks()
     Core::Hook::Install(0xA48E40, &CPhysical::SetPosition);
     Core::Hook::Install(0xA47A40, &CPhysical::SetHeading);
 
-    Core::Log::Info("CPhysical hooks yuklendi (5 fonksiyon)");
+    Core::Log::Info("CPhysical hooks installed (5 functions)");
 }
 
 CPhysical* __thiscall CPhysical::Ctor()

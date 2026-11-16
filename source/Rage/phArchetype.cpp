@@ -74,7 +74,7 @@ namespace rage
         Core::Hook::Install(0xCA7BD0, &phArchetypeGta::Dtor);
         Core::Hook::Install(0xCA7C00, &phArchetypeGta::DeletingDtor);
 
-        Core::Log::Info("phArchetype hooks yuklendi (15 fonksiyon)");
+        Core::Log::Info("phArchetype hooks installed (15 functions)");
     }
 
     // 0x6BF150 (retn 4)

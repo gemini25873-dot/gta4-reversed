@@ -9,7 +9,7 @@ void CVector::InjectHooks()
     Core::Hook::Install(0x42F570, &CVector::InvMagnitude);
     Core::Hook::Install(0x42F5D0, &CVector::Normalise);
 
-    Core::Log::Info("CVector hooks yuklendi (2 fonksiyon)");
+    Core::Log::Info("CVector hooks installed (2 functions)");
 }
 
 double __thiscall CVector::InvMagnitude()

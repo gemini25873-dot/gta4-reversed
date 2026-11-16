@@ -51,7 +51,7 @@ void CTimer::InjectHooks() {
     Core::Hook::Install(0x8487C0, &CTimer::GetIsCodePaused);
     Core::Hook::Install(0x8487D0, &CTimer::Stop);
     Core::Hook::Install(0x848A10, &CTimer::Update);
-    Core::Log::Info("CTimer hooks yuklendi.");
+    Core::Log::Info("CTimer hooks installed.");
 }
 
 // 0x444370

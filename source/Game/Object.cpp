@@ -11,7 +11,7 @@ void CObject::InjectHooks()
     Core::Hook::Install(0x8E5810, &CObject::DeletingDtor);
     Core::Hook::Install(0x8DF650, &CObject::Init);
 
-    Core::Log::Info("CObject hooks yuklendi (4 fonksiyon)");
+    Core::Log::Info("CObject hooks installed (4 functions)");
 }
 
 CObject* __thiscall CObject::Ctor()

@@ -16,7 +16,7 @@ namespace rage
 
         phInstGta::InjectHooks();
 
-        Core::Log::Info("rage::phInst hooks yuklendi (5 fonksiyon)");
+        Core::Log::Info("rage::phInst hooks installed (5 functions)");
     }
 
     // 0x6869C0
@@ -96,7 +96,7 @@ void phInstGta::InjectHooks()
     Core::Hook::Install(0xC736C0, &phInstGta::DeletingDtor);
     Core::Hook::Install(0xC70E90, &phInstGta::GetClassType);
 
-    Core::Log::Info("phInstGta hooks yuklendi (3 fonksiyon)");
+    Core::Log::Info("phInstGta hooks installed (3 functions)");
 }
 
 // 0xC70E60

@@ -11,7 +11,7 @@ void CPoolBase::InjectHooks()
     Core::Hook::Install(0x96C6C0, &CPoolBase::InitSlot);
     Core::Hook::Install(0x96C730, &CPoolBase::GetIndex);
 
-    Core::Log::Info("CPool hooks yuklendi (5 fonksiyon)");
+    Core::Log::Info("CPool hooks installed (5 functions)");
 }
 
 CPoolBase* __thiscall CPoolBase::Init(int32 size, const char* /*name*/, int32 elemSize)

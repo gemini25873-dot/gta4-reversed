@@ -28,7 +28,7 @@ namespace rage
         // 0x6D75A0 (__thiscall, retn 4) - vftable[0]
         phLevelBase* __thiscall DeletingDtor(uint8 flags);
 
-        // 0x6D75E0 (__usercall: esi = this) - saf C++ (hooklanmaz)
+        // 0x6D75E0 (__usercall: esi = this) - pure C++ (hooklanmaz)
         int32 AllocInstanceStates();
     };
 

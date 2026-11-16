@@ -24,7 +24,7 @@ void CEntity::InjectHooks()
     Core::Hook::Install(0x9E8680, &CEntity::AddToInterior);
     Core::Hook::Install(0x9E86C0, &CEntity::RemoveFromInterior);
 
-    Core::Log::Info("CEntity hooks yuklendi (8 fonksiyon)");
+    Core::Log::Info("CEntity hooks installed (8 functions)");
 }
 
 CEntity* __thiscall CEntity::Ctor()

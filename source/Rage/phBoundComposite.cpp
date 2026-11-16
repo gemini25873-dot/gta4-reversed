@@ -32,7 +32,7 @@ namespace rage
         Core::Hook::Install(0x68BF70, &phBoundComposite::VFunc52Wrapper);
         Core::Hook::Install(0x68BFD0, &phBoundComposite::VFunc53Wrapper);
 
-        Core::Log::Info("rage::phBoundComposite hooks yuklendi (10 fonksiyon)");
+        Core::Log::Info("rage::phBoundComposite hooks installed (10 functions)");
     }
 
     // 0x6883C0 (retn)

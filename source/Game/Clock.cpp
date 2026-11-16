@@ -37,7 +37,7 @@ void CClock::InjectHooks() {
     Core::Hook::Install(0x821200, &CClock::SetGameClock);
     Core::Hook::Install(0x821260, &CClock::OffsetClockByADayOrAdvance);
     Core::Hook::Install(0x8212E0, &CClock::Update);
-    Core::Log::Info("CClock hooks yuklendi.");
+    Core::Log::Info("CClock hooks installed.");
 }
 
 // 0x820E50
