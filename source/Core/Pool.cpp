@@ -2,6 +2,21 @@
 #include "Core/Pool.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
+#include <intrin.h>
+
+namespace
+{
+    // 0x4011D0 (__cdecl) - Rage sysMemAllocator::Allocate(size, 16, 0)
+    void* RageAlloc(size_t size)
+    {
+        auto* tlsArray = reinterpret_cast<uintptr_t*>(__readfsdword(0x2C));
+        auto* tlsBlock = reinterpret_cast<void**>(tlsArray[0]);
+        void* allocator = tlsBlock[2];
+        void** vtable = *reinterpret_cast<void***>(allocator);
+        using AllocFn = void*(__thiscall*)(void*, size_t, size_t, uint32);
+        return reinterpret_cast<AllocFn>(vtable[2])(allocator, size, 16, 0);
+    }
+}
 
 void CPoolBase::InjectHooks()
 {
@@ -17,8 +32,8 @@ void CPoolBase::InjectHooks()
 CPoolBase* __thiscall CPoolBase::Init(int32 size, const char* /*name*/, int32 elemSize)
 {
     m_nElementSize = elemSize;
-    m_pObjects = Core::Hook::Call<void*>(0x4011D0, elemSize * size);
-    m_byteMap = static_cast<uint8*>(Core::Hook::Call<void*>(0x4011D0, size));
+    m_pObjects = RageAlloc(static_cast<size_t>(elemSize) * static_cast<size_t>(size));
+    m_byteMap = static_cast<uint8*>(RageAlloc(static_cast<size_t>(size)));
     m_bOwnsMemory = true;
     m_nSize = size;
     m_nFirstFree = -1;
@@ -43,7 +58,7 @@ void* __thiscall CPoolBase::New()
 
     while (true)
     {
-        if (++idx == m_nSize)
+        if (++idx >= m_nSize)
         {
             if (wrapped)
                 return nullptr;
@@ -80,8 +95,14 @@ void* __thiscall CPoolBase::InitSlot(int32 handle)
     m_byteMap[index] = (m_byteMap[index] & 0x80) | clamped;
 
     m_nFirstFree = 0;
-    while (static_cast<int8>(m_byteMap[m_nFirstFree]) >= 0)
+    while (m_nFirstFree < m_nSize && static_cast<int8>(m_byteMap[m_nFirstFree]) >= 0)
         ++m_nFirstFree;
+
+    if (m_nFirstFree >= m_nSize)
+    {
+        m_nFirstFree = -1;
+        return nullptr;
+    }
 
     return &m_byteMap[m_nFirstFree];
 }

@@ -34,6 +34,7 @@ void CClock::InjectHooks() {
     Core::Hook::Install(0x821060, &CClock::GetIsTimeInRange);
     Core::Hook::Install(0x821020, &CClock::GetGameClockMinutesUntil);
     Core::Hook::Install(0x820EE0, &CClock::SetGameClockExact);
+    Core::Hook::Install(0x8210B0, &CClock::StepDay);
     Core::Hook::Install(0x821200, &CClock::SetGameClock);
     Core::Hook::Install(0x821260, &CClock::OffsetClockByADayOrAdvance);
     Core::Hook::Install(0x8212E0, &CClock::Update);
@@ -92,6 +93,33 @@ void __cdecl CClock::SetGameClockExact(int32 day, int32 hours, int32 minutes, in
     ms_nLastClockTick    = CTimer::m_snTimeInMilliseconds;
 }
 
+// 0x8210B0
+void __cdecl CClock::StepDay(bool forward) {
+    const auto* daysInMonth = reinterpret_cast<const uint8*>(Core::Rebase(0xF1CD94));
+
+    if (forward) {
+        if (++ms_nGameClockDays > daysInMonth[ms_nGameClockMonths - 1]) {
+            ms_nGameClockDays = 1;
+            if (++ms_nGameClockMonths > 12) {
+                ms_nGameClockMonths = 1;
+            }
+        }
+        CurrentDay = (CurrentDay + 1) % 7;
+        Core::Hook::Call<void>(0x962B90, 0x104, 1.0f);
+    } else {
+        if (--ms_nGameClockDays == 0) {
+            if (--ms_nGameClockMonths == 0) {
+                ms_nGameClockMonths = 12;
+            }
+            ms_nGameClockDays = daysInMonth[ms_nGameClockMonths - 1];
+        }
+        if (--CurrentDay < 0) {
+            CurrentDay = 6;
+        }
+        Core::Hook::Call<void>(0x962B90, 0x104, -1.0f);
+    }
+}
+
 // 0x821200
 void __cdecl CClock::SetGameClock(int32 hours, int32 minutes, int32 seconds, int32 day) {
     ms_nGameClockHours   = hours;
@@ -145,12 +173,12 @@ void __cdecl CClock::OffsetClockByADayOrAdvance(int32 hours, int32 minutes) {
         for (uint32 i = 0; i < extraHours; ++i) {
             if (++h >= 24) {
                 h -= 24;
-                Core::Hook::Call<void>(0x8210B0, 1);
+                StepDay(true);
             }
         }
     }
     if (h < ms_nGameClockHours || (h == ms_nGameClockHours && m < ms_nGameClockMinutes)) {
-        Core::Hook::Call<void>(0x8210B0, 1);
+        StepDay(true);
     }
     SetGameClock(h, m, 0, -1);
 }
@@ -173,7 +201,7 @@ void __cdecl CClock::Update() {
                 ms_nGameClockMinutes = 0;
                 if (++ms_nGameClockHours >= 24) {
                     ms_nGameClockHours = 0;
-                    Core::Hook::Call<void>(0x8210B0, 1);
+                    StepDay(true);
                     last = ms_nLastClockTick;
                     now  = CTimer::m_snTimeInMilliseconds;
                 }

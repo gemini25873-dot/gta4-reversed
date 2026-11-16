@@ -1,6 +1,6 @@
 # gta4-reversed
 
-[![Build ASI (x86)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml/badge.svg)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml)
+[![Build ASI (x86)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml)
 
 An open-source C++20 reverse engineering and compatibility project targeting **Grand Theft Auto IV (`1.0.7.0` x86)**.
 
@@ -13,9 +13,9 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `188` (`~0.43%`)
+- **Hooked Functions:** `189` implemented (`185` active at runtime; `~0.43%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
-  - `Core`: `Matrix.cpp`, `Vector.cpp`
+  - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
   - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
 
@@ -24,15 +24,15 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Module | File | Hooked Functions | Remaining `Hook::Call` | Notes |
 | --- | --- | ---: | ---: | --- |
 | Core | `source/Core/Matrix.cpp` | 1 | 0 | Pure C++ |
-| Core | `source/Core/Pool.cpp` | 5 | 2 | |
+| Core | `source/Core/Pool.cpp` | 5 | 0 | Pure C++ |
 | Core | `source/Core/Vector.cpp` | 2 | 0 | Pure C++ |
 | Game | `source/Game/Cam.cpp` | 6 | 8 | |
 | Game | `source/Game/Cheat.cpp` | 12 | 14 | |
-| Game | `source/Game/Clock.cpp` | 9 | 4 | |
+| Game | `source/Game/Clock.cpp` | 10 | 2 | |
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 6 | |
 | Game | `source/Game/General.cpp` | 4 | 2 | |
-| Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ |
+| Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
 | Game | `source/Game/Ped.cpp` | 4 | 21 | |
 | Game | `source/Game/Physical.cpp` | 5 | 8 | |
@@ -41,7 +41,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
 | Game | `source/Game/Weather.cpp` | 4 | 9 | |
-| Game | `source/Game/World.cpp` | 4 | 3 | |
+| Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` currently disabled in `CWorld::InjectHooks()` |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
 | Rage | `source/Rage/phBound.cpp` | 4 | 0 | Pure C++ |
@@ -57,7 +57,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 
 ## Compatibility Features (`dllmain.cpp`)
 
-- **Complete Edition Compatibility on `1.0.7.0`:**
+- **Complete Edition Compatibility on `1.0.7.0`** *(for downgraded Complete Edition installs)*:
   - Multi-WTD DLC radio HUD logo fix
   - Stubbing missing Complete Edition script natives (e.g., `0x2C89A1F9` / `SCRT70`)
 
@@ -97,7 +97,7 @@ The compiled output is written to:
 - `bin/Release/gta4_reversed.pdb`
 
 ### Running in Game
-1. Make sure you have a working, legitimate GTA IV `1.0.7.0` installation with an ASI loader (e.g., Ultimate ASI Loader) and **ZolikaPatch** installed. In `ZolikaPatch.ini`, **only enable `LaunchWithPlayGTAIV=1` and `SkipLauncher=1`** (keep other optional patches disabled to avoid hook conflicts with `gta4_reversed.asi`).
+1. Make sure you have a working, legitimate GTA IV `1.0.7.0` installation with an ASI loader (e.g., Ultimate ASI Loader). If you are running a downgraded Steam / Complete Edition installation with **ZolikaPatch**, keep only `LaunchWithPlayGTAIV=1` and `SkipLauncher=1` enabled in `ZolikaPatch.ini` (disable other optional patches to avoid hook conflicts with `gta4_reversed.asi`).
 2. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
 3. Launch the game (`PlayGTAIV.exe` / `GTAIV.exe`) and check `gta4_reversed.log` for initialization and any VEH diagnostics.
 

@@ -90,7 +90,7 @@ CPed* __thiscall CPed::DeletingDtor(uint8 flags)
 bool __thiscall CPed::IsValidOrPlayer()
 {
     CPool<CPed>* pool = CPools::ms_pPedPool;
-    const int32 index = pool->GetIndex(this) >> 8;
+    const int32 index = pool->GetIndex(this);
     if (index < 0 || index >= pool->m_nSize)
         return false;
 
@@ -108,7 +108,7 @@ void __thiscall CPed::SetPedState(int32 state)
         Core::Hook::CallMethod<void>(0x89DC70, this);
         if ((m_nPedFlags2 & 0x10u) != 0)
         {
-            const int32 handle = CPools::ms_pPedPool->GetIndex(this);
+            const int32 handle = CPools::ms_pPedPool->GetHandle(CPools::ms_pPedPool->GetIndex(this));
             Core::Hook::Call<void>(0x80E6A0, handle, 2);
         }
     }

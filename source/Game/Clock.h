@@ -15,7 +15,8 @@ public:
     static inline uint32& ms_nLastClockTick             = *reinterpret_cast<uint32*>(Core::Rebase(0x11D5318));
 
     static void InjectHooks();
-
+    
+    static void   __cdecl StepDay(bool forward);
     static void   __cdecl Initialise(int32 millisecondsPerGameMinute);
     static int32  __cdecl GetGameClockHours();
     static int32  __cdecl GetGameClockMinutes();
