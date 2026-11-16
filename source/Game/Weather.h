@@ -32,5 +32,6 @@ public:
     static float       __cdecl CalcNightFactor();
     static const int8* __cdecl GetWeatherCycle();
     static void        __cdecl ProcessPlayerWetness();
+    static int32       __cdecl AdvanceWeather();
     static void        __cdecl Update();
 };

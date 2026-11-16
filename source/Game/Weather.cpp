@@ -11,7 +11,8 @@ void CWeather::InjectHooks() {
     Core::Hook::Install(0x9E4250, &CWeather::GetWeatherCycle);
     Core::Hook::Install(0x9E4270, &CWeather::ProcessPlayerWetness);
     Core::Hook::Install(0x9E4490, &CWeather::Update);
-    Core::Log::Info("CWeather hooks installed.");
+    Core::Hook::Install(0x9E42A0, &CWeather::AdvanceWeather);
+    Core::Log::Info("CWeather hooks installed (5 functions).");
 }
 
 // 0x9E4100
@@ -50,6 +51,44 @@ void __cdecl CWeather::ProcessPlayerWetness() {
             Core::Hook::CallMethod<bool>(0x9C5FD0, ped);
         }
     }
+}
+
+// 0x9E42A0
+int32 __cdecl CWeather::AdvanceWeather() {
+    const int32 current = (InterpolationValue >= 0.5f) ? NewWeatherType : OldWeatherType;
+    const int32 target  = (current + 1) % 8;
+    const auto* cycle   = reinterpret_cast<const int8*>(Core::Rebase(0xF34488));
+
+    int32 idx   = WeatherTypeList;
+    int32 steps = 0;
+    while (true) {
+        if (cycle[(idx + 127) % 128] == target && cycle[idx] == target) {
+            break;
+        }
+        idx = (idx + 1) % 128;
+        ++steps;
+        if (steps > 128) {
+            break;
+        }
+    }
+    WeatherTypeList = idx;
+
+    if (steps > 128) {
+        const int32 offset = (InterpolationValue < 0.5f) ? -1 : 0;
+        for (int32 i = 0; i <= 128; ++i) {
+            if (cycle[(offset + idx + 128) % 128] == target) {
+                break;
+            }
+            idx = (idx + 1) % 128;
+        }
+        WeatherTypeList = idx;
+    }
+
+    const int32 prevIdx = (idx + 127) % 128;
+    const int32 result  = cycle[idx];
+    OldWeatherType      = cycle[prevIdx];
+    NewWeatherType      = result;
+    return result;
 }
 
 // 0x9E4490

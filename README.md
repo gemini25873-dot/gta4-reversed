@@ -13,7 +13,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `189` implemented (`185` active at runtime; `~0.43%`)
+- **Hooked Functions:** `218` implemented (`214` active at runtime; `~0.50%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
@@ -27,7 +27,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Core | `source/Core/Pool.cpp` | 5 | 0 | Pure C++ |
 | Core | `source/Core/Vector.cpp` | 2 | 0 | Pure C++ |
 | Game | `source/Game/Cam.cpp` | 6 | 8 | |
-| Game | `source/Game/Cheat.cpp` | 12 | 14 | |
+| Game | `source/Game/Cheat.cpp` | 40 | 22 | |
 | Game | `source/Game/Clock.cpp` | 10 | 2 | |
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 6 | |
@@ -40,7 +40,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Game | `source/Game/Timer.cpp` | 10 | 15 | |
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
-| Game | `source/Game/Weather.cpp` | 4 | 9 | |
+| Game | `source/Game/Weather.cpp` | 5 | 9 | |
 | Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` currently disabled in `CWorld::InjectHooks()` |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
