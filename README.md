@@ -12,7 +12,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `344` implemented (`340` active at runtime; `~0.79%`)
+- **Hooked Functions:** `365` implemented (`361` active at runtime; `~0.83%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`, `Pad.cpp`
@@ -32,6 +32,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/Clock.cpp` | 10 | 2 | |
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 6 | |
+| Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
 | Game | `source/Game/General.cpp` | 4 | 2 | |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | |
@@ -49,6 +50,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
 | Game | `source/Game/Weather.cpp` | 5 | 8 | |
 | Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` currently disabled in `CWorld::InjectHooks()` |
+| Rage | `source/Rage/fiStream.cpp` | 7 | 5 | |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
 | Rage | `source/Rage/phBound.cpp` | 4 | 0 | Pure C++ |
