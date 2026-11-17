@@ -35,6 +35,7 @@ add_library(gta4_reversed SHARED
     source/Game/FileMgr.cpp
     source/Game/DummyObject.cpp
     source/Game/IplStore.cpp
+    source/Game/Font.cpp
     source/Rage/fiStream.cpp
     source/Game/PlayerInfo.cpp
     source/Game/Wanted.cpp

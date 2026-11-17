@@ -12,7 +12,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `391` implemented (`387` active at runtime; `~0.89%`)
+- **Hooked Functions:** `462` implemented (`458` active at runtime; `~1.06%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`, `Pad.cpp`
@@ -34,6 +34,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 4 | |
 | Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
+| Game | `source/Game/Font.cpp` | 71 | 34 | |
 | Game | `source/Game/General.cpp` | 4 | 2 | |
 | Game | `source/Game/IplStore.cpp` | 15 | 4 | |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
