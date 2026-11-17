@@ -37,6 +37,7 @@ add_library(gta4_reversed SHARED
     source/Game/ModelInfo.cpp
     source/Game/TxdStore.cpp
     source/Game/Streaming.cpp
+    source/Game/Pad.cpp
     source/Rage/phBound.cpp
     source/Rage/phBoundComposite.cpp
     source/Rage/phBoundBVH.cpp

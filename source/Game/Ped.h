@@ -34,7 +34,8 @@ public:
     void*  m_pPedUnk7C0;                   // +0x7C0
     uint8  pad7C4[4];                      // +0x7C4..+0x7C7
     int32  m_nPedUnk7C8;                   // +0x7C8
-    uint8  pad7CC[0x2B8];                  // +0x7CC..+0xA83
+    uint8  pad7CC[0x2B4];                  // +0x7CC..+0xA7F
+    int32  m_nUnkA80;                      // +0xA80
     int32  m_nPedState;                    // +0xA84
     uint8  padA88[8];                      // +0xA88..+0xA8F
     void*  m_pPedIntelligence;             // +0xA90
@@ -84,6 +85,7 @@ VALIDATE_OFFSET(CPed, m_nPedFlags, 0x260);
 VALIDATE_OFFSET(CPed, m_nPedFlags2, 0x26C);
 VALIDATE_OFFSET(CPed, m_pedSpeechAudio, 0x580);
 VALIDATE_OFFSET(CPed, m_audPlaceableTracker, 0x790);
+VALIDATE_OFFSET(CPed, m_nUnkA80, 0xA80);
 VALIDATE_OFFSET(CPed, m_nPedState, 0xA84);
 VALIDATE_OFFSET(CPed, m_pPedIntelligence, 0xA90);
 VALIDATE_OFFSET(CPed, m_pPlayerInfo, 0x228);

@@ -12,10 +12,10 @@ The long-term goal is to document every engine/game class and incrementally reim
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `314` implemented (`310` active at runtime; `~0.72%`)
+- **Hooked Functions:** `328` implemented (`324` active at runtime; `~0.75%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
-  - `Game`: `LoadingScreens.cpp`
+  - `Game`: `LoadingScreens.cpp`, `Pad.cpp`
   - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phCollider.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
 
 ### Module Breakdown
@@ -35,6 +35,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
+| Game | `source/Game/Pad.cpp` | 14 | 0 | Pure C++ |
 | Game | `source/Game/Ped.cpp` | 8 | 20 | |
 | Game | `source/Game/Physical.cpp` | 9 | 8 | |
 | Game | `source/Game/PlayerInfo.cpp` | 18 | 13 | |
