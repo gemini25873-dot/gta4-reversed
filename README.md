@@ -2,12 +2,11 @@
 
 [![Build ASI (x86)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml)
 
-An open-source C++20 reverse engineering and compatibility project targeting **Grand Theft Auto IV (`1.0.7.0` x86)**.
+An open-source C++20 reverse engineering, documentation, and runtime reimplementation project targeting **Grand Theft Auto IV (`1.0.7.0` x86)** — inspired by [`gta-reversed`](https://github.com/gta-reversed/gta).
 
-The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and game classes at runtime, allowing incremental replacement and verification inside a real copy of `GTAIV.exe` without modifying original game files.
+The long-term goal is to document every engine/game class and incrementally reimplement `GTAIV.exe` (`43,740` functions) in clean, verified C++20 (`0` `Core::Hook::Call` fallbacks). The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and game classes at runtime, allowing live replacement and verification inside a real copy of `GTAIV.exe` without modifying original game files on disk.
 
-> **Disclaimer:** This repository contains **no copyrighted game assets, binaries, or proprietary data**. It is strictly a research and modding SDK effort and requires a legitimate copy of Grand Theft Auto IV (`1.0.7.0`) to run.
-
+> **Disclaimer:** This repository contains **no copyrighted game assets, binaries, or proprietary data**. It is strictly an open-source research and runtime reimplementation effort and requires a legitimate copy of Grand Theft Auto IV (`1.0.7.0`) to run.
 ---
 
 ## Current Progress
