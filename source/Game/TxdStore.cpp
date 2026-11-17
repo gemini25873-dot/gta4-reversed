@@ -1,6 +1,7 @@
 #include "StdInc.h"
 #include "Game/TxdStore.h"
 #include "Game/ModelInfo.h"
+#include "Game/Streaming.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 #include <intrin.h>
@@ -137,7 +138,7 @@ int32 __cdecl CTxdStore::RemoveRef(int32 slot)
     TxdDef* def = ms_pTxdPool->GetAt(slot);
     if (--def->m_nRefCount <= 0)
     {
-        const uint8 isStreamed = Core::Hook::Call<uint8>(0x832E60, slot, ms_nStreamingModuleId);
+        const uint8 isStreamed = CStreaming::IsObjectInStreaming(slot, ms_nStreamingModuleId) ? 1 : 0;
         if (!isStreamed)
             return RemoveTxd(slot);
         return isStreamed;
@@ -178,8 +179,8 @@ int32 __cdecl CTxdStore::RemoveTxd(int32 slot)
 // 0x820540
 int32 __cdecl CTxdStore::UnloadTxd(int32 slot)
 {
-    if (Core::Hook::Call<uint8>(0x832E60, slot, ms_nStreamingModuleId))
-        return Core::Hook::Call<int32>(0x832C70, slot, ms_nStreamingModuleId);
+    if (CStreaming::IsObjectInStreaming(slot, ms_nStreamingModuleId))
+        return CStreaming::RemoveModel(slot, ms_nStreamingModuleId);
 
     if (GetTxd(slot))
         return RemoveTxd(slot);
@@ -205,7 +206,7 @@ void __cdecl CTxdStore::RemoveUnusedTxds(bool force)
             if (GetNumRefs(i) != 0)
                 continue;
 
-            const uint8 flags = Core::Hook::Call<uint8>(0x832C90, i, ms_nStreamingModuleId);
+            const uint16 flags = CStreaming::GetModelFlags(i, ms_nStreamingModuleId);
             if ((flags & 0xC6u) != 0)
                 continue;
         }
@@ -323,7 +324,7 @@ int32 __cdecl CTxdStore::GetDependencies(int32 slot, int32* outDeps)
     TxdDef* def = ms_pTxdPool->GetAt(slot);
     if (def->m_nParent != -1)
     {
-        auto* streamingMgr = Core::Hook::Call<uint8*>(0x832F00);
+        auto* streamingMgr = static_cast<uint8*>(CStreaming::GetModuleManager());
         const int32 baseIdx = *reinterpret_cast<int32*>(streamingMgr + 100 * ms_nStreamingModuleId + 88);
         *outDeps = def->m_nParent + baseIdx;
         return 1;

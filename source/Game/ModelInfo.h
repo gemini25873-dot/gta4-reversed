@@ -28,6 +28,12 @@ public:
     int16   m_nAnimIndex = -1;             // +0x56
     uint8   m_pad58[0x08]{};               // +0x58..+0x5F
 
+    uint8 GetModelType()
+    {
+        using Fn = uint8(__thiscall*)(CBaseModelInfo*);
+        return reinterpret_cast<Fn>(m_vftable[3])(this);
+    }
+
     int32 __thiscall SetTexDictionary(const char* txdName);
     int32 __thiscall SetAnimGroup(const char* animGroup);
 };
@@ -111,6 +117,7 @@ class CModelInfo
 public:
     static inline CBaseModelInfo**& ms_apModelInfoPtrs   = Core::StaticRef<CBaseModelInfo**>(0x15F73B0);
     static inline auto&             ms_modelInfoPtrs     = Core::StaticRef<CBaseModelInfo*[31000]>(0x15F73B0);
+    static inline int32&            ms_nStreamingModuleId = Core::StaticRef<int32>(0x15F73A0);
     static inline int32&            ms_nModelInfoCount   = Core::StaticRef<int32>(0x15F73A4);
     static inline ModelHashEntry*&  ms_pHashTable        = Core::StaticRef<ModelHashEntry*>(0xF2C240);
     static inline uint16&           ms_nHashTableCount   = Core::StaticRef<uint16>(0xF2C244);

@@ -12,7 +12,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `295` implemented (`291` active at runtime; `~0.67%`)
+- **Hooked Functions:** `314` implemented (`310` active at runtime; `~0.72%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
@@ -39,8 +39,9 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/Physical.cpp` | 9 | 8 | |
 | Game | `source/Game/PlayerInfo.cpp` | 18 | 13 | |
 | Game | `source/Game/Stats.cpp` | 19 | 8 | |
+| Game | `source/Game/Streaming.cpp` | 19 | 7 | |
 | Game | `source/Game/Timer.cpp` | 10 | 15 | |
-| Game | `source/Game/TxdStore.cpp` | 23 | 8 | |
+| Game | `source/Game/TxdStore.cpp` | 23 | 3 | |
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
 | Game | `source/Game/Wanted.cpp` | 10 | 8 | |
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |

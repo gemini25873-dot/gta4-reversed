@@ -25,6 +25,7 @@
 #include "Game/Building.h"
 #include "Game/ModelInfo.h"
 #include "Game/TxdStore.h"
+#include "Game/Streaming.h"
 #include "Rage/phBound.h"
 #include "Rage/phBoundComposite.h"
 #include "Rage/phBoundBVH.h"
@@ -244,6 +245,7 @@ static void InitPlugin() {
     CBuilding::InjectHooks();
     CModelInfo::InjectHooks();
     CTxdStore::InjectHooks();
+    CStreaming::InjectHooks();
     rage::phBound::InjectHooks();
     rage::phBoundComposite::InjectHooks();
     rage::phBoundGeometry::InjectHooks();
