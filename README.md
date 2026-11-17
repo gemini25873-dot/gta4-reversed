@@ -100,9 +100,10 @@ The compiled output is written to:
 - `bin/Release/gta4_reversed.pdb`
 
 ### Running in Game
-1. Make sure you have a working, legitimate GTA IV `1.0.7.0` installation with an ASI loader (e.g., Ultimate ASI Loader). If you are running a downgraded Steam / Complete Edition installation with **ZolikaPatch**, keep only `LaunchWithPlayGTAIV=1` and `SkipLauncher=1` enabled in `ZolikaPatch.ini` (disable other optional patches to avoid hook conflicts with `gta4_reversed.asi`).
-2. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
-3. Launch the game (`PlayGTAIV.exe` / `GTAIV.exe`) and check `gta4_reversed.log` for initialization and any VEH diagnostics.
+1. Make sure you have a legitimate GTA IV `1.0.7.0` installation with an ASI loader (e.g., Ultimate ASI Loader) and **ZolikaPatch** installed.
+2. In `ZolikaPatch.ini`, **enable `LaunchWithPlayGTAIV=1` and `SkipLauncher=1`** (both must be enabled so `1.0.7.0` launches cleanly without base-game `RMN60` / `DFA` startup errors, which are unrelated to `gta4_reversed.asi`). Keep all other optional `ZolikaPatch` features disabled (`=0`) to avoid hook conflicts.
+3. Copy `bin/Release/gta4_reversed.asi` (and optionally `.pdb` for crash stack traces) into your GTA IV root folder.
+4. Launch the game (`PlayGTAIV.exe` / `GTAIV.exe`) and check `gta4_reversed.log` for initialization and any VEH diagnostics.
 
 ---
 
