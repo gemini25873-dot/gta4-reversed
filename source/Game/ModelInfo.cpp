@@ -1,5 +1,6 @@
 #include "StdInc.h"
 #include "Game/ModelInfo.h"
+#include "Game/TxdStore.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 #include <cstdlib>
@@ -259,11 +260,11 @@ int32 __thiscall CBaseModelInfo::SetTexDictionary(const char* txdName)
         return 0;
     }
 
-    int32 txdSlot = Core::Hook::Call<int32>(0x41ECE0, txdName);
+    int32 txdSlot = CTxdStore::FindTxdSlot(txdName);
     m_nTexDictionary = static_cast<int16>(txdSlot);
     if (static_cast<uint16>(txdSlot) == 0xFFFFu)
     {
-        txdSlot = Core::Hook::Call<int32>(0x41EC20, txdName);
+        txdSlot = CTxdStore::AddTxdSlot(txdName);
         m_nTexDictionary = static_cast<int16>(txdSlot);
     }
     return txdSlot;
