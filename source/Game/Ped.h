@@ -4,11 +4,11 @@
 class CPed : public CPhysical
 {
 public:
-    uint8  m_nPedUnk210;                   // +0x210
-    uint8  m_nPedUnk211;                   // +0x211
-    uint8  m_nPedUnk212;                   // +0x212
+    uint8  m_bIsDead;                      // +0x210
+    uint8  m_bIsInjured;                   // +0x211
+    uint8  m_bIsCriticallyInjured;         // +0x212
     uint8  pad213;                         // +0x213
-    float  m_fPedUnk214;                   // +0x214
+    float  m_fPedHealth;                   // +0x214
     uint8  m_nPedUnk218;                   // +0x218
     uint8  m_nPedUnk219;                   // +0x219
     uint8  pad21A[2];                      // +0x21A..+0x21B
@@ -66,10 +66,15 @@ public:
     CPed* __thiscall DeletingDtor(uint8 flags);
     bool  __thiscall IsValidOrPlayer();
     void  __thiscall SetPedState(int32 state);
+    int32 __thiscall UpdateHealthFlags(float health);
+    int32 __thiscall InitHealth(float health);
+    int32 __thiscall SetHealth(float health, int32 arg);
+    int32 __thiscall AddHealth(float delta);
 };
 
 VALIDATE_SIZE(CPed, 0xF00);
-VALIDATE_OFFSET(CPed, m_nPedUnk210, 0x210);
+VALIDATE_OFFSET(CPed, m_bIsDead, 0x210);
+VALIDATE_OFFSET(CPed, m_fPedHealth, 0x214);
 VALIDATE_OFFSET(CPed, m_pPedUnk21C, 0x21C);
 VALIDATE_OFFSET(CPed, m_nPedFlags, 0x260);
 VALIDATE_OFFSET(CPed, m_nPedFlags2, 0x26C);

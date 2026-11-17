@@ -10,8 +10,12 @@ void CPed::InjectHooks()
     Core::Hook::Install(0x8ACAC0, &CPed::DeletingDtor);
     Core::Hook::Install(0x8A9030, &CPed::IsValidOrPlayer);
     Core::Hook::Install(0x8A92C0, &CPed::SetPedState);
+    Core::Hook::Install(0x89E5A0, &CPed::UpdateHealthFlags);
+    Core::Hook::Install(0x8AC150, &CPed::InitHealth);
+    Core::Hook::Install(0x8AC180, &CPed::SetHealth);
+    Core::Hook::Install(0x8AC1B0, &CPed::AddHealth);
 
-    Core::Log::Info("CPed hooks installed (4 functions)");
+    Core::Log::Info("CPed hooks installed (8 functions)");
 }
 
 CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
@@ -19,10 +23,10 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     CPhysical::Ctor();
     m_vftable = reinterpret_cast<void**>(Core::Rebase(0xD69844));
 
-    m_nPedUnk210 = 0;
-    m_nPedUnk211 = 0;
-    m_nPedUnk212 = 0;
-    m_fPedUnk214 = 0.0f;
+    m_bIsDead = 0;
+    m_bIsInjured = 0;
+    m_bIsCriticallyInjured = 0;
+    m_fPedHealth = 0.0f;
     m_nPedUnk218 = initParams[0];
     m_nPedUnk219 = initParams[1];
     m_pPedUnk21C = nullptr;
@@ -114,4 +118,44 @@ void __thiscall CPed::SetPedState(int32 state)
     }
 
     m_nPedState = state;
+}
+
+int32 __thiscall CPed::UpdateHealthFlags(float health)
+{
+    m_bIsCriticallyInjured = (health < 50.0f) ? 1 : 0;
+    m_bIsInjured = (health < 100.0f) ? 1 : 0;
+
+    int32 dead = 0;
+    if (health <= 0.0f)
+    {
+        dead = 1;
+        m_bIsDead = 1;
+    }
+    else
+    {
+        m_bIsDead = 0;
+    }
+
+    m_fPedHealth = health;
+    return dead;
+}
+
+int32 __thiscall CPed::InitHealth(float health)
+{
+    CPhysical::InitHealth(health);
+    return UpdateHealthFlags(health);
+}
+
+int32 __thiscall CPed::SetHealth(float health, int32 arg)
+{
+    CPhysical::SetHealth(health, arg);
+    return UpdateHealthFlags(health);
+}
+
+int32 __thiscall CPed::AddHealth(float delta)
+{
+    CPhysical::AddHealth(delta);
+    using GetHealthFn = float(__thiscall*)(const CPed*);
+    const float current = reinterpret_cast<GetHealthFn>(m_vftable[63])(this);
+    return UpdateHealthFlags(current);
 }

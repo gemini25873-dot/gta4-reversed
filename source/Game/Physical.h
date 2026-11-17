@@ -41,7 +41,7 @@ public:
     uint32 m_nPhysUnk1E8 = 0;            // +0x1E8 (this[122])
     int8   m_nPhysUnk1EC = -1;           // +0x1EC (byte +492)
     uint8  m_nPhysPad1ED[3]{};           // +0x1ED..+0x1EF
-    float  m_fMaxHealth = 100.0f;        // +0x1F0 (this[124])
+    float  m_fMaxHealth = 100.0f;        // +0x1F0 (this[124]; CPhysical health)
     uint8  m_nPhysUnk1F4 = 0;            // +0x1F4 (byte +500)
     uint8  m_nPhysPad1F5[3]{};           // +0x1F5..+0x1F7
     void*  m_pPhysUnk1F8 = nullptr;      // +0x1F8 (this[126])
@@ -56,6 +56,10 @@ public:
     CPhysical* __thiscall DeletingDtor(uint8 flags);
     void* __thiscall SetPosition(const float* pos, bool skipPhysics, int32 arg);
     void __thiscall SetHeading(float heading);
+    void  __thiscall InitHealth(float health);
+    void  __thiscall SetHealth(float health, int32 arg);
+    void  __thiscall AddHealth(float delta);
+    float __thiscall GetHealth() const;
 };
 
 VALIDATE_SIZE(CPhysical, 0x210);

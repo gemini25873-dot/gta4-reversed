@@ -11,8 +11,12 @@ void CPhysical::InjectHooks()
     Core::Hook::Install(0xA48610, &CPhysical::DeletingDtor);
     Core::Hook::Install(0xA48E40, &CPhysical::SetPosition);
     Core::Hook::Install(0xA47A40, &CPhysical::SetHeading);
+    Core::Hook::Install(0xA47930, &CPhysical::InitHealth);
+    Core::Hook::Install(0xA47950, &CPhysical::SetHealth);
+    Core::Hook::Install(0xA47970, &CPhysical::AddHealth);
+    Core::Hook::Install(0x447B30, &CPhysical::GetHealth);
 
-    Core::Log::Info("CPhysical hooks installed (5 functions)");
+    Core::Log::Info("CPhysical hooks installed (9 functions)");
 }
 
 CPhysical* __thiscall CPhysical::Ctor()
@@ -152,4 +156,24 @@ void __thiscall CPhysical::SetHeading(float heading)
         using OnWarpFn = void(__thiscall*)(CPhysical*, int32);
         reinterpret_cast<OnWarpFn>(m_vftable[45])(this, 0);
     }
+}
+
+void __thiscall CPhysical::InitHealth(float health)
+{
+    m_fMaxHealth = health;
+}
+
+void __thiscall CPhysical::SetHealth(float health, int32 /*arg*/)
+{
+    m_fMaxHealth = health;
+}
+
+void __thiscall CPhysical::AddHealth(float delta)
+{
+    m_fMaxHealth += delta;
+}
+
+float __thiscall CPhysical::GetHealth() const
+{
+    return m_fMaxHealth;
 }

@@ -13,7 +13,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `218` implemented (`214` active at runtime; `~0.50%`)
+- **Hooked Functions:** `226` implemented (`222` active at runtime; `~0.52%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
@@ -34,8 +34,8 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Game | `source/Game/General.cpp` | 4 | 2 | |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
-| Game | `source/Game/Ped.cpp` | 4 | 21 | |
-| Game | `source/Game/Physical.cpp` | 5 | 8 | |
+| Game | `source/Game/Ped.cpp` | 8 | 21 | |
+| Game | `source/Game/Physical.cpp` | 9 | 8 | |
 | Game | `source/Game/Stats.cpp` | 19 | 8 | |
 | Game | `source/Game/Timer.cpp` | 10 | 15 | |
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
