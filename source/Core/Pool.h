@@ -20,6 +20,9 @@ public:
     void* __thiscall InitSlot(int32 handle);
     int32 __thiscall GetIndex(const void* obj) const;
     int32 __thiscall Delete(void* obj);
+    void* __thiscall NewAt(int32 handle);
+    void* __thiscall GetAtHandleRegistered(int32 handle) const;
+    int32 __thiscall GetIndexThunk(const void* obj) const;
 
     bool IsSlotFree(int32 index) const { return (m_byteMap[index] & 0x80) != 0; }
     uint8 GetRef(int32 index) const { return m_byteMap[index] & 0x7F; }

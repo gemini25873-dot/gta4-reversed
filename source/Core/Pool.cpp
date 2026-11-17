@@ -26,8 +26,11 @@ void CPoolBase::InjectHooks()
     Core::Hook::Install(0x96C6C0, &CPoolBase::InitSlot);
     Core::Hook::Install(0x96C730, &CPoolBase::GetIndex);
     Core::Hook::Install(0xC79660, &CPoolBase::Delete);
+    Core::Hook::Install(0xB26820, &CPoolBase::NewAt);
+    Core::Hook::Install(0xA4C560, &CPoolBase::GetAtHandleRegistered);
+    Core::Hook::Install(0xB25790, &CPoolBase::GetIndexThunk);
 
-    Core::Log::Info("CPool hooks installed (6 functions)");
+    Core::Log::Info("CPool hooks installed (9 functions)");
 }
 
 CPoolBase* __thiscall CPoolBase::Init(int32 size, const char* /*name*/, int32 elemSize)
@@ -123,4 +126,28 @@ int32 __thiscall CPoolBase::Delete(void* obj)
     if (index < m_nFirstFree)
         m_nFirstFree = index;
     return index;
+}
+
+// 0xB26820
+void* __thiscall CPoolBase::NewAt(int32 handle)
+{
+    void* obj = static_cast<uint8*>(m_pObjects) + (handle >> 8) * m_nElementSize;
+    InitSlot(handle);
+    ++m_nUsed;
+    return obj;
+}
+
+// 0xA4C560
+void* __thiscall CPoolBase::GetAtHandleRegistered(int32 handle) const
+{
+    const int32 index = handle >> 8;
+    if (m_byteMap[index] == static_cast<uint8>(handle))
+        return static_cast<uint8*>(m_pObjects) + index * m_nElementSize;
+    return nullptr;
+}
+
+// 0xB25790
+int32 __thiscall CPoolBase::GetIndexThunk(const void* obj) const
+{
+    return GetIndex(obj);
 }

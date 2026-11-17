@@ -130,7 +130,7 @@ int32 __thiscall CEntity::AddToInterior()
     if (m_nInteriorHash <= -1)
         return m_nInteriorHash;
 
-    void* interior = Core::Hook::CallMethod<void*>(0xA4C560, CPools::ms_pInteriorInstPool, m_nInteriorHash);
+    void* interior = CPools::ms_pInteriorInstPool->GetAtHandleRegistered(m_nInteriorHash);
     if (!interior)
         return 0;
 
@@ -143,7 +143,7 @@ int32 __thiscall CEntity::RemoveFromInterior()
     if (m_nInteriorHash <= -1 || m_nInteriorIndex <= -1)
         return m_nInteriorHash;
 
-    void* interior = Core::Hook::CallMethod<void*>(0xA4C560, CPools::ms_pInteriorInstPool, m_nInteriorHash);
+    void* interior = CPools::ms_pInteriorInstPool->GetAtHandleRegistered(m_nInteriorHash);
     if (!interior)
         return 0;
 

@@ -13,6 +13,7 @@ public:
     static inline CPool<CPed>*&         ms_pPedPool           = Core::StaticRef<CPool<CPed>*>(0x18A82AC);
     static inline CPool<CVehicle>*&     ms_pVehiclePool       = Core::StaticRef<CPool<CVehicle>*>(0x1619240);
     static inline CPool<CObject>*&      ms_pObjectPool        = Core::StaticRef<CPool<CObject>*>(0x1350CE0);
+    static inline CPool<CDummyObject>*& ms_pDummyObjectPool = Core::StaticRef<CPool<CDummyObject>*>(0x168FF90);
     static inline CPool<CBuilding>*&    ms_pBuildingPool      = Core::StaticRef<CPool<CBuilding>*>(0x168FED0);
     static inline CPool<CDummyObject>*& ms_pDummyPool         = Core::StaticRef<CPool<CDummyObject>*>(0x168FF90);
     static inline CPoolBase*&           ms_pTaskPool          = Core::StaticRef<CPoolBase*>(0x164B01C);

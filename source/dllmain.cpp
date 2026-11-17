@@ -22,6 +22,8 @@
 #include "Game/Cam.h"
 #include "Game/Camera.h"
 #include "Game/FileMgr.h"
+#include "Game/DummyObject.h"
+#include "Game/IplStore.h"
 #include "Rage/fiStream.h"
 #include "Game/PlayerInfo.h"
 #include "Game/Wanted.h"
@@ -246,6 +248,8 @@ static void InitPlugin() {
     CCam::InjectHooks();
     rage::fiStream::InjectHooks();
     CFileMgr::InjectHooks();
+    CDummyObject::InjectHooks();
+    CIplStore::InjectHooks();
     CCamera::InjectHooks();
     CPlayerInfo::InjectHooks();
     CWanted::InjectHooks();
