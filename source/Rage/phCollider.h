@@ -49,6 +49,7 @@ namespace rage
         void        __thiscall Dtor();
         phCollider* __thiscall DeletingDtor(uint8 flags);
         int32       __thiscall Init(int32 a2, int32 a3);
+        int32       __thiscall InitFromInstance(phInst* instance);
         int32       __thiscall FixupInstance(uintptr_t fixupTable);
         int32       __thiscall Unk69EF20(int32 a2, int32 a3);
         float*      __thiscall GetInvMassMatrix(float* outMat, int32 a3);

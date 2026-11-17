@@ -13,11 +13,11 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `226` implemented (`222` active at runtime; `~0.52%`)
+- **Hooked Functions:** `227` implemented (`223` active at runtime; `~0.52%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
-  - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
+  - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phCollider.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
 
 ### Module Breakdown
 
@@ -47,7 +47,7 @@ The project builds into `gta4_reversed.asi` and hooks reversed RAGE engine and g
 | Rage | `source/Rage/phBound.cpp` | 4 | 0 | Pure C++ |
 | Rage | `source/Rage/phBoundBVH.cpp` | 8 | 5 | |
 | Rage | `source/Rage/phBoundComposite.cpp` | 10 | 0 | Pure C++ |
-| Rage | `source/Rage/phCollider.cpp` | 8 | 2 | |
+| Rage | `source/Rage/phCollider.cpp` | 9 | 0 | Pure C++ |
 | Rage | `source/Rage/phConstraint.cpp` | 5 | 0 | Pure C++ |
 | Rage | `source/Rage/phInst.cpp` | 8 | 0 | Pure C++ |
 | Rage | `source/Rage/phLevelNew.cpp` | 3 | 0 | Pure C++ |
