@@ -19,6 +19,7 @@ public:
     int32 __thiscall SetRef(int32 index, uint8 ref);
     void* __thiscall InitSlot(int32 handle);
     int32 __thiscall GetIndex(const void* obj) const;
+    int32 __thiscall Delete(void* obj);
 
     bool IsSlotFree(int32 index) const { return (m_byteMap[index] & 0x80) != 0; }
     uint8 GetRef(int32 index) const { return m_byteMap[index] & 0x7F; }

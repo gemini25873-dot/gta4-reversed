@@ -25,8 +25,9 @@ void CPoolBase::InjectHooks()
     Core::Hook::Install(0x41F180, &CPoolBase::SetRef);
     Core::Hook::Install(0x96C6C0, &CPoolBase::InitSlot);
     Core::Hook::Install(0x96C730, &CPoolBase::GetIndex);
+    Core::Hook::Install(0xC79660, &CPoolBase::Delete);
 
-    Core::Log::Info("CPool hooks installed (5 functions)");
+    Core::Log::Info("CPool hooks installed (6 functions)");
 }
 
 CPoolBase* __thiscall CPoolBase::Init(int32 size, const char* /*name*/, int32 elemSize)
@@ -111,4 +112,15 @@ int32 __thiscall CPoolBase::GetIndex(const void* obj) const
 {
     const uintptr_t diff = reinterpret_cast<uintptr_t>(obj) - reinterpret_cast<uintptr_t>(m_pObjects);
     return static_cast<int32>(diff) / m_nElementSize;
+}
+
+// 0xC79660
+int32 __thiscall CPoolBase::Delete(void* obj)
+{
+    const int32 index = GetIndex(obj);
+    m_byteMap[index] |= 0x80u;
+    --m_nUsed;
+    if (index < m_nFirstFree)
+        m_nFirstFree = index;
+    return index;
 }

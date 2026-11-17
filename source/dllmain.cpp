@@ -22,6 +22,8 @@
 #include "Game/Cam.h"
 #include "Game/PlayerInfo.h"
 #include "Game/Wanted.h"
+#include "Game/Building.h"
+#include "Game/ModelInfo.h"
 #include "Rage/phBound.h"
 #include "Rage/phBoundComposite.h"
 #include "Rage/phBoundBVH.h"
@@ -238,6 +240,8 @@ static void InitPlugin() {
     CCam::InjectHooks();
     CPlayerInfo::InjectHooks();
     CWanted::InjectHooks();
+    CBuilding::InjectHooks();
+    CModelInfo::InjectHooks();
     rage::phBound::InjectHooks();
     rage::phBoundComposite::InjectHooks();
     rage::phBoundGeometry::InjectHooks();

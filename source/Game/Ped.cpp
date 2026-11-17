@@ -2,6 +2,7 @@
 #include "Game/Ped.h"
 #include "Game/Pools.h"
 #include "Game/PlayerInfo.h"
+#include "Game/ModelInfo.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 
@@ -78,8 +79,8 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     m_pPedUnk21C = obj;
     m_bPedUnk220 = 1;
 
-    auto** modelPtrs = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0));
-    *reinterpret_cast<uint32*>(obj + 0x12C) = *reinterpret_cast<uint32*>(modelPtrs[modelIndex] + 0x90);
+    auto* pedModel = static_cast<CPedModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
+    *reinterpret_cast<uint32*>(obj + 0x12C) = pedModel->m_nPedType;
 
     Core::Hook::CallMethod<void>(0x8AA570, this);
     return this;

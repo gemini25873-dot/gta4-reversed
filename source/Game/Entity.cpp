@@ -1,15 +1,15 @@
 #include "StdInc.h"
 #include "Game/Entity.h"
 #include "Game/Pools.h"
+#include "Game/ModelInfo.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 
 namespace
 {
-    inline uint8* GetModelInfoPtr(int16 modelIndex)
+    inline CBaseModelInfo* GetModelInfoPtr(int16 modelIndex)
     {
-        auto** modelPtrs = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0));
-        return modelPtrs[modelIndex];
+        return CModelInfo::ms_modelInfoPtrs[modelIndex];
     }
 }
 
@@ -116,12 +116,12 @@ int32 __thiscall CEntity::UpdateTransform()
 
 double __thiscall CEntity::GetBoundRadius() const
 {
-    return *reinterpret_cast<float*>(GetModelInfoPtr(m_nModelIndex) + 28);
+    return GetModelInfoPtr(m_nModelIndex)->m_fBoundRadius;
 }
 
 const CVector* __thiscall CEntity::GetBoundCentre() const
 {
-    return reinterpret_cast<const CVector*>(GetModelInfoPtr(m_nModelIndex) + 32);
+    return &GetModelInfoPtr(m_nModelIndex)->m_vBoundCentre;
 }
 
 int32 __thiscall CEntity::AddToInterior()

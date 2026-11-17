@@ -12,7 +12,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 ## Current Progress
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `255` implemented (`251` active at runtime; `~0.58%`)
+- **Hooked Functions:** `272` implemented (`268` active at runtime; `~0.62%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `LoadingScreens.cpp`
@@ -23,8 +23,9 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Module | File | Hooked Functions | Remaining `Hook::Call` | Notes |
 | --- | --- | ---: | ---: | --- |
 | Core | `source/Core/Matrix.cpp` | 1 | 0 | Pure C++ |
-| Core | `source/Core/Pool.cpp` | 5 | 0 | Pure C++ |
+| Core | `source/Core/Pool.cpp` | 6 | 0 | Pure C++ |
 | Core | `source/Core/Vector.cpp` | 2 | 0 | Pure C++ |
+| Game | `source/Game/Building.cpp` | 5 | 3 | |
 | Game | `source/Game/Cam.cpp` | 6 | 8 | |
 | Game | `source/Game/Cheat.cpp` | 40 | 21 | |
 | Game | `source/Game/Clock.cpp` | 10 | 2 | |
@@ -32,6 +33,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/Entity.cpp` | 8 | 6 | |
 | Game | `source/Game/General.cpp` | 4 | 2 | |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
+| Game | `source/Game/ModelInfo.cpp` | 11 | 3 | |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
 | Game | `source/Game/Ped.cpp` | 8 | 20 | |
 | Game | `source/Game/Physical.cpp` | 9 | 8 | |

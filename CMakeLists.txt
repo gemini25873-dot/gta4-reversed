@@ -33,6 +33,8 @@ add_library(gta4_reversed SHARED
     source/Game/Cam.cpp
     source/Game/PlayerInfo.cpp
     source/Game/Wanted.cpp
+    source/Game/Building.cpp
+    source/Game/ModelInfo.cpp
     source/Rage/phBound.cpp
     source/Rage/phBoundComposite.cpp
     source/Rage/phBoundBVH.cpp
