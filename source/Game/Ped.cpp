@@ -1,6 +1,7 @@
 #include "StdInc.h"
 #include "Game/Ped.h"
 #include "Game/Pools.h"
+#include "Game/PlayerInfo.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 
@@ -47,7 +48,8 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     *reinterpret_cast<void**>(m_audPlaceableTracker) = reinterpret_cast<void*>(Core::Rebase(0xD69690));
     *reinterpret_cast<uint32*>(m_audPlaceableTracker + 8) = 0;
 
-    for (uint32& val : m_nPedUnkB40)
+    m_pMyVehicle = nullptr;
+    for (uint32& val : m_nPedUnkB44)
         val = 0;
 
     Core::Hook::CallMethod<void>(0x4475C0, &m_nPedUnkB94);
@@ -101,7 +103,7 @@ bool __thiscall CPed::IsValidOrPlayer()
     if (m_pAnimBlender)
         return true;
 
-    CPed* player = Core::Hook::Call<CPed*>(0x8788D0, 0);
+    CPed* player = CPlayerInfo::FindPlayerPed(nullptr);
     return this == player;
 }
 

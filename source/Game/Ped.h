@@ -1,6 +1,9 @@
 #pragma once
 #include "Game/Physical.h"
 
+class CPlayerInfo;
+class CVehicle;
+
 class CPed : public CPhysical
 {
 public:
@@ -16,7 +19,7 @@ public:
     uint8  m_bPedUnk220;                   // +0x220
     uint8  pad221[3];                      // +0x221..+0x223
     void*  m_pPedUnk224;                   // +0x224
-    uint8  pad228[4];                      // +0x228..+0x22B
+    CPlayerInfo* m_pPlayerInfo;            // +0x228
     void*  m_pPedUnk22C;                   // +0x22C
     uint8  pad230[8];                      // +0x230..+0x237
     uint8  m_pedSubObj238[0x28];           // +0x238..+0x25F
@@ -36,7 +39,8 @@ public:
     uint8  padA88[8];                      // +0xA88..+0xA8F
     void*  m_pPedIntelligence;             // +0xA90
     uint8  padA94[0xAC];                   // +0xA94..+0xB3F
-    uint32 m_nPedUnkB40[19];               // +0xB40..+0xB8B
+    CVehicle* m_pMyVehicle;                // +0xB40
+    uint32 m_nPedUnkB44[18];               // +0xB44..+0xB8B
     uint8  padB8C[8];                      // +0xB8C..+0xB93
     uint32 m_nPedUnkB94;                   // +0xB94
     uint32 m_nPedUnkB98;                   // +0xB98
@@ -82,6 +86,7 @@ VALIDATE_OFFSET(CPed, m_pedSpeechAudio, 0x580);
 VALIDATE_OFFSET(CPed, m_audPlaceableTracker, 0x790);
 VALIDATE_OFFSET(CPed, m_nPedState, 0xA84);
 VALIDATE_OFFSET(CPed, m_pPedIntelligence, 0xA90);
-VALIDATE_OFFSET(CPed, m_nPedUnkB40, 0xB40);
+VALIDATE_OFFSET(CPed, m_pPlayerInfo, 0x228);
+VALIDATE_OFFSET(CPed, m_pMyVehicle, 0xB40);
 VALIDATE_OFFSET(CPed, m_nPedUnkD94, 0xD94);
 VALIDATE_OFFSET(CPed, m_fPedUnkE50, 0xE50);

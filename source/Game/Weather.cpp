@@ -1,6 +1,8 @@
 #include "StdInc.h"
 #include "Weather.h"
 #include "Clock.h"
+#include "PlayerInfo.h"
+#include "Ped.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 
@@ -197,7 +199,7 @@ void __cdecl CWeather::Update() {
         Wind = ForcedWind;
     }
 
-    const uintptr_t camBase   = Core::Hook::Call<uintptr_t>(0x817F40);
+    const uintptr_t camBase   = reinterpret_cast<uintptr_t>(CPlayerInfo::FindPlayerPedFast());
     const float     camHeight = *reinterpret_cast<const float*>(*reinterpret_cast<const uintptr_t*>(camBase + 32) + 56);
     if (camHeight > 50.0f) {
         if (camHeight <= 200.0f) {

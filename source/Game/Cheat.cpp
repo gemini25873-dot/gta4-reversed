@@ -1,6 +1,8 @@
 #include "StdInc.h"
 #include "Game/Cheat.h"
 #include "Game/Weather.h"
+#include "Game/PlayerInfo.h"
+#include "Game/Ped.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 #include <cstdio>
@@ -134,24 +136,15 @@ namespace
     }
 
     // 0x8788D0 / 0x817F40
-    uint8* FindPlayerPed()
+    CPed* FindPlayerPed()
     {
-        const int32 activeProfile = Core::StaticRef<int32>(0xF1CC68);
-        if (activeProfile == -1)
-            return nullptr;
-
-        auto** profiles = reinterpret_cast<uint8**>(Core::Rebase(0x11A7008));
-        uint8* profile = profiles[activeProfile];
-        return profile ? *reinterpret_cast<uint8**>(profile + 1420) : nullptr;
+        return CPlayerInfo::FindPlayerPed(nullptr);
     }
 
     // 0x878890
-    uint8* FindPlayerVehicle()
+    CVehicle* FindPlayerVehicle()
     {
-        uint8* ped = FindPlayerPed();
-        if (ped && (ped[620] & 4) != 0)
-            return *reinterpret_cast<uint8**>(ped + 2880);
-        return nullptr;
+        return CPlayerInfo::FindPlayerVehicle(nullptr);
     }
 
     const void* GetTextString(const char* key)
@@ -191,7 +184,7 @@ namespace
 
         for (size_t i = 0; i < count; ++i)
         {
-            uint8* ped = FindPlayerPed();
+            auto* ped = reinterpret_cast<uint8*>(FindPlayerPed());
             Core::Hook::CallMethod<void>(0x9AB750, ped + 0x2B0, entries[i].weaponType, entries[i].ammo, 0, 0, 0);
         }
 
@@ -492,18 +485,18 @@ int32 __cdecl CCheat::HealthArmourAmmoCheat()
 {
     RecordCheatStat();
 
-    uint8* ped = FindPlayerPed();
-    const uint8* playerInfo = *reinterpret_cast<const uint8* const*>(ped + 552);
-    const float maxHealth = static_cast<float>(*reinterpret_cast<const uint16*>(playerInfo + 1354));
+    CPed* ped = FindPlayerPed();
+    const CPlayerInfo* playerInfo = ped->m_pPlayerInfo;
+    const float maxHealth = static_cast<float>(playerInfo->m_nMaxHealth);
 
     using SetHealthFn = void(__thiscall*)(void*, float, int32);
     void** pedVtable = *reinterpret_cast<void***>(ped);
     reinterpret_cast<SetHealthFn>(pedVtable[61])(ped, maxHealth, 0);
 
-    const float maxArmour = static_cast<float>(*reinterpret_cast<const uint16*>(playerInfo + 1356));
+    const float maxArmour = static_cast<float>(playerInfo->m_nMaxArmour);
     Core::Hook::CallMethod<void>(0x89E640, ped, maxArmour);
 
-    uint8* veh = FindPlayerVehicle();
+    auto* veh = reinterpret_cast<uint8*>(FindPlayerVehicle());
     if (veh)
     {
         const uint8* vehSub = *reinterpret_cast<const uint8* const*>(veh + 108);
@@ -527,11 +520,10 @@ int32 __cdecl CCheat::WantedLevelUpCheat()
 {
     RecordCheatStat();
 
-    uint8* ped = FindPlayerPed();
-    uint8* playerInfo = *reinterpret_cast<uint8**>(ped + 552);
-    void* wanted = playerInfo ? (playerInfo + 96) : nullptr;
+    CPed* ped = FindPlayerPed();
+    CWanted* wanted = ped->m_pPlayerInfo ? &ped->m_pPlayerInfo->m_Wanted : nullptr;
 
-    const int32 currentWanted = Core::Hook::CallMethod<int32>(0x920FF0, wanted);
+    const int32 currentWanted = wanted ? wanted->GetWantedLevel() : 0;
     const int32 targetWanted = (currentWanted + 1 >= 6) ? 6 : (currentWanted + 1);
 
     Core::Hook::CallMethod<void>(0x9BEF50, ped, targetWanted);
@@ -545,7 +537,7 @@ void __cdecl CCheat::WantedLevelDownCheat()
     ShowCheatNotification(4);
     RecordCheatStat();
 
-    uint8* ped = FindPlayerPed();
+    CPed* ped = FindPlayerPed();
     Core::Hook::CallMethod<void>(0x9BEF50, ped, 0);
 }
 
@@ -559,7 +551,7 @@ void __cdecl CCheat::ChangeWeatherCheat()
 
 int32 __cdecl CCheat::ParachuteCheat()
 {
-    uint8* ped = FindPlayerPed();
+    auto* ped = reinterpret_cast<uint8*>(FindPlayerPed());
     Core::Hook::CallMethod<void>(0x9AB750, ped + 0x2B0, 41, 1, 0, 0, 0);
 
     const int32 streamingFlags = Core::StaticRef<int32>(0x15F73A0);
@@ -601,10 +593,10 @@ void __cdecl CCheat::SpawnAnnihilatorCheat()
     if (Core::StaticRef<uint8>(0x1690C11) != 0)
         return;
 
-    const uint8* ped = FindPlayerPed();
-    if (ped && (ped[620] & 4) != 0)
+    const CPed* ped = FindPlayerPed();
+    if (ped && (ped->m_nPedFlags2 & 4u) != 0)
     {
-        const uint8* veh = *reinterpret_cast<const uint8* const*>(ped + 2880);
+        const auto* veh = reinterpret_cast<const uint8*>(ped->m_pMyVehicle);
         if (veh && *reinterpret_cast<const int32*>(veh + 4948) == 3)
             return;
     }
@@ -620,10 +612,10 @@ void __cdecl CCheat::SpawnJetmaxCheat()
     if (Core::StaticRef<uint8>(0x1690C11) != 0)
         return;
 
-    const uint8* ped = FindPlayerPed();
-    if (ped && (ped[620] & 4) != 0)
+    const CPed* ped = FindPlayerPed();
+    if (ped && (ped->m_nPedFlags2 & 4u) != 0)
     {
-        const uint8* veh = *reinterpret_cast<const uint8* const*>(ped + 2880);
+        const auto* veh = reinterpret_cast<const uint8*>(ped->m_pMyVehicle);
         if (veh && *reinterpret_cast<const int32*>(veh + 4948) == 3)
             return;
     }
