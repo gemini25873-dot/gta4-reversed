@@ -1,6 +1,6 @@
 # gta4-reversed
 
-[![Build ASI (x86)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gemini25873-dot/gta4-reversed/actions/workflows/build.yml)
+[![Build ASI (x86)](https://github.com/master4824/gta4-reversed/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/master4824/gta4-reversed/actions/workflows/build.yml)
 
 An open-source C++20 reverse engineering, documentation, and runtime reimplementation project targeting **Grand Theft Auto IV (`1.0.7.0` x86)** — inspired by [`gta-reversed`](https://github.com/gta-reversed/gta-reversed).
 
