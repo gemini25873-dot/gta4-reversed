@@ -20,6 +20,7 @@
 #include "Game/World.h"
 #include "Game/WeaponInfo.h"
 #include "Game/Cam.h"
+#include "Game/Camera.h"
 #include "Game/PlayerInfo.h"
 #include "Game/Wanted.h"
 #include "Game/Building.h"
@@ -241,6 +242,7 @@ static void InitPlugin() {
     CWorld::InjectHooks();
     CWeaponInfo::InjectHooks();
     CCam::InjectHooks();
+    CCamera::InjectHooks();
     CPlayerInfo::InjectHooks();
     CWanted::InjectHooks();
     CBuilding::InjectHooks();

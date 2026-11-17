@@ -31,6 +31,7 @@ add_library(gta4_reversed SHARED
     source/Game/World.cpp
     source/Game/WeaponInfo.cpp
     source/Game/Cam.cpp
+    source/Game/Camera.cpp
     source/Game/PlayerInfo.cpp
     source/Game/Wanted.cpp
     source/Game/Building.cpp

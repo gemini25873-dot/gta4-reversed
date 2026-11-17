@@ -2,6 +2,7 @@
 #include "Game/Cam.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
+#include <xmmintrin.h>
 
 void CCam::InjectHooks()
 {
@@ -9,6 +10,7 @@ void CCam::InjectHooks()
     Core::Hook::Install(0x9AD190, &CCam::CleanupUnk12C);
     Core::Hook::Install(0x9AD1C0, &CCam::CleanupUnk110);
     Core::Hook::Install(0x9AD220, &CCam::AttachChild);
+    Core::Hook::Install(0x9AD2D0, &CCam::GetCamOfType);
     Core::Hook::Install(0x9AD380, &CCam::UpdateChildren);
     Core::Hook::Install(0x9AD3B0, &CCam::UpdateNearFarClip);
 
@@ -21,7 +23,7 @@ void CCam::InjectHooks()
     // - 0x9AD4C0: sub_874640/sub_9F03A0/sub_BE0440 missing this and 0x9AD060 (__usercall) call
     // - 0x9AD740 (ScalarDeletingDtor): sub_9AD030() and sub_C79660() missing arguments
 
-    Core::Log::Info("CCam hooks installed (6/13 functions)");
+    Core::Log::Info("CCam hooks installed (7/13 functions)");
 }
 
 CCam* __thiscall CCam::Ctor()
@@ -78,6 +80,30 @@ CCam* __thiscall CCam::AttachChild(CCam* child)
     child->m_pParent = this;
     m_pChild = child;
     return this;
+}
+
+// 0x9AD2D0
+CCam* __thiscall CCam::GetCamOfType(int32 type, int32 index)
+{
+    using GetTypeFn = int32(__thiscall*)(CCam*);
+    if (reinterpret_cast<GetTypeFn>(m_vftable[10])(this) == type && index-- <= 0)
+        return this;
+
+    CCam* cur = m_pChild;
+    if (!cur)
+        return nullptr;
+
+    const uint8 allowFlag2 = Core::StaticRef<uint8>(0x1618024);
+    while (cur)
+    {
+        CCam* next = cur->m_pNext;
+        _mm_prefetch(reinterpret_cast<const char*>(next), _MM_HINT_T0);
+        CCam* found = Core::Hook::CallMethod<CCam*>(0x9ACC20, cur, type, &index);
+        if (found && ((found->m_nFlags & 2u) == 0 || allowFlag2))
+            return found;
+        cur = next;
+    }
+    return nullptr;
 }
 
 int32 __thiscall CCam::UpdateChildren()

@@ -26,7 +26,8 @@ public:
     uint32 m_nUnk130 = 0;                // +0x130
     int32  m_nUnk134 = 0;                // +0x134
     int16  m_nUnk138 = 0;                // +0x138
-    uint16 m_nPad13A = 0;                // +0x13A
+    uint8  m_nUnk13A = 0;                // +0x13A
+    uint8  m_nUnk13B = 0;                // +0x13B
     uint32 m_nFlags = 0;                 // +0x13C
 
     static void InjectHooks();
@@ -35,6 +36,7 @@ public:
     int32 __thiscall CleanupUnk12C();
     int32 __thiscall CleanupUnk110();
     CCam* __thiscall AttachChild(CCam* child);
+    CCam* __thiscall GetCamOfType(int32 type, int32 index);
     int32 __thiscall UpdateChildren();
     void  __thiscall UpdateNearFarClip();
 };
