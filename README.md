@@ -11,6 +11,8 @@ The long-term goal is to document every engine/game class and incrementally reim
 
 ## Current Progress
 
+See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and per-module `Hook::Call` dependency status.
+
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
 - **Hooked Functions:** `504` implemented (`500` active at runtime; `~1.15%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
