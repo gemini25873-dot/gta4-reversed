@@ -1,5 +1,6 @@
 #include "StdInc.h"
 #include "Game/Font.h"
+#include "Game/Radar.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 #include <cstring>
@@ -567,7 +568,7 @@ int32 __cdecl CFont::Native_BB4C00(scrNativeCallContext* ctx)
 // 0xBB4C50
 int32 __cdecl CFont::Native_BB4C50(scrNativeCallContext* ctx)
 {
-    const int32 res = Core::Hook::Call<int32>(0xBB1DB0);
+    const int32 res = CRadar::GetSimpleBlipHandle();
     ctx->SetReturn<int32>(res);
     return res;
 }
@@ -583,7 +584,7 @@ int32 __cdecl CFont::Native_BB4C80(scrNativeCallContext* ctx)
 // 0xBB4CA0
 int32 __cdecl CFont::Native_BB4CA0(scrNativeCallContext* ctx)
 {
-    const int32 res = Core::Hook::Call<int32>(0xBB1EF0, ctx->GetArg<int32>(0));
+    const int32 res = CRadar::GetBlipCategory(ctx->GetArg<int32>(0));
     ctx->SetReturn<int32>(res);
     return res;
 }
@@ -591,7 +592,7 @@ int32 __cdecl CFont::Native_BB4CA0(scrNativeCallContext* ctx)
 // 0xBB4CC0
 int32 __cdecl CFont::Native_BB4CC0(scrNativeCallContext* ctx)
 {
-    const int32 res = Core::Hook::Call<int32>(0xBB1F30, ctx->GetArg<int32>(0));
+    const int32 res = CRadar::GetBlipType(ctx->GetArg<int32>(0));
     ctx->SetReturn<int32>(res);
     return res;
 }
@@ -599,7 +600,7 @@ int32 __cdecl CFont::Native_BB4CC0(scrNativeCallContext* ctx)
 // 0xBB4CE0
 int32 __cdecl CFont::Native_BB4CE0(scrNativeCallContext* ctx)
 {
-    const int32 res = Core::Hook::Call<int32>(0xBB1F70, ctx->GetArg<int32>(0));
+    const int32 res = CRadar::GetBlipSprite(ctx->GetArg<int32>(0));
     ctx->SetReturn<int32>(res);
     return res;
 }
@@ -613,30 +614,29 @@ int32 __cdecl CFont::Native_BB4D00(scrNativeCallContext* ctx)
 // 0xBB4D20
 int32 __cdecl CFont::Native_BB4D20(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(
-        0xBB20C0,
+    return CRadar::SetBlipCoordinates(
         ctx->GetArg<int32>(0),
-        ctx->GetArg<int32>(1),
-        ctx->GetArg<int32>(2),
-        ctx->GetArg<int32>(3));
+        ctx->GetArg<float>(1),
+        ctx->GetArg<float>(2),
+        ctx->GetArg<float>(3));
 }
 
 // 0xBB4D90
 int32 __cdecl CFont::Native_BB4D90(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2440, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipDisplay(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4DB0
 int32 __cdecl CFont::Native_BB4DB0(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2420, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipColour(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4DD0
 int32 __cdecl CFont::Native_BB4DD0(scrNativeCallContext* ctx)
 {
-    const uint8 res = Core::Hook::Call<uint8>(0xBB2540, ctx->GetArg<int32>(0));
+    const uint8 res = CRadar::IsBlipFlag8Set(ctx->GetArg<int32>(0)) ? 1 : 0;
     ctx->SetReturn<uint32>(res);
     return res;
 }
@@ -644,43 +644,43 @@ int32 __cdecl CFont::Native_BB4DD0(scrNativeCallContext* ctx)
 // 0xBB4E20
 int32 __cdecl CFont::Native_BB4E20(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2580, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0);
+    return CRadar::SetBlipFlashes(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0 ? 1 : 0);
 }
 
 // 0xBB4E50
 int32 __cdecl CFont::Native_BB4E50(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB25C0, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0);
+    return CRadar::SetBlipShortRange(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0 ? 1 : 0);
 }
 
 // 0xBB4E80
 int32 __cdecl CFont::Native_BB4E80(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB25E0, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0);
+    return CRadar::SetBlipFriendly(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0 ? 1 : 0);
 }
 
 // 0xBB4EB0
 int32 __cdecl CFont::Native_BB4EB0(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2620, ctx->GetArg<int32>(0), ctx->GetArg<float>(1));
+    return CRadar::SetBlipScale(ctx->GetArg<int32>(0), ctx->GetArg<float>(1));
 }
 
 // 0xBB4ED0
 int32 __cdecl CFont::Native_BB4ED0(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2660, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipDisplayMode(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4EF0
 int32 __cdecl CFont::Native_BB4EF0(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2640, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipPriority(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4F10
 int32 __cdecl CFont::Native_BB4F10(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2680, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipSprite(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4F30
@@ -692,13 +692,13 @@ int32 __cdecl CFont::Native_BB4F30(scrNativeCallContext* ctx)
 // 0xBB4F50
 int32 __cdecl CFont::Native_BB4F50(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2710, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0);
+    return CRadar::SetBlipRoute(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1) != 0 ? 1 : 0);
 }
 
 // 0xBB4F80
 int32 __cdecl CFont::Native_BB4F80(scrNativeCallContext* ctx)
 {
-    const uint8 res = Core::Hook::Call<uint8>(0xBB2770, ctx->GetArg<int32>(0));
+    const uint8 res = static_cast<uint8>(CRadar::DoesBlipExist(ctx->GetArg<int32>(0)));
     ctx->SetReturn<uint32>(res);
     return res;
 }
@@ -706,7 +706,7 @@ int32 __cdecl CFont::Native_BB4F80(scrNativeCallContext* ctx)
 // 0xBB4FC0
 int32 __cdecl CFont::Native_BB4FC0(scrNativeCallContext* ctx)
 {
-    return Core::Hook::Call<int32>(0xBB2750, ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
+    return CRadar::SetBlipMinimalClean(ctx->GetArg<int32>(0), ctx->GetArg<int32>(1));
 }
 
 // 0xBB4FE0

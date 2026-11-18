@@ -25,6 +25,7 @@
 #include "Game/DummyObject.h"
 #include "Game/IplStore.h"
 #include "Game/Font.h"
+#include "Game/Radar.h"
 #include "Rage/fiStream.h"
 #include "Game/PlayerInfo.h"
 #include "Game/Wanted.h"
@@ -251,6 +252,7 @@ static void InitPlugin() {
     CFileMgr::InjectHooks();
     CDummyObject::InjectHooks();
     CIplStore::InjectHooks();
+    CRadar::InjectHooks();
     CFont::InjectHooks();
     CCamera::InjectHooks();
     CPlayerInfo::InjectHooks();
