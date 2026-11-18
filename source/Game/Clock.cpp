@@ -5,6 +5,15 @@
 #include "Core/Log.h"
 
 namespace {
+    // 0x794330
+    bool IsNetworkSessionBlocked() {
+        const int32  netState = Core::StaticRef<int32>(0x10D0170);
+        const HANDLE netHandle = Core::StaticRef<HANDLE>(0x10E1984);
+        const int32  gameState = Core::StaticRef<int32>(0xF0E4A0);
+        const int32  netActive = Core::StaticRef<int32>(0x10D01A4);
+        return (netState == 1 || netHandle != INVALID_HANDLE_VALUE || gameState == 18) && netActive != 0;
+    }
+
     // 0x7955D0
     bool IsClockUpdateBlocked() {
         const int32  state1 = Core::StaticRef<int32>(0xF0E4A0);
@@ -17,7 +26,7 @@ namespace {
             || handle != INVALID_HANDLE_VALUE
             || state1 == 18
             || ((state1 == 2 || state1 == 7) && flag1 != 0)
-            || (Core::Hook::Call<uint8>(0x794330) != 0 && flag2 == 0);
+            || (IsNetworkSessionBlocked() && flag2 == 0);
 
         return cond
             && state2 != 5

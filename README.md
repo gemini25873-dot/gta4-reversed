@@ -15,7 +15,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 - **Hooked Functions:** `504` implemented (`500` active at runtime; `~1.15%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
-  - `Game`: `LoadingScreens.cpp`, `Pad.cpp`
+  - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`, `Pad.cpp`
   - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phCollider.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
 
 ### Module Breakdown
@@ -29,15 +29,15 @@ The long-term goal is to document every engine/game class and incrementally reim
 | Game | `source/Game/Cam.cpp` | 7 | 9 |
 | Game | `source/Game/Camera.cpp` | 15 | 5 |
 | Game | `source/Game/Cheat.cpp` | 40 | 21 | |
-| Game | `source/Game/Clock.cpp` | 10 | 2 | |
+| Game | `source/Game/Clock.cpp` | 10 | 1 | |
 | Game | `source/Game/DummyObject.cpp` | 8 | 1 | |
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 4 | |
 | Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
 | Game | `source/Game/Font.cpp` | 71 | 16 | |
 | Game | `source/Game/Game.cpp` | 7 | 22 | |
-| Game | `source/Game/General.cpp` | 4 | 2 | |
-| Game | `source/Game/IplStore.cpp` | 15 | 4 | |
+| Game | `source/Game/General.cpp` | 4 | 0 | Pure C++ |
+| Game | `source/Game/IplStore.cpp` | 15 | 0 | Pure C++ |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |

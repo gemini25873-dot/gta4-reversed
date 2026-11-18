@@ -171,45 +171,64 @@ int32 __cdecl CIplStore::RemoveIplAndMark(int32 slot)
     return res;
 }
 
+namespace
+{
+    // 0x886F60
+    bool IsPointInsideBounds(const float* bounds, const void* posPtr)
+    {
+        const auto* pos = static_cast<const float*>(posPtr);
+        return pos[0] >= bounds[0] && pos[0] <= bounds[4]
+            && pos[1] >= bounds[1] && pos[1] <= bounds[5]
+            && pos[2] >= bounds[2] && pos[2] <= bounds[6];
+    }
+
+    // 0x4E0310
+    bool IsPointNearBounds(const float* bounds, const void* posPtr, float radius)
+    {
+        const auto* pos = static_cast<const float*>(posPtr);
+        return (pos[0] + radius) >= bounds[0] && (pos[0] - radius) <= bounds[4]
+            && (pos[1] + radius) >= bounds[1] && (pos[1] - radius) <= bounds[5]
+            && (pos[2] + radius) >= bounds[2] && (pos[2] - radius) <= bounds[6];
+    }
+}
+
 // 0xB26520
 int32 __cdecl CIplStore::SetIfIplIsRequired(const void* pos2D, IplDef* def)
 {
-    const uint8 inside = Core::Hook::CallMethod<uint8>(0x886F60, def->m_fBounds, pos2D);
-    if (inside)
+    if (IsPointInsideBounds(def->m_fBounds, pos2D))
     {
         const int32 slot = ms_pPool->GetIndex(def);
         ms_pRequiredFlags[slot] |= 1u;
         return slot;
     }
-    return inside;
+    return 0;
 }
 
 // 0xB26560
 int32 __cdecl CIplStore::SetIfIplIsRequiredReducedBB(const void* pos2D, IplDef* def)
 {
     const float radius = def->m_bLargeBounds ? -230.0f : ms_fLoadRadius;
-    const uint8 inside = Core::Hook::CallMethod<uint8>(0x4E0310, def->m_fBounds, pos2D, radius);
-    if (inside)
+    if (IsPointNearBounds(def->m_fBounds, pos2D, radius))
     {
         const int32 slot = ms_pPool->GetIndex(def);
         ms_pRequiredFlags[slot] |= 1u;
         return slot;
     }
-    return inside;
+    return 0;
 }
 
 // 0xB25C80
 void __cdecl CIplStore::CheckIfIplLoadedAtPos(const void* pos2D, IplDef* def)
 {
     const float radius = def->m_bLargeBounds ? -290.0f : ms_fLoadRadius;
-    if (!def->m_pData && Core::Hook::CallMethod<uint8>(0x4E0310, def->m_fBounds, pos2D, radius) && !def->m_bDisableWhenFar)
+    if (!def->m_pData && IsPointNearBounds(def->m_fBounds, pos2D, radius) && !def->m_bDisableWhenFar)
         ms_bAllIplsLoaded = 0;
 }
 
 // 0xB265C0
 void __cdecl CIplStore::RequestIplAtPosImmediate(const void* pos2D, IplDef* def)
 {
-    if (!def->m_pData && Core::Hook::CallMethod<uint8>(0x4E0310, def->m_fBounds, pos2D, ms_fLoadRadius) && !def->m_bDisableWhenFar)
+    if (!def->m_pData && IsPointNearBounds(def->m_fBounds, pos2D, ms_fLoadRadius) && !def->m_bDisableWhenFar)
     {
         const int32 slot = ms_pPool->GetIndex(def);
         RequestIplIfInStreaming(slot, 24);

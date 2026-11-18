@@ -31,10 +31,10 @@ This document maps the real binary scope of `GTAIV.exe` (`1.0.7.0` x86) against 
 | Game | `source/Game/Pad.cpp` | 14 | 0 | 0 | — | — | Pure C++ |
 | Game | `source/Game/DummyObject.cpp` | 8 | 1 | 1 | `0xDA5994` | 51 | Leaf candidate |
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | 1 | `0xD7CD04` (Base) | 15 | Leaf candidate |
-| Game | `source/Game/General.cpp` | 4 | 1 | 2 | — | — | Leaf candidate |
-| Game | `source/Game/Clock.cpp` | 10 | 2 | 3 | — | — | Leaf candidate |
+| Game | `source/Game/General.cpp` | 4 | 0 | 0 | — | — | Pure C++ |
+| Game | `source/Game/IplStore.cpp` | 15 | 0 | 0 | — | — | Pure C++ |
+| Game | `source/Game/Clock.cpp` | 10 | 1 | 2 | — | — | Leaf candidate |
 | Game | `source/Game/FileMgr.cpp` | 14 | 2 | 3 | — | — | Leaf candidate |
-| Game | `source/Game/IplStore.cpp` | 15 | 2 | 4 | — | — | Leaf candidate |
 | Game | `source/Game/Building.cpp` | 5 | 3 | 3 | `0xDA3A3C` | 51 | Partial |
 | Game | `source/Game/Camera.cpp` | 15 | 3 | 6 | — | — | Partial |
 | Game | `source/Game/TxdStore.cpp` | 23 | 3 | 3 | — | — | Partial |

@@ -7,6 +7,7 @@
 
 void CGeneral::InjectHooks()
 {
+    std::srand(GetTickCount());
     Core::Hook::Install(0x401950, static_cast<int32(__cdecl*)(int32, int32)>(&CGeneral::GetRandomNumberInRange));
     Core::Hook::Install(0x438960, static_cast<double(__cdecl*)(float, float)>(&CGeneral::GetRandomNumberInRange));
     Core::Hook::Install(0x404B80, &CGeneral::Sqrt);
@@ -17,13 +18,13 @@ void CGeneral::InjectHooks()
 
 int32 __cdecl CGeneral::GetRandomNumberInRange(int32 min, int32 max)
 {
-    const float r = static_cast<float>(static_cast<uint16>(Core::Hook::Call<int32>(0xD0D21A))) * (1.0f / 32768.0f);
+    const float r = static_cast<float>(static_cast<uint16>(std::rand())) * (1.0f / 32768.0f);
     return min + static_cast<int32>(r * static_cast<float>(max - min));
 }
 
 double __cdecl CGeneral::GetRandomNumberInRange(float min, float max)
 {
-    const double r = static_cast<double>(Core::Hook::Call<int32>(0xD0D21A)) * (1.0 / 32767.0);
+    const double r = static_cast<double>(std::rand()) * (1.0 / 32767.0);
     return min + (max - min) * r;
 }
 
