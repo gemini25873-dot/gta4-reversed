@@ -34,6 +34,8 @@
 #include "Game/TxdStore.h"
 #include "Game/Streaming.h"
 #include "Game/Pad.h"
+#include "Game/Pickups.h"
+#include "Game/Game.h"
 #include "Rage/phBound.h"
 #include "Rage/phBoundComposite.h"
 #include "Rage/phBoundBVH.h"
@@ -262,6 +264,8 @@ static void InitPlugin() {
     CTxdStore::InjectHooks();
     CStreaming::InjectHooks();
     CPad::InjectHooks();
+    CPickups::InjectHooks();
+    CGame::InjectHooks();
     rage::phBound::InjectHooks();
     rage::phBoundComposite::InjectHooks();
     rage::phBoundGeometry::InjectHooks();
