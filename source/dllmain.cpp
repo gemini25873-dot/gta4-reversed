@@ -36,6 +36,9 @@
 #include "Game/Pad.h"
 #include "Game/Pickups.h"
 #include "Game/Game.h"
+#include "Game/Zones.h"
+#include "Game/Explosion.h"
+#include "Game/Garages.h"
 #include "Rage/phBound.h"
 #include "Rage/phBoundComposite.h"
 #include "Rage/phBoundBVH.h"
@@ -266,6 +269,9 @@ static void InitPlugin() {
     CPad::InjectHooks();
     CPickups::InjectHooks();
     CGame::InjectHooks();
+    CTheZones::InjectHooks();
+    CExplosion::InjectHooks();
+    CGarages::InjectHooks();
     rage::phBound::InjectHooks();
     rage::phBoundComposite::InjectHooks();
     rage::phBoundGeometry::InjectHooks();

@@ -14,7 +14,7 @@ This document maps the real binary scope of `GTAIV.exe` (`1.0.7.0` x86) against 
   - `aud*` (Top-level audio classes): `27`
   - Other (`ART`, `NMutils`, callbacks, templates): `203`
 - **Mapped Vtables:** `3,414` (`44,608` total virtual function slots across all vtables)
-- **Currently Implemented Hooks:** `507` (`504` in `Core/`/`Game/`/`Rage/` + `3` compatibility hooks in `dllmain.cpp`)
+- **Currently Implemented Hooks:** `538` (`535` in `Core/`/`Game/`/`Rage/` + `3` compatibility hooks in `dllmain.cpp`)
 
 > **Note:** Static/utility classes without virtual functions (`CTimer`, `CClock`, `CWeather`, `CWorld`, `CGeneral`, `CPickups`, `CGame`, `CFileMgr`, `CStreaming`, etc.) do not have RTTI entries or vtables; their total function count must be tracked via call-graph/namespace clustering in IDA.
 
@@ -39,7 +39,10 @@ This document maps the real binary scope of `GTAIV.exe` (`1.0.7.0` x86) against 
 | Game | `source/Game/Camera.cpp` | 15 | 3 | 6 | — | — | Partial |
 | Game | `source/Game/TxdStore.cpp` | 23 | 3 | 3 | — | — | Partial |
 | Game | `source/Game/World.cpp` | 4 | 3 | 3 | — | — | Partial |
+| Game | `source/Game/Zones.cpp` | 8 | 4 | 10 | — | — | Partial |
 | Game | `source/Game/Entity.cpp` | 8 | 4 | 4 | `0xD83BAC` | 51 | Partial |
+| Game | `source/Game/Explosion.cpp` | 10 | 4 | 6 | — | — | Partial |
+| Game | `source/Game/Garages.cpp` | 13 | 5 | 5 | — | — | Partial |
 | Game | `source/Game/Physical.cpp` | 9 | 5 | 8 | `0xD89F2C` | 72 | Partial |
 | Game | `source/Game/Stats.cpp` | 19 | 6 | 8 | — | — | Partial |
 | Game | `source/Game/Wanted.cpp` | 10 | 6 | 8 | — | — | Partial |

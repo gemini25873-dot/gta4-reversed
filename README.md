@@ -14,7 +14,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and per-module `Hook::Call` dependency status.
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `504` implemented (`500` active at runtime; `~1.15%`)
+- **Hooked Functions:** `535` implemented (`531` active at runtime; `~1.22%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`, `Pad.cpp`
@@ -35,9 +35,11 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Game | `source/Game/DummyObject.cpp` | 8 | 1 | |
 | Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
 | Game | `source/Game/Entity.cpp` | 8 | 4 | |
+| Game | `source/Game/Explosion.cpp` | 10 | 6 | |
 | Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
 | Game | `source/Game/Font.cpp` | 71 | 16 | |
 | Game | `source/Game/Game.cpp` | 7 | 22 | |
+| Game | `source/Game/Garages.cpp` | 13 | 5 | |
 | Game | `source/Game/General.cpp` | 4 | 0 | Pure C++ |
 | Game | `source/Game/IplStore.cpp` | 15 | 0 | Pure C++ |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
@@ -58,6 +60,7 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
 | Game | `source/Game/Weather.cpp` | 5 | 8 | |
 | Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` currently disabled in `CWorld::InjectHooks()` |
+| Game | `source/Game/Zones.cpp` | 8 | 10 | |
 | Rage | `source/Rage/fiStream.cpp` | 7 | 5 | |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
