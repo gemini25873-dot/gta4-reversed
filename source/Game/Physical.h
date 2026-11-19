@@ -60,6 +60,65 @@ public:
     void  __thiscall SetHealth(float health, int32 arg);
     void  __thiscall AddHealth(float delta);
     float __thiscall GetHealth() const;
+
+    // Slice 1 (0xA47600..0xA483D0)
+    static void __stdcall RemoveInstConstraints(void* phInst);
+    void __thiscall ActivatePhysics();
+    void __thiscall DeactivatePhysics();
+    void __thiscall TryDeactivatePhysics();
+    void __thiscall SetMoveSpeed(const CVector* speed);
+    CVector* __thiscall GetMoveSpeed(CVector* out);
+    void __thiscall SetTurnSpeed(const CVector* speed);
+    CVector* __thiscall GetTurnSpeed(CVector* out);
+    void __thiscall SetPhysUnk1E4(CPhysical* target);
+    void __thiscall ClearPhysUnk16C(bool keepCount);
+    bool __thiscall HasPhysUnk154Value(uint32 value);
+    void __thiscall ApplyForce(const CVector* force, const CVector* offset, int32 component);
+    void __thiscall ApplyForceCenter(const CVector* force);
+    void __thiscall ApplyForceWithTorque(const CVector* force, const CVector* offset);
+    void __thiscall ApplyTorque(const CVector* torque);
+    void __thiscall ApplyImpulse(const CVector* impulse, const CVector* offset, int32 component);
+    void __thiscall ApplyImpulseCenter(const CVector* impulse);
+    void __thiscall ApplyImpulseToLevel(const CVector* impulse, const CVector* offset, int32 component, void* phInst);
+    void __thiscall ApplyImpulseToLevelScaled(const CVector* impulse, const CVector* offset, int32 component, void* phInst, float scale);
+    CVector* __thiscall GetVelocityAtPoint(CVector* out, const CVector* offset, bool isWorldPos, int32 component);
+    void __thiscall SetPhysFlag4();
+    void __thiscall RemovePhysUnk154Value(uint32 value);
+    void __thiscall SetPhysUnk1F8(void* entity, uint8 flags);
+    void __thiscall UpdatePhysUnk1F8();
+    void __thiscall AttachToEntitySimple(CPhysical* target, int16 targetBone, int16 myBone, uint16 attachFlags, const CVector* offset, float breakForce);
+    void __thiscall AttachToWorld(int16 myBone, uint16 attachFlags, const CVector* worldPos, const CVector* offset, float breakForce);
+
+    // Slice 2 (0xA48550..0xA49A60)
+    void __thiscall DetachFromEntity();
+    bool __thiscall CheckPhysUnk11C(uint16 value) const;
+    double __thiscall GetModelBoundRadiusNeg() const;
+    void __thiscall AddToPhysicsWorld();
+    void __thiscall RemoveFromPhysicsWorld();
+    void __thiscall SyncPhysicsMatrix(bool forceColliderUpdate);
+    void __thiscall SetPhysFlag(bool enable, bool isFlag10);
+    void __thiscall SetColliderScale(float scale);
+    void __thiscall UpdateTransformFromPhysics(void* phInst, bool skipUnk);
+    void __thiscall SetMatrixAndWarp(const CMatrix* mat, bool skipPhysics, int32 warpArg);
+    void __thiscall ApplyImpactImpulse(CPhysical* attacker, const CVector* impulse, const float* unk180, const float* unk190, uint32 unk1A0, uint32 unk1A4, uint32 unk1A8);
+    void __thiscall ProcessImpactEffect();
+    double __thiscall CalcEffectiveMass(const CVector* dir, const CVector* pos);
+    void __thiscall UpdatePhysicsActiveState();
+    static void __cdecl CopyAttachTransform(CEntity* src, CEntity* dst, const CVector* offset);
+    void __thiscall MarkPhysUnk1F4Bit7();
+    bool __thiscall CheckPhysCollisionFilter(void* arg0, bool arg1);
+    void __thiscall AttachToEntityQuat(CEntity* target, int16 boneTag, uint16 flags, const float* offset, const float* quat);
+    void __thiscall AttachToWorldQuat(uint16 flags, const float* offset, const float* quat);
+
+    // Slice 3 (0xA49A90..0xA4AF20, 0x447B20, 0x447B50)
+    void __thiscall AttachToEntity(CEntity* target, int16 targetBoneId, int16 selfBoneId, uint16 attachFlags, const float* offset, const float* quat, const CVector* velOffset, float breakStrength);
+    void __thiscall UpdateAttachRotation(const CVector* pos, const CVector* rot);
+    void __thiscall ProcessAttach(uint32 flags);
+    void __thiscall UpdateAttachment();
+    bool __thiscall CanBeDamaged(CEntity* inflictor, int32 weaponType, bool checkUnk) const;
+    void __thiscall UpdateSubmersion();
+    bool __thiscall IsPhysFlag118Bit3Clear() const;
+    void __thiscall SetPhysVec200(const float* vec4);
 };
 
 VALIDATE_SIZE(CPhysical, 0x210);

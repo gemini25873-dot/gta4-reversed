@@ -14,6 +14,7 @@
 #include "Game/DynamicEntity.h"
 #include "Game/Physical.h"
 #include "Game/Ped.h"
+#include "Game/PedData.h"
 #include "Game/Vehicle.h"
 #include "Game/Object.h"
 #include "Game/LoadingScreens.h"
@@ -413,6 +414,7 @@ static void InitPlugin() {
     CDynamicEntity::InjectHooks();
     CPhysical::InjectHooks();
     CPed::InjectHooks();
+    CPedData::InjectHooks();
     CVehicle::InjectHooks();
     CObject::InjectHooks();
     CLoadingScreens::InjectHooks();
