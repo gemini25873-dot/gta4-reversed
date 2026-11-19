@@ -2,37 +2,132 @@
 #include "Game/Cam.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
+#include "Core/Pool.h"
 #include <xmmintrin.h>
 
 void CCam::InjectHooks()
 {
+    Core::Hook::Install(0x9AC880, &CCam::InitFields);
+    Core::Hook::Install(0x9ACC20, &CCam::FindCamOfType);
+    Core::Hook::Install(0x9ACF10, &CCam::ClearUnk128);
+    Core::Hook::Install(0x9ACF50, &CCam::SyncBlend);
     Core::Hook::Install(0x9AD000, &CCam::Ctor);
+    Core::Hook::Install(0x9AD030, &CCam::Dtor);
     Core::Hook::Install(0x9AD190, &CCam::CleanupUnk12C);
     Core::Hook::Install(0x9AD1C0, &CCam::CleanupUnk110);
     Core::Hook::Install(0x9AD220, &CCam::AttachChild);
     Core::Hook::Install(0x9AD2D0, &CCam::GetCamOfType);
     Core::Hook::Install(0x9AD380, &CCam::UpdateChildren);
     Core::Hook::Install(0x9AD3B0, &CCam::UpdateNearFarClip);
+    Core::Hook::Install(0x9AD480, &CCam::InitPool);
+    Core::Hook::Install(0x9AD740, &CCam::ScalarDeletingDtor);
 
-    // Skipped functions (due to unsafe / ambiguous IDA callees):
-    // - 0x9AD030 (Dtor): sub_9ACF10() __thiscall argument (this) is ambiguous
-    // - 0x9AD060: sub_D1112B (__usercall@<xmm0>) and sub_9F03A0/sub_9F0710 missing this argument
-    // - 0x9AD1F0: sub_9AC9D0/sub_9ACA80 argument mismatch and uninitialized v2
-    // - 0x9AD2D0: missing this argument in sub_9ACC20() __thiscall call
-    // - 0x9AD350: missing this argument in sub_91F510() __thiscall call
-    // - 0x9AD4C0: sub_874640/sub_9F03A0/sub_BE0440 missing this and 0x9AD060 (__usercall) call
-    // - 0x9AD740 (ScalarDeletingDtor): sub_9AD030() and sub_C79660() missing arguments
+    // Remaining deferred CCam functions:
+    // - 0x9AD060: sub_D1112B (__usercall@<xmm0>) and sub_9F03A0/sub_9F0710
+    // - 0x9AD1F0: sub_9AC9D0/sub_9ACA80
+    // - 0x9AD350: sub_91F510()
+    // - 0x9AD4C0: sub_874640/sub_9F03A0/sub_BE0440 and 0x9AD060
 
-    Core::Log::Info("CCam hooks installed (7/13 functions)");
+    Core::Log::Info("CCam hooks installed (14 functions)");
+}
+
+// 0x9AD480
+void* __cdecl CCam::InitPool()
+{
+    auto* pool = Core::Hook::Call<CPoolBase*>(0x4011D0, 28);
+    if (pool)
+    {
+        pool->Init(60, reinterpret_cast<const char*>(Core::Rebase(0xD80410)), 1280);
+        Core::StaticRef<CPoolBase*>(0x1618020) = pool;
+    }
+    else
+    {
+        Core::StaticRef<CPoolBase*>(0x1618020) = nullptr;
+    }
+    return Core::StaticRef<CPoolBase*>(0x1618020);
 }
 
 CCam* __thiscall CCam::Ctor()
 {
+    Core::Log::InfoOnce("cam_ctor", "CCam::Ctor executed");
     m_vftable = reinterpret_cast<void**>(Core::Rebase(0xD80464));
     Core::Hook::CallMethod<void*>(0x9EFFE0, m_pad10);
     Core::Hook::CallMethod<void*>(0x9EFFE0, m_pad90);
-    Core::Hook::CallMethod<int32>(0x9AC880, this);
+    InitFields();
     return this;
+}
+
+// 0x9AC880
+int32 __thiscall CCam::InitFields()
+{
+    uint8* flagsBytes = reinterpret_cast<uint8*>(&m_nFlags);
+    const uint8 lowFlag = flagsBytes[0];
+    flagsBytes[1] |= 3u;
+
+    m_pChild = nullptr;
+    m_pPrev = nullptr;
+    m_pNext = nullptr;
+    m_pParent = nullptr;
+    m_pUnk128 = nullptr;
+    m_pUnk110 = nullptr;
+    m_pUnk12C = nullptr;
+    m_nUnk130 = 0;
+    m_nUnk13A = 0;
+    m_nUnk114 = 0;
+    m_nUnk13B = 0;
+    m_nUnk138 = 250;
+    m_nUnk134 = -1;
+    flagsBytes[0] = (lowFlag & 0x40u) | 0x94u;
+    return 1;
+}
+
+// 0x9AD030
+int32 __thiscall CCam::Dtor()
+{
+    Core::Log::InfoOnce("cam_dtor", "CCam::Dtor executed");
+    m_vftable = reinterpret_cast<void**>(Core::Rebase(0xD80464));
+    if (Core::StaticRef<uint8>(0xF2F054))
+    {
+        ClearUnk128();
+    }
+    return 0;
+}
+
+// 0x9AD740
+CCam* __thiscall CCam::ScalarDeletingDtor(uint8 flags)
+{
+    Dtor();
+    if ((flags & 1) != 0)
+    {
+        Core::StaticRef<CPoolBase*>(0x1618020)->Delete(this);
+    }
+    return this;
+}
+
+// 0x9ACF10
+void __thiscall CCam::ClearUnk128()
+{
+    if (!m_pUnk128)
+        return;
+
+    void** vtable = *reinterpret_cast<void***>(m_pUnk128);
+    using GetTypeFn = int32(__thiscall*)(void*);
+    if (reinterpret_cast<GetTypeFn>(vtable[10])(m_pUnk128) == 5)
+    {
+        Core::Hook::CallMethod<void>(0x9AC7E0, m_pUnk128, 0);
+        reinterpret_cast<uint8*>(&m_nFlags)[0] &= static_cast<uint8>(~0x20u);
+        m_pUnk128 = nullptr;
+    }
+}
+
+// 0x9ACF50
+void __thiscall CCam::SyncBlend()
+{
+    if (m_nUnk130 && (reinterpret_cast<uint8*>(&m_nFlags)[0] & 1u) != 0 && m_pUnk110)
+    {
+        const uint32 val = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pUnk110) + 0x274);
+        Core::Hook::CallMethod<void>(0x9F03A0, m_pad10, val);
+    }
 }
 
 int32 __thiscall CCam::CleanupUnk12C()
@@ -82,6 +177,30 @@ CCam* __thiscall CCam::AttachChild(CCam* child)
     return this;
 }
 
+// 0x9ACC20
+CCam* __thiscall CCam::FindCamOfType(int32 type, int32* indexPtr)
+{
+    using GetTypeFn = int32(__thiscall*)(CCam*);
+    if (reinterpret_cast<GetTypeFn>(m_vftable[10])(this) == type && (*indexPtr)-- <= 0)
+        return this;
+
+    CCam* cur = m_pChild;
+    if (!cur)
+        return nullptr;
+
+    const uint8 allowFlag2 = Core::StaticRef<uint8>(0x1618024);
+    while (cur)
+    {
+        CCam* next = cur->m_pNext;
+        _mm_prefetch(reinterpret_cast<const char*>(next), _MM_HINT_T0);
+        CCam* found = cur->FindCamOfType(type, indexPtr);
+        if (found && ((found->m_nFlags & 2u) == 0 || allowFlag2))
+            return found;
+        cur = next;
+    }
+    return nullptr;
+}
+
 // 0x9AD2D0
 CCam* __thiscall CCam::GetCamOfType(int32 type, int32 index)
 {
@@ -98,7 +217,7 @@ CCam* __thiscall CCam::GetCamOfType(int32 type, int32 index)
     {
         CCam* next = cur->m_pNext;
         _mm_prefetch(reinterpret_cast<const char*>(next), _MM_HINT_T0);
-        CCam* found = Core::Hook::CallMethod<CCam*>(0x9ACC20, cur, type, &index);
+        CCam* found = cur->FindCamOfType(type, &index);
         if (found && ((found->m_nFlags & 2u) == 0 || allowFlag2))
             return found;
         cur = next;
@@ -112,7 +231,10 @@ int32 __thiscall CCam::UpdateChildren()
     for (CCam* child = m_pChild; child; child = child->m_pNext)
     {
         if ((static_cast<uint8>(child->m_nFlags) & 4) != 0)
-            result = Core::Hook::CallMethod<int32>(0x9ACF50, child);
+        {
+            child->SyncBlend();
+            result = 1;
+        }
     }
     return result;
 }

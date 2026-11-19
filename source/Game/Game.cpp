@@ -54,6 +54,7 @@ void CGame::InjectHooks()
 // 0x41FE30
 int32 __cdecl CGame::ShutdownCore()
 {
+    Core::Log::InfoOnce("game_shutdown_core", "CGame::ShutdownCore executed");
     ms_qwShutdownTime = 0ULL;
     Core::Hook::Call<void>(0x8DE520);
     Core::Hook::Call<void>(0x8AD090);
@@ -79,6 +80,7 @@ int32 __cdecl CGame::ShutdownCore()
 // 0x4202A0
 int32 __cdecl CGame::OnEpisodeChanged()
 {
+    Core::Log::InfoOnce("game_episode_changed", "CGame::OnEpisodeChanged executed (target=%d)", ms_nTargetEpisode);
     const int32 prevEpisode = ms_nCurrentEpisode;
     ms_nCurrentEpisode = ms_nTargetEpisode;
     ms_nActiveEpisode = ms_nTargetEpisode;

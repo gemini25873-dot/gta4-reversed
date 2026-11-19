@@ -52,6 +52,7 @@ void __thiscall CPickup::DestroyObject()
 // 0x9350C0
 uint8 __thiscall CPickup::Remove()
 {
+    Core::Log::InfoOnce("pickup_remove", "CPickup::Remove executed");
     const int32 index = static_cast<int32>(this - CPickups::GetArray());
 
     if (Core::Hook::Call<char>(0x80E600, m_nBlipIndex))
@@ -86,6 +87,7 @@ uint8 __thiscall CPickup::Remove()
 // 0x9357E0
 int32 __cdecl CPickups::Init()
 {
+    Core::Log::InfoOnce("pickups_init", "CPickups::Init executed");
     return Core::Hook::CallMethod<int32>(
         0xB3CC50,
         &Core::StaticRef<uint32>(0x1692078),

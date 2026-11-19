@@ -60,6 +60,25 @@ add_library(gta4_reversed SHARED
     source/Rage/phConstraint.cpp
     source/Rage/phLevelNew.cpp
     source/Rage/phSimulator.cpp
+    source/Tools/DebugMenu.cpp
+    third_party/imgui/imgui.cpp
+    third_party/imgui/imgui_draw.cpp
+    third_party/imgui/imgui_tables.cpp
+    third_party/imgui/imgui_widgets.cpp
+    third_party/imgui/imgui_impl_win32.cpp
+    third_party/imgui/imgui_impl_dx9.cpp
+)
+
+set_source_files_properties(
+    third_party/imgui/imgui.cpp
+    third_party/imgui/imgui_draw.cpp
+    third_party/imgui/imgui_tables.cpp
+    third_party/imgui/imgui_widgets.cpp
+    third_party/imgui/imgui_impl_win32.cpp
+    third_party/imgui/imgui_impl_dx9.cpp
+    PROPERTIES
+        SKIP_PRECOMPILE_HEADERS ON
+        COMPILE_OPTIONS "/w"
 )
 
 set_target_properties(gta4_reversed PROPERTIES
@@ -70,6 +89,7 @@ set_target_properties(gta4_reversed PROPERTIES
 
 target_include_directories(gta4_reversed PRIVATE
     "${CMAKE_SOURCE_DIR}/source"
+    "${CMAKE_SOURCE_DIR}/third_party/imgui"
 )
 
 target_precompile_headers(gta4_reversed PRIVATE

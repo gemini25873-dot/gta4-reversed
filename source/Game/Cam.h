@@ -32,10 +32,18 @@ public:
 
     static void InjectHooks();
 
+    static void* __cdecl InitPool();
+
     CCam* __thiscall Ctor();
+    int32 __thiscall InitFields();
+    int32 __thiscall Dtor();
+    CCam* __thiscall ScalarDeletingDtor(uint8 flags);
+    void  __thiscall ClearUnk128();
+    void  __thiscall SyncBlend();
     int32 __thiscall CleanupUnk12C();
     int32 __thiscall CleanupUnk110();
     CCam* __thiscall AttachChild(CCam* child);
+    CCam* __thiscall FindCamOfType(int32 type, int32* indexPtr);
     CCam* __thiscall GetCamOfType(int32 type, int32 index);
     int32 __thiscall UpdateChildren();
     void  __thiscall UpdateNearFarClip();
