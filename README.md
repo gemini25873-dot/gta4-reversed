@@ -14,7 +14,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and per-module `Hook::Call` dependency status.
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `693` implemented (`~1.58%`)
+- **Hooked Functions:** `806` implemented (`~1.84%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`, `Pad.cpp`
@@ -33,8 +33,8 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Game | `source/Game/Cheat.cpp` | 40 | 21 | |
 | Game | `source/Game/Clock.cpp` | 10 | 1 | |
 | Game | `source/Game/DummyObject.cpp` | 8 | 1 | |
-| Game | `source/Game/DynamicEntity.cpp` | 7 | 11 | |
-| Game | `source/Game/Entity.cpp` | 8 | 4 | |
+| Game | `source/Game/DynamicEntity.cpp` | 40 | 11 | |
+| Game | `source/Game/Entity.cpp` | 85 | 4 | |
 | Game | `source/Game/Explosion.cpp` | 10 | 6 | |
 | Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
 | Game | `source/Game/Font.cpp` | 71 | 16 | |

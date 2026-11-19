@@ -36,6 +36,38 @@ public:
     double __thiscall GetBoundRadius();
     const CVector* __thiscall GetBoundCentre();
     const CVector* __thiscall GetBoundBoxMin();
+
+    // Slice 1 (0x9E04D0..0x9E17AF)
+    CVector* __thiscall GetWorldBoundCentre(CVector* out);
+    CVector* __thiscall GetBoundCentreTransformed(CVector* out);
+    double __thiscall GetBoundSphere(CVector* outCentre);
+    float* __thiscall GetWorldBoundRect(float* outRect);
+    float* __thiscall CalcWorldBoundBox(float* outBox);
+    void __thiscall UpdateFragState();
+    void __thiscall ResetDynUnkE0();
+    bool __thiscall ShouldSkipDistanceCheck();
+    bool __thiscall ShouldSkipOrFlagged();
+    void* __thiscall CleanupAndNotify();
+    int32 __thiscall ProcessPostPhysicsUpdate();
+
+    // Slice 2 (0x9E17B0..0x9E2400)
+    void __thiscall InitSkeleton();
+    void __thiscall DeleteSkeleton();
+    void __thiscall UpdateSkeletonOrUnk(void* arg);
+    static void __cdecl AddAnimRef(int32 index);
+    static void __cdecl ReleaseAnimRef(int32 index);
+    void __thiscall AddToWorldSectors();
+    void __thiscall AddToDynList();
+    void __thiscall UpdateAnim();
+    void __thiscall CreateAnimBlender(void* arg);
+    void __thiscall InitCrSkeletonOrAnim(void* arg);
+    void __thiscall ReleaseCrSkeletonOrAnim();
+    void __thiscall RemoveFromWorldSectors();
+    void __thiscall UpdateWorldSectors();
+    void __thiscall RemoveFromDynList();
+    void __thiscall DeleteAnimBlender();
+    void __thiscall CleanupDynamicData();
+    CDynamicEntity* __thiscall ScalarDeletingDtor(uint8 flags);
 };
 
 VALIDATE_SIZE(CDynamicEntity, 0x110);
