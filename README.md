@@ -14,7 +14,7 @@ The long-term goal is to document every engine/game class and incrementally reim
 See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and per-module `Hook::Call` dependency status.
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `535` implemented (`531` active at runtime; `~1.22%`)
+- **Hooked Functions:** `693` implemented (`~1.58%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
   - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`, `Pad.cpp`
@@ -28,7 +28,7 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Core | `source/Core/Pool.cpp` | 9 | 0 | Pure C++ |
 | Core | `source/Core/Vector.cpp` | 2 | 0 | Pure C++ |
 | Game | `source/Game/Building.cpp` | 5 | 3 | |
-| Game | `source/Game/Cam.cpp` | 7 | 9 |
+| Game | `source/Game/Cam.cpp` | 14 | 9 | |
 | Game | `source/Game/Camera.cpp` | 15 | 5 |
 | Game | `source/Game/Cheat.cpp` | 40 | 21 | |
 | Game | `source/Game/Clock.cpp` | 10 | 1 | |
@@ -46,7 +46,7 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
 | Game | `source/Game/Pad.cpp` | 14 | 0 | Pure C++ |
-| Game | `source/Game/Ped.cpp` | 8 | 20 | |
+| Game | `source/Game/Ped.cpp` | 159 | 534 | |
 | Game | `source/Game/Physical.cpp` | 9 | 8 | |
 | Game | `source/Game/Pickups.cpp` | 10 | 12 | |
 | Game | `source/Game/PlayerInfo.cpp` | 18 | 13 | |
@@ -75,11 +75,15 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 
 ---
 
-## Compatibility Features (`dllmain.cpp`)
+## Compatibility & Diagnostics (`dllmain.cpp`, `Tools/`)
 
 - **Complete Edition Compatibility on `1.0.7.0`** *(for downgraded Complete Edition installs)*:
   - Multi-WTD DLC radio HUD logo fix
   - Stubbing missing Complete Edition script natives (e.g., `0x2C89A1F9` / `SCRT70`)
+- **PDB-Backed VEH Crash Handler (`dllmain.cpp`):**
+  - Resolves `gta4_reversed.pdb` symbols and source file/line numbers via `dbghelp.dll` (`StackWalk64` + raw `ESP` dump + `Access Violation` read/write details).
+- **In-Game Test Menu (`source/Tools/DebugMenu.*`) & `[TEST]` Logger (`Core::Log::InfoOnce`):**
+  - Dear ImGui D3D9 overlay (`F10` / `Insert` toggle, mouse-controlled with DirectInput8/WndProc isolation) with `World & Time`, `Player & Gameplay`, and `Test Events Log` tabs.
 
 ---
 
@@ -87,10 +91,13 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 
 ```text
 source/
-├── Core/        # Hook engine, logging, math (Vector/Matrix), Pool helpers
+├── Core/        # Hook engine, logging (InfoOnce), math (Vector/Matrix), Pool helpers
 ├── Game/        # GTA IV game classes (CEntity, CPed, CVehicle, CCam, CWeaponInfo, CWorld, ...)
 ├── Rage/        # RAGE physics engine (phBound*, phArchetype, phInst, phCollider*, phLevelNew, ...)
-└── dllmain.cpp  # ASI entry point, VEH crash logger, compatibility & hook registration
+├── Tools/       # In-game Dear ImGui D3D9 DebugMenu
+└── dllmain.cpp  # ASI entry point, PDB VEH crash logger, compatibility & hook registration
+third_party/
+└── imgui/       # Vendored Dear ImGui (Win32 + D3D9 backends)
 ```
 
 ---
@@ -101,7 +108,7 @@ source/
 - Windows (x86 target)
 - MSVC x86 C++20 toolchain (Visual Studio / Build Tools or Portable MSVC)
 - CMake `3.20+` and Ninja (or Visual Studio generator)
-- No external third-party libraries required
+- No external system dependencies required (`third_party/imgui` is vendored)
 
 ### Build Steps
 
