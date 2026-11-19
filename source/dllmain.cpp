@@ -15,6 +15,7 @@
 #include "Game/Physical.h"
 #include "Game/Ped.h"
 #include "Game/PedData.h"
+#include "Game/PedIntelligence.h"
 #include "Game/Vehicle.h"
 #include "Game/Object.h"
 #include "Game/LoadingScreens.h"
@@ -415,6 +416,7 @@ static void InitPlugin() {
     CPhysical::InjectHooks();
     CPed::InjectHooks();
     CPedData::InjectHooks();
+    CPedIntelligence::InjectHooks();
     CVehicle::InjectHooks();
     CObject::InjectHooks();
     CLoadingScreens::InjectHooks();
