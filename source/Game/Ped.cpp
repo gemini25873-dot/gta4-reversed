@@ -41,8 +41,8 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     m_fPedHealth = 0.0f;
     m_nPedUnk218 = initParams[0];
     m_nPedUnk219 = initParams[1];
-    m_pPedUnk21C = nullptr;
-    m_bPedUnk220 = 0;
+    m_pPedData = nullptr;
+    m_bHasPedData = 0;
 
     Core::Hook::CallMethod<void>(0x9E2320, m_pedSubObj238);
     Core::Hook::CallMethod<void>(0x9AB4A0, m_pedSubObj2B0);
@@ -60,7 +60,7 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     *reinterpret_cast<uint32*>(m_audPlaceableTracker + 8) = 0;
 
     m_pMyVehicle = nullptr;
-    for (uint32& val : m_nPedUnkB44)
+    for (uint32& val : m_voiceData)
         val = 0;
 
     Core::Hook::CallMethod<void>(0x4475C0, &m_nPedUnkB94);
@@ -86,8 +86,8 @@ CPed* __thiscall CPed::Ctor(const uint8* initParams, int32 modelIndex)
     if (obj)
         Core::Hook::CallMethod<void>(0xA66720, obj);
 
-    m_pPedUnk21C = obj;
-    m_bPedUnk220 = 1;
+    m_pPedData = obj;
+    m_bHasPedData = 1;
 
     auto* pedModel = static_cast<CPedModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
     *reinterpret_cast<uint32*>(obj + 0x12C) = pedModel->m_nPedType;
@@ -204,7 +204,7 @@ void CPed::InjectHooks_Slice1()
 int32 __thiscall CPed::SetPedUnk7C8(int32 value, int32 unused)
 {
     (void)unused;
-    m_nPedUnk7C8 = value;
+    m_nRagdollState = value;
     *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x7CC) = Core::StaticRef<uint32>(0x11DDE74);
     return value;
 }
@@ -212,11 +212,11 @@ int32 __thiscall CPed::SetPedUnk7C8(int32 value, int32 unused)
 int32 __thiscall CPed::UpdateUnk7C0And7C4(int32 arg)
 {
     int32 result = 0;
-    if (m_pPedUnk7C0)
+    if (m_pAnimBlendInst)
     {
         using VtblFn = int32(__thiscall*)(void*, int32);
-        auto** vtbl = *reinterpret_cast<void***>(m_pPedUnk7C0);
-        result = reinterpret_cast<VtblFn>(vtbl[2])(m_pPedUnk7C0, arg);
+        auto** vtbl = *reinterpret_cast<void***>(m_pAnimBlendInst);
+        result = reinterpret_cast<VtblFn>(vtbl[2])(m_pAnimBlendInst, arg);
     }
 
     void* unk7C4 = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(this) + 0x7C4);
@@ -258,7 +258,7 @@ void __thiscall CPed::ResetUnkBB0()
 
 float __thiscall CPed::GetPedIntelligenceUnk08()
 {
-    return *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(m_pPedIntelligence) + 8);
+    return *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(m_pMoveBlend) + 8);
 }
 
 int32 __thiscall CPed::SetUnkVtbl52_322(uint8 value)
@@ -296,23 +296,22 @@ uint32 __thiscall CPed::StartUnkA74Timer(int32 value)
     auto* self = reinterpret_cast<uint8*>(this);
     *reinterpret_cast<int32*>(self + 0xA74) = value;
     const uint32 now = Core::StaticRef<uint32>(0x11DDE74);
-    *reinterpret_cast<uint32*>(self + 0xA78) = now;
-    *(self + 0xA7C) = 1;
+    m_nHeadLookStartMs = now;
+    m_bHeadLookActive = 1;
     return now;
 }
 
 float __thiscall CPed::GetUnkA74TimerProgress()
 {
-    auto* self = reinterpret_cast<uint8*>(this);
-    if (!*(self + 0xA7C))
+    if (!m_bHeadLookActive)
         return 1.0f;
 
-    const uint32 start = *reinterpret_cast<const uint32*>(self + 0xA78);
+    const uint32 start = m_nHeadLookStartMs;
     const uint32 now = Core::StaticRef<uint32>(0x11DDE74);
     if (now >= start && (now - start) <= 500u)
         return static_cast<float>(static_cast<double>(now) - static_cast<double>(start)) * 0.0020000001f;
 
-    *(self + 0xA7C) = 0;
+    m_bHeadLookActive = 0;
     return 1.0f;
 }
 
@@ -345,22 +344,22 @@ float __thiscall CPed::GetUnkAB8()
 int32 __thiscall CPed::CallIntelligenceVtbl9()
 {
     using VtblFn = int32(__thiscall*)(void*, CPed*);
-    auto** vtbl = *reinterpret_cast<void***>(m_pPedIntelligence);
-    return reinterpret_cast<VtblFn>(vtbl[9])(m_pPedIntelligence, this);
+    auto** vtbl = *reinterpret_cast<void***>(m_pMoveBlend);
+    return reinterpret_cast<VtblFn>(vtbl[9])(m_pMoveBlend, this);
 }
 
 int32 __thiscall CPed::CallIntelligenceVtbl10(int32 arg)
 {
     using VtblFn = int32(__thiscall*)(void*, int32);
-    auto** vtbl = *reinterpret_cast<void***>(m_pPedIntelligence);
-    return reinterpret_cast<VtblFn>(vtbl[10])(m_pPedIntelligence, arg);
+    auto** vtbl = *reinterpret_cast<void***>(m_pMoveBlend);
+    return reinterpret_cast<VtblFn>(vtbl[10])(m_pMoveBlend, arg);
 }
 
 void __thiscall CPed::DecayAudioTimers()
 {
     if (!m_bIsDead || (m_nPedState != 1 && m_nPedState != 2))
     {
-        if (m_pPedUnk224)
+        if (m_pPedIntelligence)
         {
             auto* self = reinterpret_cast<uint8*>(this);
             const float dt = Core::StaticRef<float>(0x11DDE7C);
@@ -377,7 +376,7 @@ void __thiscall CPed::DecayAudioTimers()
 uint8 __thiscall CPed::GetMaxFromPedUnk224(float* outMax)
 {
     uint8 found = 0;
-    const auto* base = reinterpret_cast<const uint8*>(m_pPedUnk224);
+    const auto* base = reinterpret_cast<const uint8*>(m_pPedIntelligence);
 
     for (int32 offset = 68; offset < 88; offset += 4)
     {
@@ -484,7 +483,7 @@ bool __thiscall CPed::CanUseUnkB38(float val) const
 
 bool __thiscall CPed::IsSpecialPedType() const
 {
-    const uint32 pedType = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pPedUnk21C) + 0x12C);
+    const uint32 pedType = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pPedData) + 0x12C);
     return pedType >= 3 && pedType <= 14;
 }
 
@@ -550,13 +549,13 @@ int32 __thiscall CPed::RemoveUnkD68Ref(CEntity* entity)
 
 bool __thiscall CPed::IsPedType2NotModel() const
 {
-    const uint32 pedType = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pPedUnk21C) + 0x12C);
+    const uint32 pedType = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pPedData) + 0x12C);
     return pedType == 2 && m_nModelIndex != Core::StaticRef<int32>(0x1230AC0);
 }
 
 uint8 __thiscall CPed::HasUnkTask1310() const
 {
-    const auto* sub = reinterpret_cast<const uint8*>(m_pPedUnk224);
+    const auto* sub = reinterpret_cast<const uint8*>(m_pPedIntelligence);
     const auto* node = *reinterpret_cast<const uint32* const*>(sub + 0x2E0);
     if (node)
     {
@@ -635,7 +634,7 @@ double __thiscall CPed::GetUnkAnimWeight() const
         return 0.0;
     if (mode == 2)
         return 1.0;
-    if (m_nPedUnk7C8 > 2)
+    if (m_nRagdollState > 2)
         return *reinterpret_cast<const float*>(base + 0x8C4);
     return *reinterpret_cast<const float*>(base + 0x7E4);
 }
@@ -858,7 +857,7 @@ bool __thiscall CPed::IsValidForSomething8A3390()
         return false;
     }
 
-    if (!m_pPedUnk224)
+    if (!m_pPedIntelligence)
     {
         return false;
     }
@@ -970,7 +969,7 @@ int32 __thiscall CPed::SetVoiceGroup(int32 voiceGroup)
 {
     *reinterpret_cast<int32*>(reinterpret_cast<uint8*>(this) + 0xBB4) = voiceGroup;
     const int32 voiceId = Core::Hook::Call<int32>(0xB3C5A0, voiceGroup);
-    return Core::Hook::CallMethod<int32>(0x7B7B00, m_nPedUnkB44, voiceId);
+    return Core::Hook::CallMethod<int32>(0x7B7B00, m_voiceData, voiceId);
 }
 
 // 0x8A7740
@@ -979,7 +978,7 @@ int32 __thiscall CPed::InitVoiceByPedType()
     if (m_nPedUnk219)
         return SetVoiceGroup(0);
 
-    const int32 pedType = *reinterpret_cast<const int32*>(static_cast<const uint8*>(m_pPedUnk21C) + 0x12C);
+    const int32 pedType = *reinterpret_cast<const int32*>(static_cast<const uint8*>(m_pPedData) + 0x12C);
     if (pedType >= 0 && pedType <= 22)
         return SetVoiceGroup(pedType + 1);
 
@@ -1021,7 +1020,7 @@ int32 __thiscall CPed::ResetRagdollIfActive()
     void* ragdollInst = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(this) + 0x7C4);
     if (m_pPhysicsInst && m_pPhysicsInst == ragdollInst)
     {
-        uint8* const* slots = reinterpret_cast<uint8* const*>(static_cast<const uint8*>(m_pPedUnk224) + 0x44);
+        uint8* const* slots = reinterpret_cast<uint8* const*>(static_cast<const uint8*>(m_pPedIntelligence) + 0x44);
         uint8* task = nullptr;
         for (int32 i = 0; i < 5; ++i)
         {
@@ -1059,7 +1058,7 @@ int32 __thiscall CPed::ResetRagdollIfActive()
 // 0x8AACD0
 uint32 __thiscall CPed::UpdateRagdollTimeout()
 {
-    if (m_nPedUnk7C8 == 6)
+    if (m_nRagdollState == 6)
     {
         const uint32 elapsed = Core::StaticRef<uint32>(0x11DDE74) - *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x7CC);
         if (elapsed > 0x3E8u)
@@ -1277,7 +1276,7 @@ int32 __thiscall CPed::CollectEntities89C200(int32 outArray, int32* outCount, in
 void __thiscall CPed::UpdateUnk7C4Matrix89C2C0(int8 arg)
 {
     auto* self = reinterpret_cast<uint32*>(this);
-    uint32 unk7C4 = self[497];
+    uint32 unk7C4 = reinterpret_cast<uint32>(m_pRagdollInst);
     if (!unk7C4)
         return;
 
@@ -1285,22 +1284,22 @@ void __thiscall CPed::UpdateUnk7C4Matrix89C2C0(int8 arg)
     if (arg)
     {
         Core::Hook::CallMethod<uint32>(0x5171A0, reinterpret_cast<void*>(unk7C4), self[8]);
-        auto* vtbl = *reinterpret_cast<void***>(self[497]);
-        reinterpret_cast<Vtbl4Fn>(vtbl[4])(self[497], self[497] + 16);
-        self[167] &= ~0x4000000u;
+        auto* vtbl = *reinterpret_cast<void***>(reinterpret_cast<uint32>(m_pRagdollInst));
+        reinterpret_cast<Vtbl4Fn>(vtbl[4])(reinterpret_cast<uint32>(m_pRagdollInst), reinterpret_cast<uint32>(m_pRagdollInst) + 16);
+        m_nRagdollAnimFlags &= ~0x4000000u;
     }
     else
     {
-        if ((self[167] & 0x4000000u) == 0)
+        if ((m_nRagdollAnimFlags & 0x4000000u) == 0)
         {
             auto* vtbl = *reinterpret_cast<void***>(unk7C4);
             reinterpret_cast<Vtbl4Fn>(vtbl[4])(unk7C4, unk7C4 + 16);
-            self[167] |= 0x4000000u;
+            m_nRagdollAnimFlags |= 0x4000000u;
         }
-        Core::Hook::CallMethod<uint32>(0x5171A0, reinterpret_cast<void*>(self[497]), self[8]);
+        Core::Hook::CallMethod<uint32>(0x5171A0, reinterpret_cast<void*>(reinterpret_cast<uint32>(m_pRagdollInst)), self[8]);
     }
 
-    uint16 modelIdx = *reinterpret_cast<const uint16*>(self[497] + 8);
+    uint16 modelIdx = *reinterpret_cast<const uint16*>(reinterpret_cast<uint32>(m_pRagdollInst) + 8);
     if (modelIdx != 0xFFFF)
         Core::Hook::CallMethod<uint32>(0x6A3960, Core::StaticRef<void*>(0x1666880), static_cast<uint32>(modelIdx), uint32(0));
 }
@@ -1308,16 +1307,15 @@ void __thiscall CPed::UpdateUnk7C4Matrix89C2C0(int8 arg)
 // 0x89C350
 int32 __thiscall CPed::SetPedUnk7C0(void* ptr)
 {
-    m_pPedUnk7C0 = ptr;
+    m_pAnimBlendInst = ptr;
     *reinterpret_cast<CPed**>(reinterpret_cast<uint8*>(ptr) + 12) = this;
-    return Core::Hook::CallMethod<int32>(0x686AD0, m_pPedUnk7C0, int32(64), int8(1));
+    return Core::Hook::CallMethod<int32>(0x686AD0, m_pAnimBlendInst, int32(64), int8(1));
 }
 
 // 0x89C370
 int32 __thiscall CPed::SetPedUnk7C4(void* ptr)
 {
-    auto* self = reinterpret_cast<uint32*>(this);
-    self[497] = reinterpret_cast<uint32>(ptr);
+    m_pRagdollInst = ptr;
     *reinterpret_cast<CPed**>(reinterpret_cast<uint8*>(ptr) + 12) = this;
     return Core::Hook::CallMethod<int32>(0x686AD0, ptr, int32(64), int8(1));
 }
@@ -1336,13 +1334,13 @@ int32 __thiscall CPed::UpdateModelPedFlags89C3B0()
         || Core::Hook::CallMethod<uint8>(0xBC60D0, this, int32(30))
         || modelIdx == Core::StaticRef<int32>(0x12303AC))
     {
-        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedUnk224, int32(2));
+        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedIntelligence, int32(2));
     }
 
     if (Core::Hook::CallMethod<uint8>(0xBC60D0, this, int32(32)))
-        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedUnk224, int32(4));
+        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedIntelligence, int32(4));
 
-    return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedUnk224, int32(3));
+    return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedIntelligence, int32(3));
 }
 
 // 0x89C460
@@ -1350,9 +1348,9 @@ int32 __thiscall CPed::UpdateState89C460()
 {
     const auto* selfBytes = reinterpret_cast<const uint8*>(this);
     if (m_nPedUnk219)
-        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedUnk224, int32(-2));
+        return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedIntelligence, int32(-2));
 
-    const int32 modelIdx = *reinterpret_cast<const int16*>(selfBytes + 46);
+    const int32 modelIdx = m_nModelIndex;
     const auto* modelInfo = reinterpret_cast<const uint8*>(CModelInfo::ms_modelInfoPtrs[modelIdx]);
 
     if (selfBytes[2672] != 2
@@ -1364,16 +1362,16 @@ int32 __thiscall CPed::UpdateState89C460()
     {
         UpdateModelPedFlags89C3B0();
         const int32 state = *reinterpret_cast<const int32*>(
-            reinterpret_cast<const uint8*>(m_pPedUnk224) + 208);
+            reinterpret_cast<const uint8*>(m_pPedIntelligence) + 208);
         if (state == 2)
-            return Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedUnk224, int32(14));
+            return Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedIntelligence, int32(14));
         if (state == 3)
-            return Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedUnk224, int32(12));
+            return Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedIntelligence, int32(12));
         return state;
     }
 
-    Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedUnk224, int32(10));
-    return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedUnk224, int32(-1));
+    Core::Hook::CallMethod<int32>(0x9C41F0, m_pPedIntelligence, int32(10));
+    return Core::Hook::CallMethod<int32>(0x9C22C0, m_pPedIntelligence, int32(-1));
 }
 
 // 0x89C520
@@ -1443,7 +1441,7 @@ int8 __cdecl CPed::CanUseAnim89C630(int32 a1, const int32* animId, const CPed* p
 // 0x89C780
 int32 __thiscall CPed::GetIntelligenceUnk3C()
 {
-    const auto* intel = reinterpret_cast<const uint32*>(m_pPedIntelligence);
+    const auto* intel = reinterpret_cast<const uint32*>(m_pMoveBlend);
     return Core::Hook::Call<int32>(0xA35050, intel[15]);
 }
 
@@ -1507,15 +1505,15 @@ bool __thiscall CPed::CheckCondition89CA40(int32 a2)
         return true;
 
     auto* self = reinterpret_cast<uint32*>(this);
-    if ((self[167] & 0x300000u) != 0)
+    if ((m_nRagdollAnimFlags & 0x300000u) != 0)
         return true;
 
     const uint32 v3 = self[14];
-    if (v3 && v3 == self[497])
+    if (v3 && v3 == reinterpret_cast<uint32>(m_pRagdollInst))
         return true;
 
     if (static_cast<uint8>(GetIntelligenceUnk3C())
-        || static_cast<int32>(self[740]) > 2
+        || static_cast<int32>(m_nMoveState) > 2
         || (m_pMyVehicle && static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x9C5D60, m_pMyVehicle, this))))
     {
         return true;
@@ -1528,7 +1526,7 @@ bool __thiscall CPed::CheckCondition89CA40(int32 a2)
         return true;
     }
 
-    auto* taskMgr = reinterpret_cast<uint8*>(m_pPedUnk224) + 0x2E0;
+    auto* taskMgr = reinterpret_cast<uint8*>(m_pPedIntelligence) + 0x2E0;
     if (static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(1900), int8(0)))
         || static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(1040), int8(0)))
         || static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(740), int8(0)))
@@ -1562,11 +1560,11 @@ int8 __thiscall CPed::CheckCondition89CC30()
         return 1;
 
     const uint32 v3 = self[14];
-    if (v3 && v3 == self[497])
+    if (v3 && v3 == reinterpret_cast<uint32>(m_pRagdollInst))
         return 1;
 
     if (static_cast<uint8>(GetIntelligenceUnk3C())
-        || static_cast<int32>(self[740]) > 2
+        || static_cast<int32>(m_nMoveState) > 2
         || (m_pMyVehicle && static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x9C5D60, m_pMyVehicle, this))))
     {
         return 1;
@@ -1579,7 +1577,7 @@ int8 __thiscall CPed::CheckCondition89CC30()
         return 1;
     }
 
-    auto* taskMgr = reinterpret_cast<uint8*>(m_pPedUnk224) + 0x2E0;
+    auto* taskMgr = reinterpret_cast<uint8*>(m_pPedIntelligence) + 0x2E0;
     if (static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(1900), int8(0)))
         || static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(1040), int8(0)))
         || static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(740), int8(0)))
@@ -1634,7 +1632,7 @@ void __thiscall CPed::PlayAngryAnim89CE30(uint32 a2)
             return;
     }
 
-    if (m_pPedUnk224)
+    if (m_pPedIntelligence)
     {
         if (a2 >= 2)
             Core::Hook::Call<int32>(0xD0D21A);
@@ -1672,7 +1670,7 @@ void __thiscall CPed::PlayAnim445_89CF00(uint32 a2)
             return;
     }
 
-    if (m_pPedUnk224)
+    if (m_pPedIntelligence)
     {
         if (a2 > 2)
             Core::Hook::Call<int32>(0xD0D21A);
@@ -1691,7 +1689,7 @@ int32 __stdcall CPed::Helper89D020(int32 a1)
 }
 
 // 0x89D030
-// UNHOOK_SAFE_SKIP: declared static __stdcall in Ped.h but x86 is __thiscall thunk (loads ecx = m_pPedIntelligence and jmps to 0xBC9870)
+// UNHOOK_SAFE_SKIP: declared static __stdcall in Ped.h but x86 is __thiscall thunk (loads ecx = m_pMoveBlend and jmps to 0xBC9870)
 int32 __stdcall CPed::Helper89D030(int8 a1)
 {
     return static_cast<int32>(Core::Hook::CallStdcall<uint32>(0xBC9870, a1));
@@ -1744,7 +1742,7 @@ int32 __cdecl CPed::Helper89D260()
 void __thiscall CPed::ApplyMovement89D270(float a2)
 {
     const auto* selfBytes = reinterpret_cast<const uint8*>(this);
-    void* intel = m_pPedIntelligence;
+    void* intel = m_pMoveBlend;
 
     if ((m_nPedFlags2 & 1u) != 0 || (*reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(intel) + 80) & 0x40u) != 0)
     {
@@ -1777,7 +1775,7 @@ void __thiscall CPed::ApplyMovement89D270(float a2)
 // 0x89D360
 int32 __thiscall CPed::UpdateUnk137_89D360()
 {
-    void* subObj = reinterpret_cast<uint8*>(m_pPedUnk224) + 132;
+    void* subObj = reinterpret_cast<uint8*>(m_pPedIntelligence) + 132;
     Core::Hook::CallMethod<int32>(0xAA7D70, subObj);
     Core::Hook::CallMethod<uint32>(0xAA7E00, subObj, int8(1));
     return Core::Hook::CallMethod<int32>(0xAA7DA0, subObj);
@@ -1791,7 +1789,7 @@ int8 __thiscall CPed::ProcessFall89D3A0(int8 a2)
 
     if ((selfBytes[36] & 0x1Cu) != 0)
         return 1;
-    if (m_nPedUnk7C8 > 2)
+    if (m_nRagdollState > 2)
         return 0;
 
     const uint32 unk56 = *reinterpret_cast<const uint32*>(selfBytes + 56);
@@ -1799,7 +1797,7 @@ int8 __thiscall CPed::ProcessFall89D3A0(int8 a2)
     if (unk56Word8 == 0xFFFF)
         return 1;
 
-    void* intel = m_pPedIntelligence;
+    void* intel = m_pMoveBlend;
     using IntelCheckFn = uint8(__thiscall*)(void*);
     auto* intelVtbl = *reinterpret_cast<void***>(intel);
 
@@ -1849,7 +1847,7 @@ int8 __thiscall CPed::ProcessFall89D3A0(int8 a2)
 
     if (doImpulse)
     {
-        void* taskMgr = reinterpret_cast<uint8*>(m_pPedUnk224) + 736;
+        void* taskMgr = reinterpret_cast<uint8*>(m_pPedIntelligence) + 736;
         if ((m_nPedFlags2 & 1u) == 0
             && !static_cast<uint8>(Core::Hook::CallMethod<int32>(0x426A90, this))
             && !static_cast<uint8>(Core::Hook::CallMethod<uint32>(0x426910, taskMgr, int32(254), int8(0)))
@@ -1879,7 +1877,7 @@ int8 __thiscall CPed::ProcessFall89D3A0(int8 a2)
 int32 __thiscall CPed::SetFlags156_89D5C0(int8 a2, int32 a3)
 {
     auto* self = reinterpret_cast<uint32*>(this);
-    const uint32 flags = self[156];
+    const uint32 flags = m_nSpeechAnimFlags;
     uint32 newFlags = 0;
 
     if (a2)
@@ -1887,7 +1885,7 @@ int32 __thiscall CPed::SetFlags156_89D5C0(int8 a2, int32 a3)
         if ((flags & 0x300u) != 0)
         {
             const uint32 result = flags | 0x100u;
-            self[156] = result;
+            m_nSpeechAnimFlags = result;
             return static_cast<int32>(result);
         }
         newFlags = flags | 0x100u;
@@ -1897,13 +1895,13 @@ int32 __thiscall CPed::SetFlags156_89D5C0(int8 a2, int32 a3)
         if ((flags & 0xC00u) != 0)
         {
             const uint32 result = flags | 0x400u;
-            self[156] = result;
+            m_nSpeechAnimFlags = result;
             return static_cast<int32>(result);
         }
         newFlags = flags | 0x400u;
     }
 
-    self[156] = newFlags;
+    m_nSpeechAnimFlags = newFlags;
     self[83] = static_cast<uint32>(a3);
     if (a2)
         return static_cast<int32>(Core::Hook::CallMethod<uint32>(0xAB06E0, m_pedSubObj3D0, uint32(0), uint32(0)));
@@ -1979,7 +1977,7 @@ int32 __thiscall CPed::SetTask89D950(int32 a2, int16 a3, int32 a4, int32 a5, int
     if ((*reinterpret_cast<const uint16*>(selfBytes + 482) & 0x2000u) != 0)
     {
         *reinterpret_cast<uint32*>(selfBytes + 36) |= 1u;
-        return static_cast<int32>(Core::Hook::CallMethod<uint32>(0x686AD0, m_pPedUnk7C0, int32(8), int8(1)));
+        return static_cast<int32>(Core::Hook::CallMethod<uint32>(0x686AD0, m_pAnimBlendInst, int32(8), int8(1)));
     }
     return result;
 }
@@ -1994,7 +1992,7 @@ int32 __thiscall CPed::SetTask89D9C0(int32 a2, int32 a3, int32 a4, int32 a5)
     if ((*reinterpret_cast<const uint16*>(selfBytes + 482) & 0x2000u) != 0)
     {
         *reinterpret_cast<uint32*>(selfBytes + 36) |= 1u;
-        return static_cast<int32>(Core::Hook::CallMethod<uint32>(0x686AD0, m_pPedUnk7C0, int32(8), int8(1)));
+        return static_cast<int32>(Core::Hook::CallMethod<uint32>(0x686AD0, m_pAnimBlendInst, int32(8), int8(1)));
     }
     return result;
 }
@@ -2055,7 +2053,7 @@ void __thiscall CPed::UpdateAudio89DB40()
         reinterpret_cast<AudioVtblFn>(audioVtbl[1])(audioObj);
 
         Core::Hook::CallMethod<int32>(0x9E1190, this);
-        *reinterpret_cast<uint32*>(selfBytes + 668) |= 0x1000000u;
+        m_nRagdollAnimFlags |= 0x1000000u;
     }
 
     if (Core::StaticRef<uint8>(0xF0C511) && !Core::StaticRef<uint8>(0x10D0189))
@@ -2160,7 +2158,7 @@ int32 __thiscall CPed::CallUnkA66ED0()
 
 int32 __thiscall CPed::CountNearbyPassengers(float radius)
 {
-    uint8** slots = reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pPedUnk224) + 360);
+    uint8** slots = reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pPedIntelligence) + 360);
     const float radiusSq = radius * radius;
     const auto* selfPos = reinterpret_cast<const float*>(m_pMatrix);
     int32 count = 0;
@@ -2270,7 +2268,7 @@ bool __thiscall CPed::CanUseUnkE1F0()
     if (reinterpret_cast<VtblFn>(m_vftable[74])(this))
         return true;
 
-    if (self[0xA70] == 2)
+    if (m_nDummyConvertState == 2)
         return true;
 
     auto** modelInfos = reinterpret_cast<void**>(Core::Rebase(0x15F73B0));
@@ -2291,7 +2289,7 @@ int32 __thiscall CPed::GetVehicleSeatOrTypeState()
         && *reinterpret_cast<const int16*>(veh + 46) == Core::StaticRef<int32>(0x12308EC)
         && (*reinterpret_cast<CPed* const*>(veh + 4000) == this
             || (!Core::Hook::Call<uint8>(0x462F90)
-                && Core::Hook::CallMethod<uint8>(0x426910, reinterpret_cast<uint8*>(m_pPedUnk224) + 736, 734, int8(0)))))
+                && Core::Hook::CallMethod<uint8>(0x426910, reinterpret_cast<uint8*>(m_pPedIntelligence) + 736, 734, int8(0)))))
     {
         return 15;
     }
@@ -2361,11 +2359,11 @@ int8 __thiscall CPed::SetUnkA70State(int8 state)
     int8 result = *reinterpret_cast<int8*>(self + 0xA70);
     if (result == 2)
     {
-        Core::Hook::CallMethod<int32>(0x9C2310, m_pPedUnk224, 30.0f);
-        Core::Hook::CallMethod<int32>(0x9C22F0, m_pPedUnk224, 30.0f);
+        Core::Hook::CallMethod<int32>(0x9C2310, m_pPedIntelligence, 30.0f);
+        Core::Hook::CallMethod<int32>(0x9C22F0, m_pPedIntelligence, 30.0f);
         if (!m_nPedUnk219)
         {
-            auto* sub224 = reinterpret_cast<uint8*>(m_pPedUnk224);
+            auto* sub224 = reinterpret_cast<uint8*>(m_pPedIntelligence);
             *reinterpret_cast<float*>(sub224 + 236) = 15.0f;
             *reinterpret_cast<int32*>(sub224 + 232) = 999;
         }
@@ -2386,7 +2384,7 @@ int8 __thiscall CPed::SetUnkA70State(int8 state)
 void __thiscall CPed::OnRagdollModelCheck(int32 inst, int32 step)
 {
     Core::Hook::CallMethod<int32>(0xA48A40, this, inst, step);
-    if (step == Core::StaticRef<int32>(0xF36DFC) - 1 && inst == reinterpret_cast<int32>(m_pPedUnk7C0))
+    if (step == Core::StaticRef<int32>(0xF36DFC) - 1 && inst == reinterpret_cast<int32>(m_pAnimBlendInst))
     {
         const auto* unk7C4 = *reinterpret_cast<const uint8* const*>(reinterpret_cast<const uint8*>(this) + 0x7C4);
         if (unk7C4)
@@ -2407,7 +2405,7 @@ void __thiscall CPed::UpdateRagdollDistanceCheck(int8 forceReset)
 {
     Core::Hook::CallMethod<int32>(0xA48770, this, forceReset);
     auto* self = reinterpret_cast<uint8*>(this);
-    void* unk7C4 = *reinterpret_cast<void**>(self + 0x7C4);
+    void* unk7C4 = m_pRagdollInst;
 
     if (!m_pPhysicsInst || m_pPhysicsInst != unk7C4)
     {
@@ -2547,7 +2545,7 @@ bool __thiscall CPed::HasLineOfSightToEntity(const CEntity* target, int8 skipAng
         if (selfMat[5] * dy + selfMat[4] * dx < 0.0f)
             return false;
 
-        const auto* sub224 = reinterpret_cast<const float*>(m_pPedUnk224);
+        const auto* sub224 = reinterpret_cast<const float*>(m_pPedIntelligence);
         const float dist = std::sqrt(dy * dy + dx * dx);
         float maxRange = sub224[56];
         if (maxRange <= sub224[57])
@@ -2586,11 +2584,11 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
 
     const int32 overrideSpeech = *reinterpret_cast<const int32*>(self + 2956);
     if (overrideSpeech != -1)
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, overrideSpeech);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, overrideSpeech);
 
-    uint8* sub224 = reinterpret_cast<uint8*>(m_pPedUnk224);
+    uint8* sub224 = reinterpret_cast<uint8*>(m_pPedIntelligence);
     void* audTracker = *reinterpret_cast<void* const*>(self + 0x78);
-    const int32 v4 = ((*reinterpret_cast<const uint32*>(self + 672) & 0x100) != 0)
+    const int32 v4 = ((m_nRenderAnimFlags & 0x100) != 0)
         ? Core::Hook::CallMethod<int32>(0x426850, sub224 + 0x44, 431)
         : 0;
 
@@ -2601,12 +2599,12 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
     {
         if (Core::Hook::Call<uint8>(0x929700, 59))
         {
-            Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 59);
+            Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 59);
             const int32 res = Core::Hook::CallMethod<int32>(0x9EBE90, audTracker, 0, 8);
             if (res)
             {
                 Core::Hook::CallMethod<int32>(0xA4DBC0, reinterpret_cast<void*>(res), -1.0f);
-                void* objA90 = m_pPedIntelligence;
+                void* objA90 = m_pMoveBlend;
                 using VtblFn = int32(__thiscall*)(void*, int32);
                 return reinterpret_cast<VtblFn>((*reinterpret_cast<void***>(objA90))[10])(objA90, 1);
             }
@@ -2620,8 +2618,8 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
         const int32 v5 = Core::Hook::CallMethod<int32>(0x8959F0, reinterpret_cast<void*>(v4), this);
         const int32 v6 = Core::Hook::CallMethod<int32>(0x92F590, Core::StaticRef<void*>(0x1548F88), v5);
         if (v6 == -1 || !Core::Hook::Call<int32>(0x832DD0, v6, Core::StaticRef<int32>(0xF27324)))
-            return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 58);
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, v5);
+            return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 58);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, v5);
     }
 
     if (Core::Hook::CallMethod<uint8>(0x89C780, this))
@@ -2633,35 +2631,35 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
             if ((weapFlags & 0x80) != 0)
             {
                 if ((weapFlags & 0x400000) == 0 && Core::Hook::Call<uint8>(0x929700, 57))
-                    return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 57);
-                return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 55);
+                    return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 57);
+                return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 55);
             }
             if (Core::Hook::CallMethod<uint8>(0x89BD60, reinterpret_cast<void*>(v8)))
             {
-                if ((*reinterpret_cast<const uint32*>(self + 672) & 0x40) == 0)
-                    return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 55);
-                return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 53);
+                if ((m_nRenderAnimFlags & 0x40) == 0)
+                    return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 55);
+                return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 53);
             }
         }
         if (*reinterpret_cast<const int8*>(self + 672) >= 0)
-            return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 54);
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 53);
+            return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 54);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 53);
     }
 
-    const int32 pedType = *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(m_pPedUnk21C) + 300);
+    const int32 pedType = *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(m_pPedData) + 300);
     if (pedType == 2
         && m_nModelIndex != Core::StaticRef<int32>(0x1230AC0)
-        && (*reinterpret_cast<const uint32*>(self + 672) & 0x200) != 0)
+        && (m_nRenderAnimFlags & 0x200) != 0)
     {
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 140);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 140);
     }
 
     if ((*reinterpret_cast<const uint8*>(self + 672) & 0x20) != 0)
     {
         using GetValFn = double(__thiscall*)(CPed*);
-        if (self[0xA70] == 1 && reinterpret_cast<GetValFn>(m_vftable[63])(this) < 175.0)
-            return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 65);
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, *reinterpret_cast<const int32*>(self + 2980));
+        if (m_nDummyConvertState == 1 && reinterpret_cast<GetValFn>(m_vftable[63])(this) < 175.0)
+            return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 65);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, m_nSpeechVoiceBank);
     }
 
     const int32 v10 = Core::Hook::CallMethod<int32>(0x9A9D30, m_pedSubObj2B0);
@@ -2671,19 +2669,19 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
         if ((weapFlags & 0x80) != 0)
         {
             if ((weapFlags & 0x400000) == 0 && Core::Hook::Call<uint8>(0x929700, 56))
-                return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 56);
+                return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 56);
             if (Core::Hook::Call<uint8>(0x89BB90, pedType))
-                return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 51);
-            return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 50);
+                return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 51);
+            return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 50);
         }
     }
 
-    const uint32 flags672 = *reinterpret_cast<const uint32*>(self + 672);
-    const bool v12 = (*reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pPedIntelligence) + 80) & 2) != 0
+    const uint32 flags672 = m_nRenderAnimFlags;
+    const bool v12 = (*reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(m_pMoveBlend) + 80) & 2) != 0
         && ((flags672 & 0x80u) != 0 || (flags672 & 0x400) != 0);
 
     if ((m_nModelIndex != Core::StaticRef<int32>(0x1230AC0) || (flags672 & 0x400) != 0) && v12)
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 52);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 52);
 
     if (v10 && Core::Hook::CallMethod<uint8>(0x4269D0, reinterpret_cast<void*>(v10)))
     {
@@ -2693,7 +2691,7 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
             using GetTaskTypeFn = int32(__thiscall*)(int32);
             const int32 taskId = reinterpret_cast<GetTaskTypeFn>((*reinterpret_cast<void***>(activeTask))[3])(activeTask);
             if (taskId == 1039 && *reinterpret_cast<const int32*>(activeTask + 52) != 4)
-                return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 58);
+                return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 58);
         }
     }
 
@@ -2701,11 +2699,11 @@ int32 __thiscall CPed::ProcessPedSpeechAndState()
     if (v10 && Core::Hook::CallMethod<uint8>(0x89BD60, reinterpret_cast<void*>(v10)) && !isPlayerModel)
     {
         if (Core::Hook::Call<uint8>(0x89BB90, pedType))
-            return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 51);
-        return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 50);
+            return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 51);
+        return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 50);
     }
 
-    return Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, *reinterpret_cast<const int32*>(self + 2980));
+    return Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, m_nSpeechVoiceBank);
 }
 
 int32 __thiscall CPed::UpdatePedFlagsAndAudio()
@@ -2715,7 +2713,7 @@ int32 __thiscall CPed::UpdatePedFlagsAndAudio()
     void* audTracker = *reinterpret_cast<void* const*>(self + 0x78);
 
     if (Core::Hook::CallMethod<int32>(0x9EBFF0, audTracker, 0x80000000u, int8(1))
-        && !Core::Hook::CallMethod<uint8>(0x426910, reinterpret_cast<uint8*>(m_pPedUnk224) + 0x2E0, 1040, int8(0)))
+        && !Core::Hook::CallMethod<uint8>(0x426910, reinterpret_cast<uint8*>(m_pPedIntelligence) + 0x2E0, 1040, int8(0)))
     {
         if (!m_nPedUnk218 && m_nPedUnk219 && m_pPlayerInfo && dwords[746] == 71)
         {
@@ -2746,9 +2744,9 @@ int32 __thiscall CPed::UpdatePedFlagsAndAudio()
     }
 
     int32 result = 0;
-    if ((m_pPhysicsInst && m_pPhysicsInst == *reinterpret_cast<void* const*>(self + 0x7C4))
+    if ((m_pPhysicsInst && m_pPhysicsInst == m_pRagdollInst)
         || (result = Core::Hook::CallMethod<uint8>(0x89C780, this)) != 0
-        || static_cast<int32>(dwords[740]) > 2
+        || static_cast<int32>(m_nMoveState) > 2
         || (dwords[168] & 0x8000) != 0)
     {
         result = Core::Hook::CallMethod<int32>(0x9EBFF0, audTracker, 0x80000u, int8(1));
@@ -2771,8 +2769,8 @@ int32 __thiscall CPed::UpdatePedMoodAudio()
     auto* self = reinterpret_cast<uint8*>(this);
     void* audTracker = *reinterpret_cast<void* const*>(self + 0x78);
     int32 result = reinterpret_cast<int32>(sub);
-    const int32 speechId = *reinterpret_cast<const int32*>(self + 2988);
-    const int32 subSpeechId = *reinterpret_cast<const int32*>(self + 2992);
+    const int32 speechId = m_nSpeechId;
+    const int32 subSpeechId = m_nSubSpeechId;
 
     if (!m_nPedUnk218)
     {
@@ -2885,7 +2883,7 @@ int32 __thiscall CPed::UpdatePedMoodAudio()
 void __thiscall CPed::ProcessBoneAttachmentEvents()
 {
     const auto* self = reinterpret_cast<const uint8*>(this);
-    if (m_pPhysicsInst && m_pPhysicsInst == *reinterpret_cast<void* const*>(self + 0x7C4))
+    if (m_pPhysicsInst && m_pPhysicsInst == m_pRagdollInst)
         return;
 
     void* audTracker = *reinterpret_cast<void* const*>(self + 0x78);
@@ -3020,9 +3018,9 @@ void __thiscall CPed::TriggerShockedSpeech()
     const auto* self = reinterpret_cast<const uint8*>(this);
     if (!m_bIsDead || (m_nPedState != 1 && m_nPedState != 2))
     {
-        if (m_pPedUnk224)
+        if (m_pPedIntelligence)
         {
-            const int32 bank = Core::Hook::Call<int32>(0x908A00, *reinterpret_cast<const int32*>(self + 2988));
+            const int32 bank = Core::Hook::Call<int32>(0x908A00, m_nSpeechId);
             uint32& initFlags = Core::StaticRef<uint32>(0x1230130);
             int32& hash = Core::StaticRef<int32>(0x123012C);
             if ((initFlags & 1) == 0)
@@ -3073,16 +3071,16 @@ void __thiscall CPed::UpdateAnimEvents()
 int32 __thiscall CPed::SetRagdollUnkB90(int32 value)
 {
     auto* dwords = reinterpret_cast<int32*>(this);
-    dwords[740] = value;
+    m_nMoveState = value;
 
     const auto* unk6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (!unk6C || !unk6C[14])
     {
         const float fval = static_cast<float>(Core::Hook::Call<double>(0xA28620, value));
-        Core::Hook::CallMethod<int32>(0xBC9B00, m_pPedIntelligence, fval, 0.0f, int8(0));
+        Core::Hook::CallMethod<int32>(0xBC9B00, m_pMoveBlend, fval, 0.0f, int8(0));
     }
 
-    const int32 result = dwords[740];
+    const int32 result = m_nMoveState;
     if (result == 3 || result == 4)
         return Core::Hook::Call<int32>(0x987730, 2, reinterpret_cast<int32>(m_pMatrix) + 48, reinterpret_cast<int32>(this), 0, 0, 0.0f);
     return result;
@@ -3092,7 +3090,7 @@ int32 __thiscall CPed::UpdateRagdollUnkBC9B00(float value)
 {
     const auto* unk6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (!unk6C || !unk6C[14])
-        return Core::Hook::CallMethod<int32>(0xBC9B00, m_pPedIntelligence, value, *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(m_pPedIntelligence) + 12), int8(0));
+        return Core::Hook::CallMethod<int32>(0xBC9B00, m_pMoveBlend, value, *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(m_pMoveBlend) + 12), int8(0));
     return static_cast<int32>(m_nUnk6C);
 }
 
@@ -3103,7 +3101,7 @@ int8 __thiscall CPed::UpdateMovementAndSpeech()
 
     ProcessPedSpeechAndState();
 
-    auto* objA90 = reinterpret_cast<uint8*>(m_pPedIntelligence);
+    auto* objA90 = reinterpret_cast<uint8*>(m_pMoveBlend);
     using Vtbl1Fn = void(__thiscall*)(void*);
     reinterpret_cast<Vtbl1Fn>((*reinterpret_cast<void***>(objA90))[1])(objA90);
 
@@ -3124,7 +3122,7 @@ int8 __thiscall CPed::UpdateMovementAndSpeech()
         const auto* unk6C = reinterpret_cast<const uint8*>(m_nUnk6C);
         if (!unk6C || !unk6C[14])
         {
-            const auto* slots = reinterpret_cast<const uint8* const*>(reinterpret_cast<const uint8*>(m_pPedUnk224) + 68);
+            const auto* slots = reinterpret_cast<const uint8* const*>(reinterpret_cast<const uint8*>(m_pPedIntelligence) + 68);
             bool hasActiveTask = false;
             for (int32 i = 0; i < 5; ++i)
             {
@@ -3139,7 +3137,7 @@ int8 __thiscall CPed::UpdateMovementAndSpeech()
                     break;
                 }
             }
-            const bool flag952 = Core::Hook::CallMethod<int32>(0x426850, reinterpret_cast<uint8*>(m_pPedUnk224) + 0x44, 952) != 0;
+            const bool flag952 = Core::Hook::CallMethod<int32>(0x426850, reinterpret_cast<uint8*>(m_pPedIntelligence) + 0x44, 952) != 0;
             result = flag952 ? 1 : 0;
             if (!hasActiveTask && !flag952)
                 result = Core::Hook::Call<int32>(0x987730, 2, reinterpret_cast<int32>(m_pMatrix) + 48, reinterpret_cast<int32>(this), 0, 0, 0.0f);
@@ -3254,7 +3252,7 @@ bool __cdecl CPed::ProbeGroundCircle(float* origin, float* outMinZ, float* outMa
 void __thiscall CPed::UpdateGroundCollision(int32 entity)
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    if ((*reinterpret_cast<uint32*>(self + 0x29C) & 0x20000000u) != 0)
+    if ((m_nRagdollAnimFlags & 0x20000000u) != 0)
         return;
 
     if (Core::StaticRef<uint8>(0xF36DF8))
@@ -3263,13 +3261,13 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
         if (!phInst || phInst != *reinterpret_cast<uint32*>(self + 0x7C4))
         {
             if ((*reinterpret_cast<uint8*>(self + 0x26C) & 1u) != 0)
-                *reinterpret_cast<uint32*>(self + 0x26C) = (*reinterpret_cast<uint32*>(self + 0x26C) & ~3u) | 2u;
+                m_nPedFlags2 = (m_nPedFlags2 & ~3u) | 2u;
 
-            const float diffZ = *reinterpret_cast<float*>(self + 0xB20) - *reinterpret_cast<float*>(entity + 0x38);
-            if (diffZ > -1.0f || ((*reinterpret_cast<uint32*>(self + 0x26C) & 2u) != 0 && diffZ > -1.3f))
+            const float diffZ = m_fGroundZ - *reinterpret_cast<float*>(entity + 0x38);
+            if (diffZ > -1.0f || ((m_nPedFlags2 & 2u) != 0 && diffZ > -1.3f))
             {
-                *reinterpret_cast<uint32*>(self + 0x26C) |= 1u;
-                *reinterpret_cast<float*>(self + 0xB24) = diffZ;
+                m_nPedFlags2 |= 1u;
+                m_fGroundDeltaZ = diffZ;
                 if (self[0xD00] == 0)
                 {
                     const uint8 bVar = self[0x298];
@@ -3299,7 +3297,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
         }
     }
 
-    uint32* intelPtr = reinterpret_cast<uint32*>(m_pPedIntelligence);
+    uint32* intelPtr = reinterpret_cast<uint32*>(m_pMoveBlend);
     using IntelCheck24Fn = uint8(__thiscall*)(uint32*);
     if ((reinterpret_cast<IntelCheck24Fn>((*reinterpret_cast<void***>(intelPtr))[6])(intelPtr) && Core::StaticRef<int32>(0xF21EDC))
         || Core::StaticRef<int32>(0x122F8C4))
@@ -3316,7 +3314,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
     }
 
     if ((*reinterpret_cast<uint8*>(self + 0x26C) & 1u) != 0)
-        *reinterpret_cast<uint32*>(self + 0x26C) = (*reinterpret_cast<uint32*>(self + 0x26C) & ~3u) | 2u;
+        m_nPedFlags2 = (m_nPedFlags2 & ~3u) | 2u;
 
     const uint32 unk6C = *reinterpret_cast<uint32*>(self + 0x6C);
     const bool hasUnk6C = unk6C && *reinterpret_cast<uint8*>(unk6C + 0xE);
@@ -3324,14 +3322,14 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
     if (*reinterpret_cast<int32*>(self + 0x7C8) > 3
         || *reinterpret_cast<uint16*>(phInst + 8) == 0xFFFF
         || (!hasUnk6C && ((self[0x24] & 1u) == 0 || (self[0x26C] & 4u) != 0))
-        || (*reinterpret_cast<uint32*>(self + 0x29C) & 0x20000000u) != 0)
+        || (m_nRagdollAnimFlags & 0x20000000u) != 0)
     {
         return;
     }
 
     if ((*reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(intelPtr) + 0x50) & 0x40u) != 0)
     {
-        *reinterpret_cast<uint32*>(self + 0x26C) |= 1u;
+        m_nPedFlags2 |= 1u;
         return;
     }
 
@@ -3340,7 +3338,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
         timeStepScale = 2.0f;
 
     float probeDepth = 1.0f;
-    if ((*reinterpret_cast<uint32*>(self + 0x26C) & 2u) != 0)
+    if ((m_nPedFlags2 & 2u) != 0)
         probeDepth = (timeStepScale * 0.15000001f) * 2.0f + 1.0f;
 
     float hitZ = 0.0f;
@@ -3422,7 +3420,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
         }
         else
         {
-            if ((*reinterpret_cast<uint32*>(self + 0x26C) & 2u) == 0)
+            if ((m_nPedFlags2 & 2u) == 0)
                 return;
 
             int32 sphereResults[384]{};
@@ -3492,7 +3490,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
     if (!reinterpret_cast<IntelCheck32Fn>((*reinterpret_cast<void***>(intelPtr))[8])(intelPtr))
         return;
 
-    *reinterpret_cast<uint32*>(self + 0x26C) |= 1u;
+    m_nPedFlags2 |= 1u;
     const float invTimeStep = Core::StaticRef<float>(0xF21ED4);
     const float corrVel = ((hitZ - (*reinterpret_cast<float*>(entity + 0x38) - 1.0f)) + (0.15000001f / invTimeStep)) * (invTimeStep * 6.6666665f);
 
@@ -3557,7 +3555,7 @@ void __thiscall CPed::UpdateGroundCollision(int32 entity)
         Core::Hook::CallMethod<int32>(0x89E930, this, newPos, 0, 0);
     }
 
-    *reinterpret_cast<uint32*>(self + 0x14C) = hitMaterial;
+    *reinterpret_cast<uint32*>(&m_nPhysUnk14C) = hitMaterial;
     Core::Hook::CallMethod<int32>(0xAAE360, m_pedSubObj3D0, hitMaterial, hitEntity, hitComponent);
 
     if (hitEntity && Core::Hook::CallMethod<uint8>(0x4E0460, reinterpret_cast<void*>(hitEntity)))
@@ -3589,7 +3587,7 @@ int32 __thiscall CPed::ProcessContactPoints(int32 contacts, int32 phInst, int32 
             const uint8* posPtr = (static_cast<uint32>(phInst) == instA) ? (contact + 0x40) : (contact + 0x30);
 
             bool reject = !Core::StaticRef<uint8>(0xF36DF8)
-                || *reinterpret_cast<const float*>(posPtr + 8) <= *reinterpret_cast<float*>(self + 0xB20)
+                || *reinterpret_cast<const float*>(posPtr + 8) <= m_fGroundZ
                 || !otherInst;
 
             if (!reject)
@@ -3621,7 +3619,7 @@ int32 __thiscall CPed::ProcessContactPoints(int32 contacts, int32 phInst, int32 
 
                 if (!reject)
                 {
-                    *reinterpret_cast<float*>(self + 0xB20) = *reinterpret_cast<const float*>(posPtr + 8);
+                    m_fGroundZ = *reinterpret_cast<const float*>(posPtr + 8);
                     *reinterpret_cast<float*>(self + 0xAD0) = *reinterpret_cast<const float*>(posPtr);
                     *reinterpret_cast<float*>(self + 0xAD4) = *reinterpret_cast<const float*>(posPtr + 4);
                     *reinterpret_cast<float*>(self + 0xAD8) = *reinterpret_cast<const float*>(posPtr + 8);
@@ -3664,7 +3662,7 @@ int32 __thiscall CPed::ProcessContactPoints(int32 contacts, int32 phInst, int32 
                         material = Core::Hook::CallMethod<uint8>(0x89BB60, &contacts);
                     }
 
-                    *reinterpret_cast<uint32*>(self + 0x14C) = material;
+                    *reinterpret_cast<uint32*>(&m_nPhysUnk14C) = material;
                     uint32* m2 = *reinterpret_cast<uint32**>(*reinterpret_cast<const uint32*>(contacts + 4 * i) + 0xA0);
                     const uint32 comp = (static_cast<uint32>(phInst) == m2[13]) ? m2[28] : m2[26];
                     Core::Hook::CallMethod<int32>(0xAAE360, m_pedSubObj3D0, material, otherEnt, comp);
@@ -3709,7 +3707,7 @@ int32 __thiscall CPed::ApplyGroundSlopeVelocity()
     if ((phInst && phInst == *reinterpret_cast<uint32*>(self + 0x7C4)) || (m_nPedFlags2 & 1u) == 0)
         return static_cast<int32>(phInst);
 
-    const float diffZ = *reinterpret_cast<float*>(self + 0xB24);
+    const float diffZ = m_fGroundDeltaZ;
     if (diffZ <= -2.0f || !Core::StaticRef<uint8>(0xF36DF8))
         return static_cast<int32>(phInst);
 
@@ -3806,7 +3804,7 @@ int32 __thiscall CPed::ApplyGroundSlopeVelocity()
     if (dot >= 0.0f)
     {
         using IntelCheck32Fn = uint8(__thiscall*)(void*);
-        void* intel = m_pPedIntelligence;
+        void* intel = m_pMoveBlend;
         coeff = reinterpret_cast<IntelCheck32Fn>((*reinterpret_cast<void***>(intel))[8])(intel) ? Core::StaticRef<float>(0x122F8CC) : 0.0f;
     }
     else
@@ -3830,13 +3828,13 @@ int32 __thiscall CPed::ApplyGroundSlopeVelocity()
 void __thiscall CPed::ProcessPhysicsStep()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    if (m_nPedUnk7C8 > 3)
+    if (m_nRagdollState > 3)
         return;
 
     using ProcessCtrlFn = void(__thiscall*)(CPed*, float);
     using IntelCheck24Fn = uint8(__thiscall*)(void*);
 
-    const float timeStep = *reinterpret_cast<float*>(self + 0xAB0);
+    const float timeStep = m_fCurrentHeading;
     if ((m_nPedFlags2 & 1u) != 0 || *reinterpret_cast<float*>(*reinterpret_cast<uint32*>(self + 0x20) + 0x28) <= 0.99000001f)
     {
         if ((self[0x1E2] & 0xFu) < 2u && (m_nPedFlags2 & 4u) == 0)
@@ -3845,9 +3843,9 @@ void __thiscall CPed::ProcessPhysicsStep()
     else
     {
         const uint32 unk6C = *reinterpret_cast<uint32*>(self + 0x6C);
-        void* intel = m_pPedIntelligence;
-        uint8* taskMgr = static_cast<uint8*>(m_pPedUnk224) + 0x2E0;
-        if (Core::Hook::CallMethod<uint8>(0x9C3090, m_pPedUnk224)
+        void* intel = m_pMoveBlend;
+        uint8* taskMgr = static_cast<uint8*>(m_pPedIntelligence) + 0x2E0;
+        if (Core::Hook::CallMethod<uint8>(0x9C3090, m_pPedIntelligence)
             || ((!unk6C || !*reinterpret_cast<uint8*>(unk6C + 0xE)) && reinterpret_cast<IntelCheck24Fn>((*reinterpret_cast<void***>(intel))[6])(intel))
             || Core::Hook::CallMethod<uint8>(0x426910, taskMgr, 108, 0)
             || Core::Hook::CallMethod<uint8>(0x426910, taskMgr, 254, 0))
@@ -3866,26 +3864,26 @@ int32 __thiscall CPed::UpdateSpeechAndAudio()
     if (result)
     {
         result = *reinterpret_cast<int32*>(self + 0xB90);
-        float timerLimit = *reinterpret_cast<float*>(self + 0xB34);
+        float timerLimit = m_fGroundSlopeTimer;
         const float dt = Core::StaticRef<float>(0x11DDE7C);
         if (result == 4)
         {
             if (timerLimit > 1.0f)
-                *reinterpret_cast<float*>(self + 0xB34) = timerLimit - dt * 0.60000002f;
+                m_fGroundSlopeTimer = timerLimit - dt * 0.60000002f;
         }
         else if (result == 3 && timerLimit > 2.0f)
         {
-            *reinterpret_cast<float*>(self + 0xB34) = timerLimit - dt * 0.30000001f;
+            m_fGroundSlopeTimer = timerLimit - dt * 0.30000001f;
         }
         else
         {
             const float target = (result == 3) ? 2.0f : 4.0f;
             if (target > timerLimit)
-                *reinterpret_cast<float*>(self + 0xB34) = timerLimit + dt * 0.15000001f;
+                m_fGroundSlopeTimer = timerLimit + dt * 0.15000001f;
         }
 
         const float elapsed = *reinterpret_cast<float*>(self + 0xB30) + dt;
-        const float limit = *reinterpret_cast<float*>(self + 0xB34);
+        const float limit = m_fGroundSlopeTimer;
         *reinterpret_cast<float*>(self + 0xB30) = elapsed;
         if (elapsed > limit)
         {
@@ -3911,7 +3909,7 @@ int32 __thiscall CPed::UpdateSpeechAndAudio()
                     }
                 }
             }
-            *reinterpret_cast<uint32*>(self + 0xB30) = 0;
+            m_nGroundContactTimeMs = 0;
         }
     }
 
@@ -3952,7 +3950,7 @@ void __thiscall CPed::TriggerFootstepAudio(int32 isLeftFoot)
     if (Core::Hook::Call<double>(0xB1E4C0, *reinterpret_cast<int32*>(self + 0x20) + 0x30) > 225.0)
         return;
 
-    const uint32 matId = *reinterpret_cast<uint32*>(self + 0x14C);
+    const uint32 matId = *reinterpret_cast<const uint32*>(&m_nPhysUnk14C);
     void* matMgr = Core::StaticRef<void*>(0x18A87B8);
     using GetMatDataFn = uint8*(__thiscall*)(void*, uint32);
     auto getMatData = reinterpret_cast<GetMatDataFn>((*reinterpret_cast<void***>(matMgr))[5]);
@@ -3968,11 +3966,11 @@ void __thiscall CPed::TriggerFootstepAudio(int32 isLeftFoot)
     const float* boneMat = reinterpret_cast<const float*>(*reinterpret_cast<const uint32*>(skelData + 0x14) + (boneIdx << 6));
     const float zVal = (boneMat[5] + boneMat[4]) * 0.0f + boneMat[6];
 
-    const uint16 matGroup = *reinterpret_cast<const uint16*>(getMatData(matMgr, *reinterpret_cast<uint32*>(self + 0x14C)) + 0x20);
+    const uint16 matGroup = *reinterpret_cast<const uint16*>(getMatData(matMgr, matId) + 0x20);
     const int32 audioMat = Core::Hook::CallMethod<int32>(0xC1E550, reinterpret_cast<void*>(Core::Rebase(0x16D7078)), matGroup);
     if (audioMat)
     {
-        const int16 modelIdx = *reinterpret_cast<int16*>(self + 0x2E);
+        const int16 modelIdx = m_nModelIndex;
         const uint32* modelInfos = &Core::StaticRef<uint32>(0x15F73B0);
         const bool isFemale = (*reinterpret_cast<const uint32*>(modelInfos[modelIdx] + 0x120) & 2u) != 0;
         const uint8 footIdx = static_cast<uint8>(isLeftFoot);
@@ -3981,7 +3979,7 @@ void __thiscall CPed::TriggerFootstepAudio(int32 isLeftFoot)
             reinterpret_cast<void*>(Core::Rebase(0x16D7078)),
             this,
             audioMat,
-            *reinterpret_cast<uint32*>(self + 0x14C),
+            matId,
             boneMat,
             isLeftFoot,
             isFemale,
@@ -4045,7 +4043,7 @@ bool __thiscall CPed::CanConvertToDummy(bool allowFlag4, bool checkStreamed)
         const int32 target = pInfo ? (pInfo + 0x60) : 0;
         const int32 idx = *reinterpret_cast<const int32*>(target + 0x3D4);
         if ((idx < 0 || !Core::Hook::CallMethod<uint8>(0xA66C40, reinterpret_cast<void*>(Core::Rebase(0x1662178u) + static_cast<uint32>(idx) * 0x5Cu), this))
-            && (self[0xA70] == 1 || static_cast<uint32>(self[0xA70]) - 2u >= 2u))
+            && (m_nDummyConvertState == 1 || static_cast<uint32>(m_nDummyConvertState) - 2u >= 2u))
         {
             return true;
         }
@@ -4065,7 +4063,7 @@ int32 __thiscall CPed::PreRenderPedInternal()
     void* info208_0 = reinterpret_cast<VFunc208Fn>((*reinterpret_cast<void***>(this))[52])(this);
     Core::Hook::CallMethod<int32>(0xA66860, info208_0, this);
 
-    const int16 modelIdx = *reinterpret_cast<int16*>(self + 0x2E);
+    const int16 modelIdx = m_nModelIndex;
     const uint32 modelInfo = (&Core::StaticRef<uint32>(0x15F73B0))[modelIdx];
     if (modelInfo && *reinterpret_cast<const uint8*>(modelInfo + 0x8C) && self[0x219])
     {
@@ -4081,10 +4079,10 @@ int32 __thiscall CPed::PreRenderPedInternal()
         return 0;
     }
 
-    if (Core::Hook::CallMethod<uint8>(0x9C3090, m_pPedUnk224))
+    if (Core::Hook::CallMethod<uint8>(0x9C3090, m_pPedIntelligence))
         *reinterpret_cast<uint32*>(self + 0xBF0) &= ~2u;
 
-    if (Core::Hook::CallMethod<uint8>(0x9C2680, m_pPedUnk224))
+    if (Core::Hook::CallMethod<uint8>(0x9C2680, m_pPedIntelligence))
     {
         *reinterpret_cast<uint32*>(self + 0xBF0) &= ~2u;
     }
@@ -4101,7 +4099,7 @@ int32 __thiscall CPed::PreRenderPedInternal()
         reinterpret_cast<SubBC0VFunc4Fn>((*reinterpret_cast<void***>(self + 0xBC0))[1])(self + 0xBC0);
     }
 
-    *reinterpret_cast<uint32*>(self + 0x29C) |= 0x1000000u;
+    m_nRagdollAnimFlags |= 0x1000000u;
     const int32 res = Core::Hook::CallMethod<int32>(0x9DFF40, this);
     if (!res)
         reinterpret_cast<VFunc204Fn>((*reinterpret_cast<void***>(this))[51])(this);
@@ -4137,11 +4135,11 @@ void* __thiscall CPed::PostRenderPedInternal()
 void __thiscall CPed::SyncRagdollToMatrix()
 {
     uint32* self = reinterpret_cast<uint32*>(this);
-    if (m_nPedUnk7C8 != 1)
+    if (m_nRagdollState != 1)
         return;
 
     const float* src = reinterpret_cast<const float*>(self[8]);
-    float* dst = reinterpret_cast<float*>(self[497]) + 4;
+    float* dst = reinterpret_cast<float*>(reinterpret_cast<uint32>(m_pRagdollInst)) + 4;
     dst[0] = src[0];
     dst[1] = src[1];
     dst[2] = src[2];
@@ -4155,7 +4153,7 @@ void __thiscall CPed::SyncRagdollToMatrix()
     dst[13] = src[13];
     dst[14] = src[14];
 
-    void* ragdollInst = reinterpret_cast<void*>(self[497]);
+    void* ragdollInst = reinterpret_cast<void*>(reinterpret_cast<uint32>(m_pRagdollInst));
     using RagVFunc16Fn = void(__thiscall*)(void*, uint32);
     using RagVFunc188Fn = void(__thiscall*)(void*);
     reinterpret_cast<RagVFunc16Fn>((*reinterpret_cast<void***>(ragdollInst))[4])(ragdollInst, self[8]);
@@ -4174,10 +4172,10 @@ void __thiscall CPed::SyncRagdollToMatrix()
     reinterpret_cast<RagVFunc188Fn>((*reinterpret_cast<void***>(ragdollInst))[47])(ragdollInst);
     Core::Hook::CallMethod<int32>(0x89C390, this, 2, 1);
 
-    const uint32 bound = *reinterpret_cast<const uint32*>(*reinterpret_cast<const uint32*>(self[497] + 4) + 0xC);
+    const uint32 bound = *reinterpret_cast<const uint32*>(*reinterpret_cast<const uint32*>(reinterpret_cast<uint32>(m_pRagdollInst) + 4) + 0xC);
     const float prevVal = *reinterpret_cast<const float*>(bound + 8);
     Core::Hook::CallMethod<int32>(0x688F70, reinterpret_cast<void*>(bound), 1);
-    const uint16 levelIdx = *reinterpret_cast<const uint16*>(self[497] + 8);
+    const uint16 levelIdx = *reinterpret_cast<const uint16*>(reinterpret_cast<uint32>(m_pRagdollInst) + 8);
     void* physLevel = Core::StaticRef<void*>(0x1666880);
     if (prevVal == *reinterpret_cast<const float*>(bound + 8))
         Core::Hook::CallMethod<int32>(0x6A3960, physLevel, levelIdx, 0);
@@ -4192,7 +4190,7 @@ int32 __thiscall CPed::RenderPed(int32 pass, int32 arg3, uint8 alpha, int32 arg5
     if (pass == 1 && Core::StaticRef<uint8>(0x1135BCC))
         return 0;
 
-    const int16 modelIdx = *reinterpret_cast<int16*>(self + 0x2E);
+    const int16 modelIdx = m_nModelIndex;
     const uint32 modelInfo = (&Core::StaticRef<uint32>(0x15F73B0))[modelIdx];
     using VFunc208Fn = uint32(__thiscall*)(CPed*);
     const uint32 info208 = reinterpret_cast<VFunc208Fn>((*reinterpret_cast<void***>(this))[52])(this);
@@ -4594,7 +4592,7 @@ bool __thiscall CPed::GetBonePositionUpdated(void* outPos, int32 boneId, bool fo
     if (forceUpdate && (self[0x29F] & 1u) == 0)
     {
         Core::Hook::CallMethod<int32>(0x9E1190, this);
-        *reinterpret_cast<uint32*>(self + 0x29C) |= 0x1000000u;
+        m_nRagdollAnimFlags |= 0x1000000u;
     }
     return GetBonePosition(outPos, boneId);
 }
@@ -4606,7 +4604,7 @@ bool __thiscall CPed::GetBoneMatrixUpdated(float* outMatrix, int32 boneId, bool 
     if (forceUpdate && (self[0x29F] & 1u) == 0)
     {
         Core::Hook::CallMethod<int32>(0x9E1190, this);
-        *reinterpret_cast<uint32*>(self + 0x29C) |= 0x1000000u;
+        m_nRagdollAnimFlags |= 0x1000000u;
     }
     return GetBoneMatrixOut(outMatrix, boneId);
 }
@@ -4620,7 +4618,7 @@ void* __thiscall CPed::GetHeadOrCenterPosition(void* outPos)
 
     if ((self[0xF4] & 0x40u) != 0 || (phInst && phInst == *reinterpret_cast<const uint32*>(self + 0x7C4)))
     {
-        const int16 modelIdx = *reinterpret_cast<const int16*>(self + 0x2E);
+        const int16 modelIdx = m_nModelIndex;
         const uint32 modelInfo = (&Core::StaticRef<uint32>(0x15F73B0))[modelIdx];
         using GetBoneIdxFn = int32(__thiscall*)(uint32, int32);
         auto getBoneIdx = reinterpret_cast<GetBoneIdxFn>((*reinterpret_cast<void***>(modelInfo))[14]);
@@ -4655,7 +4653,7 @@ int32 __thiscall CPed::GetClimbOrStepHeight()
     if (absUpZ <= 0.60000002f)
     {
         const uint32 phInst = self[14];
-        if (phInst && phInst == self[497])
+        if (phInst && phInst == reinterpret_cast<uint32>(m_pRagdollInst))
         {
             float footMat[16]{};
             GetBoneMatrixUpdated(footMat, 420, true);
@@ -5240,30 +5238,30 @@ void __thiscall CPed::UpdateSpeechState(int8 a2, int32 a3)
     {
         if (!v4)
         {
-            uint8* taskMgr = static_cast<uint8*>(m_pPedUnk224) + 0x44;
+            uint8* taskMgr = static_cast<uint8*>(m_pPedIntelligence) + 0x44;
             const int32 v5 = Core::Hook::CallMethod<int32>(0x9A9D30, m_pedSubObj2B0);
             if (v5 && Core::Hook::CallMethod<uint8>(0x89BD60, reinterpret_cast<void*>(v5)))
             {
                 if (!Core::Hook::CallMethod<int32>(0x426850, taskMgr, 1040) && !Core::Hook::CallMethod<int32>(0x426850, taskMgr, 1900))
-                    Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 55);
+                    Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 55);
                 else
-                    Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 53);
+                    Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 53);
             }
             else if (!Core::Hook::CallMethod<int32>(0x426850, taskMgr, 1040))
             {
-                Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 54);
+                Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 54);
             }
             else
             {
-                Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, 53);
+                Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, 53);
             }
 
-            void* intel = m_pPedIntelligence;
+            void* intel = m_pMoveBlend;
             void** vtbl = *reinterpret_cast<void***>(intel);
             reinterpret_cast<void(__thiscall*)(void*)>(vtbl[48 / 4])(intel);
         }
 
-        uint8* intel = static_cast<uint8*>(m_pPedIntelligence);
+        uint8* intel = static_cast<uint8*>(m_pMoveBlend);
         *reinterpret_cast<uint32*>(intel + 52) = Core::StaticRef<uint32>(0x11DDE74);
         *reinterpret_cast<int32*>(intel + 56) = a3;
         return;
@@ -5271,9 +5269,9 @@ void __thiscall CPed::UpdateSpeechState(int8 a2, int32 a3)
 
     if (v4)
     {
-        Core::Hook::CallMethod<int32>(0xBC9840, m_pPedIntelligence, *reinterpret_cast<int32*>(self + 2980));
+        Core::Hook::CallMethod<int32>(0xBC9840, m_pMoveBlend, m_nSpeechVoiceBank);
         Core::Hook::CallMethod<int32>(0x89F9C0, this);
-        uint8* intel = static_cast<uint8*>(m_pPedIntelligence);
+        uint8* intel = static_cast<uint8*>(m_pMoveBlend);
         *reinterpret_cast<uint32*>(intel + 52) = 0;
         *reinterpret_cast<int32*>(intel + 56) = -1;
         void** vtbl = *reinterpret_cast<void***>(intel);
@@ -5288,7 +5286,7 @@ bool __thiscall CPed::IsPerformingUnkAction()
         return false;
     if (!Core::Hook::CallMethod<uint8>(0x9AB6D0, m_pedSubObj2B0, static_cast<int8>(1)))
         return false;
-    const uint8* obj = reinterpret_cast<const uint8*>(Core::Hook::CallMethod<int32>(0x8A6530, m_pPedUnk224));
+    const uint8* obj = reinterpret_cast<const uint8*>(Core::Hook::CallMethod<int32>(0x8A6530, m_pPedIntelligence));
     return (*reinterpret_cast<const uint32*>(obj + 2292) & 0x60000u) != 0;
 }
 

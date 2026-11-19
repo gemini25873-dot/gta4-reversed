@@ -15,37 +15,78 @@ public:
     uint8  m_nPedUnk218;                   // +0x218
     uint8  m_nPedUnk219;                   // +0x219
     uint8  pad21A[2];                      // +0x21A..+0x21B
-    void*  m_pPedUnk21C;                   // +0x21C
-    uint8  m_bPedUnk220;                   // +0x220
+    void*  m_pPedData;                   // +0x21C
+    uint8  m_bHasPedData;                   // +0x220
     uint8  pad221[3];                      // +0x221..+0x223
-    void*  m_pPedUnk224;                   // +0x224
+    void*  m_pPedIntelligence;                   // +0x224
     CPlayerInfo* m_pPlayerInfo;            // +0x228
     void*  m_pPedUnk22C;                   // +0x22C
     uint8  pad230[8];                      // +0x230..+0x237
     uint8  m_pedSubObj238[0x28];           // +0x238..+0x25F
     uint32 m_nPedFlags;                    // +0x260
-    uint8  pad264[8];                      // +0x264..+0x26B
+    uint32 m_nPropFlags;               // +0x264
+    uint32 m_nPedUnk268;                   // +0x268
     uint32 m_nPedFlags2;                   // +0x26C
-    uint8  pad270[0x40];                   // +0x270..+0x2AF
+    uint32 m_nSpeechAnimFlags;                   // +0x270
+    uint8  pad274[0x28];                   // +0x274..+0x29B
+    uint32 m_nRagdollAnimFlags;                   // +0x29C
+    uint32 m_nRenderAnimFlags;                   // +0x2A0
+    uint8  pad2A4[0x0C];                   // +0x2A4..+0x2AF
     uint8  m_pedSubObj2B0[0x120];          // +0x2B0..+0x3CF
     uint8  m_pedSubObj3D0[0x1B0];          // +0x3D0..+0x57F
     uint8  m_pedSpeechAudio[0x210];        // +0x580..+0x78F
     uint8  m_audPlaceableTracker[0x30];    // +0x790..+0x7BF
-    void*  m_pPedUnk7C0;                   // +0x7C0
-    uint8  pad7C4[4];                      // +0x7C4..+0x7C7
-    int32  m_nPedUnk7C8;                   // +0x7C8
-    uint8  pad7CC[0x2B4];                  // +0x7CC..+0xA7F
+    void*  m_pAnimBlendInst;                   // +0x7C0
+    void*  m_pRagdollInst;                   // +0x7C4
+    int32  m_nRagdollState;                   // +0x7C8
+    uint32 m_nRagdollStateTimeMs;                   // +0x7CC
+    uint8  pad7D0[0x2A0];                  // +0x7D0..+0xA6F
+    uint8  m_nDummyConvertState;               // +0xA70
+    uint8  padA71[3];                      // +0xA71..+0xA73
+    float  m_fHeadLookBlend;                      // +0xA74
+    uint32 m_nHeadLookStartMs;               // +0xA78
+    uint8  m_bHeadLookActive;                // +0xA7C
+    uint8  padA7D[3];                      // +0xA7D..+0xA7F
     int32  m_nUnkA80;                      // +0xA80
     int32  m_nPedState;                    // +0xA84
     uint8  padA88[8];                      // +0xA88..+0xA8F
-    void*  m_pPedIntelligence;             // +0xA90
-    uint8  padA94[0xAC];                   // +0xA94..+0xB3F
+    void*  m_pMoveBlend;             // +0xA90
+    uint8  padA94[0x1C];                   // +0xA94..+0xAAF
+    float  m_fCurrentHeading;              // +0xAB0
+    float  m_fDesiredHeading;              // +0xAB4
+    float  m_fHeadingChangeRate;           // +0xAB8
+    uint8  padABC[4];                      // +0xABC..+0xABF
+    CEntity* m_pGroundEntity;              // +0xAC0
+    uint8  padAC4[0x0C];                   // +0xAC4..+0xACF
+    CVector m_vecGroundContactPos;         // +0xAD0..+0xADB
+    uint8  padADC[4];                      // +0xADC..+0xADF
+    CVector m_vecPrevPos;                  // +0xAE0..+0xAEB
+    uint8  padAEC[4];                      // +0xAEC..+0xAEF
+    CVector m_vecUnkAF0;                   // +0xAF0..+0xAFB
+    uint8  padAFC[0x14];                   // +0xAFC..+0xB0F
+    CVector m_vecGroundNormal;             // +0xB10..+0xB1B
+    uint8  padB1C[4];                      // +0xB1C..+0xB1F
+    float  m_fGroundZ;                     // +0xB20
+    float  m_fGroundDeltaZ;                // +0xB24
+    float  m_fGroundPrevZ;                      // +0xB28
+    uint8  padB2C[4];                      // +0xB2C..+0xB2F
+    uint32 m_nGroundContactTimeMs;                      // +0xB30
+    float  m_fGroundSlopeTimer;                      // +0xB34
+    float  m_fPedRadius;                      // +0xB38
+    uint8  padB3C[4];                      // +0xB3C..+0xB3F
     CVehicle* m_pMyVehicle;                // +0xB40
-    uint32 m_nPedUnkB44[18];               // +0xB44..+0xB8B
-    uint8  padB8C[8];                      // +0xB8C..+0xB93
+    uint32 m_voiceData[18];               // +0xB44..+0xB8B
+    uint32 m_nVoiceState;                      // +0xB8C
+    int32  m_nMoveState;                   // +0xB90
     uint32 m_nPedUnkB94;                   // +0xB94
     uint32 m_nPedUnkB98;                   // +0xB98
-    uint8  padB9C[0x24];                   // +0xB9C..+0xBBF
+    uint8  padB9C[8];                      // +0xB9C..+0xBA3
+    int32  m_nSpeechVoiceBank;             // +0xBA4
+    uint8  padBA8[4];                      // +0xBA8..+0xBAB
+    int32  m_nSpeechId;                    // +0xBAC
+    int32  m_nSubSpeechId;                 // +0xBB0
+    int32  m_nVoiceGroup;                  // +0xBB4
+    uint8  padBB8[8];                      // +0xBB8..+0xBBF
     uint8  m_pedSubObjBC0[0x1D4];          // +0xBC0..+0xD93
     int16  m_nPedUnkD94;                   // +0xD94
     uint8  padD96[2];                      // +0xD96..+0xD97
@@ -86,9 +127,9 @@ public:
     //   +0x2A0 (uint32)       : flags (bit 0x8000) [0x89CC30]
     //   +0x7B0 (float)        : speech/audio timer 1 (decayed by frame delta) [0x89D640]
     //   +0x7B4 (float)        : speech/audio timer 2 (decayed by frame delta) [0x89D640]
-    //   +0x7C0 (void*)        : m_pPedUnk7C0 (back-pointer at +0x0C, vtbl+0x08) [0x89C350, 0x89C560]
-    //   +0x7C4 (void*)        : m_pPedUnk7C4 (back-pointer at +0x0C, vtbl+0x08/+0x10, word +0x08) [0x89C2C0, 0x89C370, 0x89C560]
-    //   +0x7C8 (int32)        : m_nPedUnk7C8 [0x89C390]
+    //   +0x7C0 (void*)        : m_pAnimBlendInst (back-pointer at +0x0C, vtbl+0x08) [0x89C350, 0x89C560]
+    //   +0x7C4 (void*)        : m_pRagdollInst (back-pointer at +0x0C, vtbl+0x08/+0x10, word +0x08) [0x89C2C0, 0x89C370, 0x89C560]
+    //   +0x7C8 (int32)        : m_nRagdollState [0x89C390]
     //   +0x7CC (uint32)       : timestamp (game timer ms) when +0x7C8 was set [0x89C390]
     //   +0xA70 (uint8)        : state byte (checked == 2) [0x89C460]
     //   +0xA74 (int32/float)  : value + timestamped blend state [0x89D040, 0x89D0E0]
@@ -271,7 +312,7 @@ public:
 //       0x8AB880 (__cdecl UpdatePedBuckets), 0x8AB9C0 (ComputeWeaponBoneTransform),
 //       0x8AC1E0 (Dtor), 0x8AC540 (ProcessAttachment)
 //   * 13 non-CPed functions skipped:
-//     - 0x8A6530 (m_pPedUnk224 / CPedIntelligence method)
+//     - 0x8A6530 (m_pPedIntelligence / CPedIntelligence method)
 //     - 0x8A6660 (task/intelligence method)
 //     - 0x8A6750 (global ped subsystem shutdown)
 //     - 0x8A9310 (CPedSaveData::ApplyToPed, `this` is 192-byte save struct)
@@ -281,13 +322,13 @@ public:
 //
 // Discovered CPed field offsets in Slice 4:
 //   +0x219 (m_nPedUnk219)  : uint8  m_bIsPlayer (checked throughout Slice 4)
-//   +0x21C (m_pPedUnk21C)  : +0x12C = int32 m_nPedType (used in 0x8A7740)
-//   +0x224 (m_pPedUnk224)  : CPedIntelligence/task manager (+0x44 = 5 task slots)
+//   +0x21C (m_pPedData)  : +0x12C = int32 m_nPedType (used in 0x8A7740)
+//   +0x224 (m_pPedIntelligence)  : CPedIntelligence/task manager (+0x44 = 5 task slots)
 //   +0x264 (pad264[0])     : uint32 flags (bit 0x8000 = weapon/prop attached; bit 0x40, 0x20000)
 //   +0x7BC                 : void*  ragdoll/frag helper
-//   +0x7C0 (m_pPedUnk7C0)  : void*  animated phInst
+//   +0x7C0 (m_pAnimBlendInst)  : void*  animated phInst
 //   +0x7C4                 : void*  ragdoll phInst
-//   +0x7C8 (m_nPedUnk7C8)  : int32  ragdoll state (1, 2, 3, 6)
+//   +0x7C8 (m_nRagdollState)  : int32  ragdoll state (1, 2, 3, 6)
 //   +0x7CC                 : uint32 ragdoll state timestamp (ms)
 //   +0xAB0                 : float  m_fCurrentHeading
 //   +0xAB4                 : float  m_fDesiredHeading
@@ -362,8 +403,8 @@ bool   __thiscall AttachWeaponOrProp(int32 arg);
     // Discovered CPed field notes (offsets relative to CPed*):
     //   +0x266 (int16)        : flags (bit 1 checked in 0x89E1F0)
     //   +0x2A0 (uint32)       : flags (bit 0x8000, bit 0x100/0x200/0x400/0x80/0x40/0x20)
-    //   +0x7C0 (void*)        : m_pPedUnk7C0
-    //   +0x7C4 (void*)        : m_pPedUnk7C4
+    //   +0x7C0 (void*)        : m_pAnimBlendInst
+    //   +0x7C4 (void*)        : m_pRagdollInst
     //   +0xA70 (uint8)        : state byte (2, 3) [0x89E1F0, 0x89EC20, 0x89F9C0]
     //   +0xB90 (int32)        : state/counter [0x89FE30, 0x8A07E0, 0x8A08A0]
     //   +0xB94 (uint32)       : m_nPedUnkB94 [0x89E660]
@@ -413,7 +454,7 @@ bool   __thiscall AttachWeaponOrProp(int32 arg);
     //   0x89E690: non-CPed (this[2] - this[5] on small helper struct)
     //   0x89E6A0: 8-byte __stdcall wrapper to CTaskSimpleMoveDoNothing::DeletingDtor (0x8AA540)
     //   0x89E6B0: non-CPed (CMatrix orthonormalization, `this` is float* matrix)
-    //   0x89EA80, 0x89EAB0: non-CPed (CPedIntelligence / m_pPedUnk224 methods)
+    //   0x89EA80, 0x89EAB0: non-CPed (CPedIntelligence / m_pPedIntelligence methods)
     //   0x89ED00: custom-register CRT SSE2 calls (0xD112E3, 0xD1112B taking xmm0) & stack-matrix ecx call (0x441ED0)
     //   0x89F390: lost x87 st7 return assignment from 0xA4E780 in decompilation
 // --- Slice 7 ---
@@ -502,7 +543,7 @@ bool   __thiscall ProcessAnimMoveAndTurn(int32 animData, float* outWeight1, floa
 //   - 0x8AC540 (ProcessAttachment: SSE2 math omits xmm args; 0x5BE050/0x513430/0xA47750 omit ecx)
 //
 // - 11 non-CPed functions skipped:
-//   - 0x8A6530 (CPedIntelligence / m_pPedUnk224 method)
+//   - 0x8A6530 (CPedIntelligence / m_pPedIntelligence method)
 //   - 0x8A6660 (task/intelligence method)
 //   - 0x8A9310 (CPedSaveStructure::ApplyToPed)
 //   - 0x8AA540 (CTaskSimpleMoveDoNothing::DeletingDtor)
@@ -523,15 +564,45 @@ static int32 __stdcall SetTaskBit96_B(int32 a1, int32 bit);
 VALIDATE_SIZE(CPed, 0xF00);
 VALIDATE_OFFSET(CPed, m_bIsDead, 0x210);
 VALIDATE_OFFSET(CPed, m_fPedHealth, 0x214);
-VALIDATE_OFFSET(CPed, m_pPedUnk21C, 0x21C);
+VALIDATE_OFFSET(CPed, m_pPedData, 0x21C);
 VALIDATE_OFFSET(CPed, m_nPedFlags, 0x260);
 VALIDATE_OFFSET(CPed, m_nPedFlags2, 0x26C);
 VALIDATE_OFFSET(CPed, m_pedSpeechAudio, 0x580);
 VALIDATE_OFFSET(CPed, m_audPlaceableTracker, 0x790);
 VALIDATE_OFFSET(CPed, m_nUnkA80, 0xA80);
 VALIDATE_OFFSET(CPed, m_nPedState, 0xA84);
-VALIDATE_OFFSET(CPed, m_pPedIntelligence, 0xA90);
+VALIDATE_OFFSET(CPed, m_pMoveBlend, 0xA90);
 VALIDATE_OFFSET(CPed, m_pPlayerInfo, 0x228);
 VALIDATE_OFFSET(CPed, m_pMyVehicle, 0xB40);
 VALIDATE_OFFSET(CPed, m_nPedUnkD94, 0xD94);
 VALIDATE_OFFSET(CPed, m_fPedUnkE50, 0xE50);
+VALIDATE_OFFSET(CPed, m_nPropFlags, 0x264);
+VALIDATE_OFFSET(CPed, m_nSpeechAnimFlags, 0x270);
+VALIDATE_OFFSET(CPed, m_nRagdollAnimFlags, 0x29C);
+VALIDATE_OFFSET(CPed, m_nRenderAnimFlags, 0x2A0);
+VALIDATE_OFFSET(CPed, m_pRagdollInst, 0x7C4);
+VALIDATE_OFFSET(CPed, m_nRagdollStateTimeMs, 0x7CC);
+VALIDATE_OFFSET(CPed, m_nDummyConvertState, 0xA70);
+VALIDATE_OFFSET(CPed, m_fHeadLookBlend, 0xA74);
+VALIDATE_OFFSET(CPed, m_nHeadLookStartMs, 0xA78);
+VALIDATE_OFFSET(CPed, m_bHeadLookActive, 0xA7C);
+VALIDATE_OFFSET(CPed, m_fCurrentHeading, 0xAB0);
+VALIDATE_OFFSET(CPed, m_fDesiredHeading, 0xAB4);
+VALIDATE_OFFSET(CPed, m_fHeadingChangeRate, 0xAB8);
+VALIDATE_OFFSET(CPed, m_pGroundEntity, 0xAC0);
+VALIDATE_OFFSET(CPed, m_vecGroundContactPos, 0xAD0);
+VALIDATE_OFFSET(CPed, m_vecPrevPos, 0xAE0);
+VALIDATE_OFFSET(CPed, m_vecUnkAF0, 0xAF0);
+VALIDATE_OFFSET(CPed, m_vecGroundNormal, 0xB10);
+VALIDATE_OFFSET(CPed, m_fGroundZ, 0xB20);
+VALIDATE_OFFSET(CPed, m_fGroundDeltaZ, 0xB24);
+VALIDATE_OFFSET(CPed, m_fGroundPrevZ, 0xB28);
+VALIDATE_OFFSET(CPed, m_nGroundContactTimeMs, 0xB30);
+VALIDATE_OFFSET(CPed, m_fGroundSlopeTimer, 0xB34);
+VALIDATE_OFFSET(CPed, m_fPedRadius, 0xB38);
+VALIDATE_OFFSET(CPed, m_nVoiceState, 0xB8C);
+VALIDATE_OFFSET(CPed, m_nMoveState, 0xB90);
+VALIDATE_OFFSET(CPed, m_nSpeechVoiceBank, 0xBA4);
+VALIDATE_OFFSET(CPed, m_nSpeechId, 0xBAC);
+VALIDATE_OFFSET(CPed, m_nSubSpeechId, 0xBB0);
+VALIDATE_OFFSET(CPed, m_nVoiceGroup, 0xBB4);
