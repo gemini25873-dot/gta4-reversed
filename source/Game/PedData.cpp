@@ -100,7 +100,7 @@ void __thiscall CPedData::Dtor()
 }
 
 // 0xA66860
-void __thiscall CPedData::UpdateLodFlags(CPed* ped)
+uint8 __thiscall CPedData::UpdateLodFlags(CPed* ped)
 {
     uint8* self = reinterpret_cast<uint8*>(this);
     const uint8* pedBytes = reinterpret_cast<const uint8*>(ped);
@@ -136,7 +136,7 @@ void __thiscall CPedData::UpdateLodFlags(CPed* ped)
                 }
             }
 
-            uint8* playerVeh = Core::Hook::Call<uint8*>(0x817F80, 0);
+            uint8* playerVeh = Core::Hook::Call<uint8*>(0x817F80);
             if (playerVeh != nullptr) {
                 if (*reinterpret_cast<CPed* const*>(playerVeh + 0xFA0) == ped) {
                     bPlayerDriver = true;
@@ -166,7 +166,7 @@ void __thiscall CPedData::UpdateLodFlags(CPed* ped)
             const float vehMult = Core::StaticRef<float>(0xF36D90);
             scale = baseMult * vehMult;
             if (bVehType1 && Core::StaticRef<int32>(0x10F8044) == 1) {
-                scale = (vehMult + Core::StaticRef<float>(0xD5829C)) * Core::StaticRef<float>(0xF12F6C);
+                scale = (vehMult + 8.0f) * Core::StaticRef<float>(0xF12F6C);
             }
         }
     } else {
@@ -181,14 +181,14 @@ void __thiscall CPedData::UpdateLodFlags(CPed* ped)
     const int32 lodSetting = flag6220F0
         ? Core::StaticRef<int32>(0xFDCEA4)
         : Core::StaticRef<int32>(0xFDCEAC);
-    float lodDistMult = static_cast<float>(lodSetting) * Core::StaticRef<float>(0xD8CCE8);
+    float lodDistMult = static_cast<float>(lodSetting) * 0.00078125001f;
 
     if ((Core::StaticRef<int32>(0x10D0170) == 1
-         || Core::StaticRef<int32>(0x10E1984) != Core::StaticRef<int32>(0xE3447C)
+         || Core::StaticRef<int32>(0x10E1984) != -1
          || Core::StaticRef<int32>(0xF0E4A0) == 0x12)
         && Core::StaticRef<int32>(0x10D01A4) != 0)
     {
-        lodDistMult = Core::StaticRef<float>(0xDCB2A4);
+        lodDistMult = 2.0f;
     }
 
     bool bit3 = (dist <= lodDistMult * scale);
@@ -209,6 +209,7 @@ void __thiscall CPedData::UpdateLodFlags(CPed* ped)
 
     uint8 packed = (bit5 ? 0x20u : 0u) | (bit4 ? 0x10u : 0u) | (bit3 ? 0x08u : 0u);
     self[0x72] = (self[0x72] & 0xC7u) | packed;
+    return self[0x72];
 }
 
 // 0xA66B20

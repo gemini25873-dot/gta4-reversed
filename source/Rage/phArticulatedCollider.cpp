@@ -100,22 +100,23 @@ namespace rage
 
     float* phArticulatedCollider::CopyLinkMatrix3x3(float* outMat, int32 componentIdx, size_t linkMatOffset)
     {
-        const auto* inst = reinterpret_cast<const uint8*>(m_pInstance);
-        const auto* archetype = *reinterpret_cast<const uint8* const*>(inst + 0x04);
-        const auto* bound = *reinterpret_cast<const uint8* const*>(archetype + 0x0C);
-        const uint16 numBounds = *reinterpret_cast<const uint16*>(bound + 0x92);
-
-        const auto* body = reinterpret_cast<const int32*>(m_pBody);
-        const int32 numLinks = body[0];
-        const auto* componentToLink = static_cast<const int32*>(m_aComponentToLink.m_pData);
-
         int32 linkIdx = 0;
-        if (componentIdx >= 0 && componentIdx < static_cast<int32>(numBounds))
+        if (componentIdx >= 0)
         {
-            const int32 mapped = componentToLink[componentIdx];
-            if (mapped >= 0 && mapped < numLinks)
+            const auto* inst = reinterpret_cast<const uint8*>(m_pInstance);
+            const auto* archetype = *reinterpret_cast<const uint8* const*>(inst + 0x04);
+            const auto* bound = *reinterpret_cast<const uint8* const*>(archetype + 0x0C);
+            const uint16 numBounds = *reinterpret_cast<const uint16*>(bound + 0x92);
+            if (componentIdx < static_cast<int32>(numBounds))
             {
-                linkIdx = mapped;
+                const auto* body = reinterpret_cast<const int32*>(m_pBody);
+                const int32 numLinks = body[0];
+                const auto* componentToLink = static_cast<const int32*>(m_aComponentToLink.m_pData);
+                const int32 mapped = componentToLink[componentIdx];
+                if (mapped >= 0 && mapped < numLinks)
+                {
+                    linkIdx = mapped;
+                }
             }
         }
 

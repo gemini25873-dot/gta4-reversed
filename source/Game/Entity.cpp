@@ -432,7 +432,7 @@ void __thiscall CEntity::PruneReferences()
 void __cdecl CEntity::PruneAllImportantReferences()
 {
     CEntity* playerPed = Core::Hook::Call<CEntity*>(0x817F40);
-    CEntity* playerVehicle = Core::Hook::Call<CEntity*>(0x817F80, 0);
+    CEntity* playerVehicle = Core::Hook::Call<CEntity*>(0x817F80);
 
     if (playerVehicle)
         playerVehicle->ResolveReferences();
@@ -1081,6 +1081,7 @@ void __thiscall CEntity::Process2dEffectsPtfx()
                             attachParent->m_nFlags2 |= 0x100000u;
                     }
                 }
+                break;
             }
         }
     next:
@@ -1088,7 +1089,7 @@ void __thiscall CEntity::Process2dEffectsPtfx()
     }
 }
 
-void __cdecl CEntity::TransformPoint2D(CVector* out, const float* posHeading, const CVector* offset)
+const CVector* __cdecl CEntity::TransformPoint2D(CVector* out, const float* posHeading, const CVector* offset)
 {
     const double heading = static_cast<double>(posHeading[3]);
     const float c = static_cast<float>(std::cos(heading));
@@ -1097,6 +1098,7 @@ void __cdecl CEntity::TransformPoint2D(CVector* out, const float* posHeading, co
     out->x = offset->x * c - offset->y * s + posHeading[0];
     out->y = offset->y * c + offset->x * s + posHeading[1];
     out->z = posHeading[2] + offset->z;
+    return offset;
 }
 
 bool __thiscall CEntity::IsInArea2D(float x1, float y1, float x2, float y2) const
@@ -1363,7 +1365,7 @@ float* __thiscall CEntity::GetBoundCentreAndRadius(float* out) const
     return out;
 }
 
-void __thiscall CEntity::CalcBoundCentreAndRadius(float* out) const
+float* __thiscall CEntity::CalcBoundCentreAndRadius(float* out) const
 {
     const CBaseModelInfo* mi = CModelInfo::ms_modelInfoPtrs[m_nModelIndex];
     const float* src = reinterpret_cast<const float*>(mi) + 4; // +0x10..+0x1C
@@ -1380,6 +1382,7 @@ void __thiscall CEntity::CalcBoundCentreAndRadius(float* out) const
     {
         TransformPoint2D(reinterpret_cast<CVector*>(out), &m_vecPos.x, &localPos);
     }
+    return out;
 }
 
 double __thiscall CEntity::GetBoundSphere(float* out) const

@@ -308,7 +308,7 @@ float __thiscall CPed::GetUnkA74TimerProgress()
 
     const uint32 start = m_nHeadLookStartMs;
     const uint32 now = Core::StaticRef<uint32>(0x11DDE74);
-    if (now >= start && (now - start) <= 500u)
+    if (now == start + 500u)
         return static_cast<float>(static_cast<double>(now) - static_cast<double>(start)) * 0.0020000001f;
 
     m_bHeadLookActive = 0;
@@ -1044,7 +1044,7 @@ int32 __thiscall CPed::ResetRagdollIfActive()
             void** vtbl = *reinterpret_cast<void***>(tail);
             if (reinterpret_cast<GetTaskIdFn>(vtbl[3])(tail) == 218)
             {
-                Core::Hook::CallMethod<void>(0xABCFD0, this, 1);
+                Core::Hook::CallMethod<void>(0xABCFD0, tail, this, 1);
                 return Core::Hook::CallMethod<int32>(0xA476B0, this);
             }
         }
@@ -1929,7 +1929,7 @@ int32 __thiscall CPed::ProcessSpeech89D6C0()
         subObj,
         uint32(0),
         int32(4),
-        reinterpret_cast<void*>(Core::Rebase(0x1000000)),
+        0x01000000u,
         int8(1),
         &v4,
         v7,
@@ -2572,7 +2572,7 @@ bool __thiscall CPed::HasLineOfSightToEntity(const CEntity* target, int8 skipAng
     if (entityType == 3 || entityType == 6)
         endPos[2] += 0.75f;
 
-    return Core::Hook::Call<int32>(0x996D80, startPos, endPos, 0, losResult, 134, 1, 0, 2) == 0;
+    return Core::Hook::Call<int32>(0x996D80, startPos, endPos, 0, losResult, 134, 1, 0, 2, 4) == 0;
 }
 
 int32 __thiscall CPed::ProcessPedSpeechAndState()
@@ -3102,8 +3102,14 @@ int8 __thiscall CPed::UpdateMovementAndSpeech()
     ProcessPedSpeechAndState();
 
     auto* objA90 = reinterpret_cast<uint8*>(m_pMoveBlend);
+    void** vtable = (reinterpret_cast<uintptr_t>(objA90) >= 0x10000u) ? *reinterpret_cast<void***>(objA90) : nullptr;
+    void* fn1 = (reinterpret_cast<uintptr_t>(vtable) >= 0x10000u) ? vtable[1] : nullptr;
+    extern void ValidateAndRecordPedMoveBlend(const void* ped, const void* objA90, const void* vtable, const void* fn1);
+    ValidateAndRecordPedMoveBlend(this, objA90, vtable, fn1);
+    if (!fn1)
+        return static_cast<int8>(m_nMoveState);
     using Vtbl1Fn = void(__thiscall*)(void*);
-    reinterpret_cast<Vtbl1Fn>((*reinterpret_cast<void***>(objA90))[1])(objA90);
+    reinterpret_cast<Vtbl1Fn>(fn1)(objA90);
 
     const float vx = *reinterpret_cast<const float*>(objA90 + 4);
     const float vy = *reinterpret_cast<const float*>(objA90 + 8);
@@ -3239,7 +3245,7 @@ bool __cdecl CPed::ProbeGroundCircle(float* origin, float* outMinZ, float* outMa
             outNormal[2] = static_cast<int32>(probe[10]);
             outNormal[3] = static_cast<int32>(probe[11]);
             hitAny = true;
-            *outMaterial = probe[17];
+            *outMaterial = probe[18];
         }
 
         angle += 6.2831855f / steps;
@@ -4228,8 +4234,8 @@ int32 __thiscall CPed::RenderPed(int32 pass, int32 arg3, uint8 alpha, int32 arg5
         {
             if (void* cmdMem = Core::Hook::Call<void*>(0x7BDD80, 944, 0))
             {
-                const int8 b91 = static_cast<int8>(self[0x5B]);
-                const int8 c1 = static_cast<int8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
+                const uint8 b91 = self[0x5B];
+                const uint8 c1 = static_cast<uint8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
                 const int32 skelData = Core::Hook::CallMethod<int32>(0x447A20, this);
                 drawCmd = Core::Hook::CallMethod<int32>(0x7C2B00, cmdMem, static_cast<int32>(modelIdx), *reinterpret_cast<int32*>(self + 0xEA8), skelData, pass, static_cast<int32>(alpha), b91, c1, arg3, fVal, 0);
             }
@@ -4249,10 +4255,10 @@ int32 __thiscall CPed::RenderPed(int32 pass, int32 arg3, uint8 alpha, int32 arg5
             if (void* cmdMem = Core::Hook::Call<void*>(0x7BDD80, 160, 0))
             {
                 const uint32 flags28 = (*reinterpret_cast<const uint32*>(self + 0x28) >> 28) & 0xFFFFFF01u;
-                const int8 b91 = static_cast<int8>(self[0x5B]);
-                const int8 c1 = static_cast<int8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
+                const uint8 b91 = self[0x5B];
+                const uint8 c1 = static_cast<uint8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
                 const int32 skelData = Core::Hook::CallMethod<int32>(0x447A20, this);
-                drawCmd = Core::Hook::CallMethod<int32>(0x7C2BF0, cmdMem, static_cast<int32>(modelIdx), *reinterpret_cast<int32*>(self + 0x21C), skelData, drawable, pass, static_cast<int32>(alpha), b91, c1, static_cast<int8>(flag8), arg3, 0, static_cast<int8>(flags28), fVal, extra);
+                drawCmd = Core::Hook::CallMethod<int32>(0x7C2BF0, cmdMem, static_cast<int32>(modelIdx), *reinterpret_cast<int32*>(self + 0x21C), skelData, drawable, pass, static_cast<int32>(alpha), b91, c1, static_cast<uint8>(flag8), arg3, 0, static_cast<uint8>(flags28), fVal, extra);
             }
             enqueueCmd = true;
         }
@@ -4260,9 +4266,9 @@ int32 __thiscall CPed::RenderPed(int32 pass, int32 arg3, uint8 alpha, int32 arg5
         {
             if (void* cmdMem = Core::Hook::Call<void*>(0x7BDD80, 28, 0))
             {
-                const int8 b91 = static_cast<int8>(self[0x5B]);
+                const uint8 b91 = self[0x5B];
                 const int32 skelData = Core::Hook::CallMethod<int32>(0x447A20, this);
-                drawCmd = Core::Hook::CallMethod<int32>(0x7C30E0, cmdMem, skelData, 0, static_cast<int8>(alpha), b91, arg3);
+                drawCmd = Core::Hook::CallMethod<int32>(0x7C30E0, cmdMem, skelData, 0, alpha, b91, arg3);
             }
             enqueueCmd = true;
         }
@@ -4278,10 +4284,10 @@ int32 __thiscall CPed::RenderPed(int32 pass, int32 arg3, uint8 alpha, int32 arg5
         if (void* cmdMem = Core::Hook::Call<void*>(0x7BDD80, 192, 0))
         {
             const uint32 flags28 = (*reinterpret_cast<const uint32*>(self + 0x28) >> 28) & 0xFFFFFF01u;
-            const int8 b91 = static_cast<int8>(self[0x5B]);
-            const int8 c1 = static_cast<int8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
+            const uint8 b91 = self[0x5B];
+            const uint8 c1 = static_cast<uint8>(Core::Hook::CallMethod<int32>(0x4479A0, this));
             const int32 skelData = Core::Hook::CallMethod<int32>(0x447A20, this);
-            cmd2 = Core::Hook::CallMethod<int32>(0x7C2D50, cmdMem, static_cast<int32>(modelIdx), skelData, *reinterpret_cast<int32*>(self + 0x21C) + 0x80, pass, static_cast<int32>(alpha), b91, c1, static_cast<int8>(flag8), arg3, static_cast<int8>(flags28));
+            cmd2 = Core::Hook::CallMethod<int32>(0x7C2D50, cmdMem, static_cast<int32>(modelIdx), skelData, *reinterpret_cast<int32*>(self + 0x21C) + 0x80, pass, static_cast<int32>(alpha), b91, c1, static_cast<uint8>(flag8), arg3, static_cast<uint8>(flags28));
         }
         Core::Hook::CallMethod<int32>(0x404E90, reinterpret_cast<void*>(cmd2));
     }
@@ -4320,7 +4326,7 @@ bool __thiscall CPed::TestLineOfSightToEntity(int32 entityA, int32 entityB)
     {
         const uint32 matB = *reinterpret_cast<const uint32*>(entityB + 0x20);
         const int32 posB = matB ? (matB + 0x30) : (entityB + 0x10);
-        if (!Core::Hook::Call<int32>(0x996D80, posB, entityA + 0x30, excludeList, probe, 142, 1, excludeCount, 0))
+        if (!Core::Hook::Call<int32>(0x996D80, posB, entityA + 0x30, excludeList, probe, 142, 1, excludeCount, 0, 4))
             return true;
     }
     return false;

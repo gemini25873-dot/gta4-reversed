@@ -111,7 +111,7 @@ public:
 
 
 
-    static void __cdecl TransformPoint2D(CVector* out, const float* posHeading, const CVector* offset);
+    static const CVector* __cdecl TransformPoint2D(CVector* out, const float* posHeading, const CVector* offset);
 
     bool __thiscall IsInArea2D(float x1, float y1, float x2, float y2) const;
     bool __thiscall IsInArea3D(float x1, float y1, float z1, float x2, float y2, float z2) const;
@@ -122,7 +122,7 @@ public:
     bool __thiscall CreateDrawHandler();
     float* __thiscall GetBoundRect(float* outRect) const;
     float* __thiscall GetBoundCentreAndRadius(float* out) const;
-    void __thiscall CalcBoundCentreAndRadius(float* out) const;
+    float* __thiscall CalcBoundCentreAndRadius(float* out) const;
     double __thiscall GetBoundSphere(float* out) const;
     bool __thiscall CheckDrawableAndUpdate();
     bool __thiscall IsInFrustum(int32 index);

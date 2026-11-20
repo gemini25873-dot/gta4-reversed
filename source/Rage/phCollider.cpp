@@ -251,6 +251,8 @@ namespace rage
     int32 __thiscall phCollider::SetUnk69D450(float dt)
     {
         auto* sleepObj = reinterpret_cast<int32*>(static_cast<uintptr_t>(m_nUnk18));
+        if (!sleepObj)
+            return 0;
         void** vtable = *reinterpret_cast<void***>(sleepObj);
         using CheckSleepFn = uint8(__thiscall*)(void*, float, float);
         using WakeFn = int32(__thiscall*)(void*);

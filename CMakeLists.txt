@@ -27,6 +27,8 @@ add_library(gta4_reversed SHARED
     source/Game/Ped.cpp
     source/Game/PedData.cpp
     source/Game/PedIntelligence.cpp
+    source/Game/PedMoveBlend.cpp
+    source/Game/PedAudio.cpp
     source/Game/Vehicle.cpp
     source/Game/Object.cpp
     source/Game/LoadingScreens.cpp

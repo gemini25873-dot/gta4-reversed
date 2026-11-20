@@ -31,7 +31,7 @@ public:
     // Slice 1 (0xA66720..0xA66C6F)
     CPedData* __thiscall Ctor();
     void __thiscall Dtor();
-    void __thiscall UpdateLodFlags(CPed* ped);
+    uint8 __thiscall UpdateLodFlags(CPed* ped);
     int32 __thiscall HasEntry3C() const;
     void* __thiscall GetEntry3C() const;
     int32 __thiscall HasSlotEntry(int32 index) const;

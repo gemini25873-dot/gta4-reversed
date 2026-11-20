@@ -561,14 +561,10 @@ void __thiscall CDynamicEntity::UpdateFragState()
                 uint16 idx = *reinterpret_cast<uint16*>(f + 0x8);
                 uint8* globalObj = *reinterpret_cast<uint8**>(Core::Rebase(0x1666880));
                 uint16 count = *reinterpret_cast<uint16*>(globalObj + 0x26);
-                if (idx < count)
+                if (idx >= count || ((*reinterpret_cast<uint8**>(globalObj + 0x70))[idx * 8 + 4] & 0x3))
                 {
-                    uint8* arr = *reinterpret_cast<uint8**>(globalObj + 0x70);
-                    if (arr[idx * 8 + 4] & 0x3)
-                    {
-                        m_nDynUnkF4 |= 0x28;
-                        return;
-                    }
+                    m_nDynUnkF4 |= 0x28;
+                    return;
                 }
             }
 
@@ -636,7 +632,7 @@ bool __thiscall CDynamicEntity::ShouldSkipDistanceCheck()
     }
 
     float thresh = static_cast<float>(Core::Hook::Call<double>(0x799240));
-    return distSq > thresh;
+    return thresh > distSq;
 }
 
 // 0x9E1460 (ret)

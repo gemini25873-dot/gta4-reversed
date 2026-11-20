@@ -188,7 +188,7 @@ void __cdecl CTimer::Update() {
         auto& statTimeMs = Core::StaticRef<uint32>(0x11DDF34);
         statTimeMs += static_cast<uint32>(static_cast<int64>(dtMs));
         Core::Hook::Call<void>(0x9655C0, 118, static_cast<float>(statTimeMs));
-        Core::Hook::Call<void>(0x962B90, 44, dtMs, scale);
+        Core::Hook::Call<void>(0x962B90, 44, dtMs);
 
         const uint32 remoteStatMs = static_cast<uint32>(static_cast<int64>(Core::Hook::Call<double>(0x9633E0, 44)));
         if (remoteStatMs < statTimeMs) {

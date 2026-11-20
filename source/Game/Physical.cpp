@@ -479,30 +479,30 @@ void __thiscall CPhysical::SetPhysUnk1E4(CPhysical* target)
         m_pPhysUnk1E4 = target;
         if (target)
             Core::Hook::CallMethod<void>(0x9E6550, target, &m_pPhysUnk1E4);
+
+        uint8* ent = static_cast<uint8*>(m_pPhysUnk1E4);
+        if (!ent)
+            return;
+
+        const uint32 type = (*reinterpret_cast<const uint32*>(ent + 0x28) >> 6) & 0xFu;
+        if (type == 2)
+            ent = *reinterpret_cast<uint8**>(ent + 0xFA0);
+        else if (type != 3)
+            return;
+
+        if (!ent || ent[0x219] == 0)
+            return;
+
+        uint8* sub = *reinterpret_cast<uint8**>(ent + 0x228);
+        if (!sub)
+            return;
+
+        const uint32 myType = (m_nFlags2 >> 6) & 0xFu;
+        if (myType == 3)
+            *reinterpret_cast<uint32*>(sub + 0x554) |= 4u;
+        else if (myType == 2)
+            *reinterpret_cast<uint32*>(sub + 0x554) |= 8u;
     }
-
-    uint8* ent = static_cast<uint8*>(m_pPhysUnk1E4);
-    if (!ent)
-        return;
-
-    const uint32 type = (*reinterpret_cast<const uint32*>(ent + 0x28) >> 6) & 0xFu;
-    if (type == 2)
-        ent = *reinterpret_cast<uint8**>(ent + 0xFA0);
-    else if (type != 3)
-        return;
-
-    if (!ent || ent[0x219] == 0)
-        return;
-
-    uint8* sub = *reinterpret_cast<uint8**>(ent + 0x228);
-    if (!sub)
-        return;
-
-    const uint32 myType = (m_nFlags2 >> 6) & 0xFu;
-    if (myType == 3)
-        *reinterpret_cast<uint32*>(sub + 0x554) |= 4u;
-    else if (myType == 2)
-        *reinterpret_cast<uint32*>(sub + 0x554) |= 8u;
 }
 
 // 0xA47AE0
@@ -794,7 +794,7 @@ void __thiscall CPhysical::AttachToEntitySimple(CPhysical* target, int16 targetB
 
     ActivatePhysics();
 
-    if ((m_nPhysUnk1E2 & 0x2000u) != 0)
+    if ((m_nPhysUnk1E2 & 0x20u) != 0)
     {
         uint8* constraint = Core::Hook::CallMethod<uint8*>(
             0x6B6990, phSim, offset, target->m_pPhysicsInst, m_pPhysicsInst, targetComp, myComp, 0.0f, 0);
@@ -808,7 +808,7 @@ void __thiscall CPhysical::AttachToEntitySimple(CPhysical* target, int16 targetB
         Core::Hook::CallMethod<void>(0x686AD0, target->m_pPhysicsInst, 0x2000u, true);
     }
 
-    if ((m_nPhysUnk1E2 & 0x4000u) != 0)
+    if ((m_nPhysUnk1E2 & 0x40u) != 0)
     {
         void* constraint = Core::Hook::CallMethod<void*>(
             0x6B6990, phSim, offset, target->m_pPhysicsInst, m_pPhysicsInst, targetComp, myComp, 0.0f, 0);
@@ -847,7 +847,7 @@ void __thiscall CPhysical::AttachToWorld(int16 myBone, uint16 attachFlags, const
     uint8* physMgr = *reinterpret_cast<uint8**>(Core::Rebase(0x1666884));
     void* phSim = *reinterpret_cast<void**>(physMgr + 8);
 
-    if ((m_nPhysUnk1E2 & 0x2000u) != 0)
+    if ((m_nPhysUnk1E2 & 0x20u) != 0)
     {
         uint8* constraint = Core::Hook::CallMethod<uint8*>(
             0x6B6830, phSim, worldPos, worldPos, m_pPhysicsInst, myComp, 0.0f, 0, 0);
@@ -867,7 +867,7 @@ void __thiscall CPhysical::AttachToWorld(int16 myBone, uint16 attachFlags, const
         }
     }
 
-    if ((m_nPhysUnk1E2 & 0x4000u) != 0)
+    if ((m_nPhysUnk1E2 & 0x40u) != 0)
     {
         void* constraint = Core::Hook::CallMethod<void*>(
             0x6B6830, phSim, worldPos, worldPos, m_pPhysicsInst, myComp, 0.0f, 1, 0);
@@ -959,7 +959,7 @@ void __thiscall CPhysical::RemoveFromPhysicsWorld()
 
     auto* instBytes = reinterpret_cast<uint8*>(m_pPhysicsInst);
     if ((*reinterpret_cast<uint16*>(instBytes + 0x0A) & 0x2000u) != 0)
-        Core::Hook::CallMethod<void>(0xA47600, this, m_pPhysicsInst);
+        RemoveInstConstraints(m_pPhysicsInst);
 
     const int32 instType = CallVFunc<int32>(m_pPhysicsInst, 1);
     if (instType != 3 && CallVFunc<int32>(m_pPhysicsInst, 1) < 13)
@@ -1099,12 +1099,10 @@ void __thiscall CPhysical::UpdateTransformFromPhysics(void* phInstPtr, bool skip
     auto* instBytes = reinterpret_cast<uint8*>(phInstPtr);
     const auto* instMat = reinterpret_cast<const CMatrix*>(instBytes + 0x10);
 
-    bool valid = IsFiniteFloat(instMat->up.x) && IsFiniteFloat(instMat->up.y) && IsFiniteFloat(instMat->up.z) &&
+    bool valid = IsFiniteFloat(instMat->right.x) && IsFiniteFloat(instMat->right.y) && IsFiniteFloat(instMat->right.z) &&
+                 IsFiniteFloat(instMat->up.x) && IsFiniteFloat(instMat->up.y) && IsFiniteFloat(instMat->up.z) &&
                  IsFiniteFloat(instMat->at.x) && IsFiniteFloat(instMat->at.y) && IsFiniteFloat(instMat->at.z) &&
-                 IsFiniteFloat(instMat->pos.x) && IsFiniteFloat(instMat->pos.y) && IsFiniteFloat(instMat->pos.z) &&
-                 IsFiniteFloat(*reinterpret_cast<const float*>(instBytes + 0x40)) &&
-                 IsFiniteFloat(*reinterpret_cast<const float*>(instBytes + 0x44)) &&
-                 IsFiniteFloat(*reinterpret_cast<const float*>(instBytes + 0x48));
+                 IsFiniteFloat(instMat->pos.x) && IsFiniteFloat(instMat->pos.y) && IsFiniteFloat(instMat->pos.z);
 
     if (valid)
     {
@@ -1162,13 +1160,13 @@ void __thiscall CPhysical::UpdateTransformFromPhysics(void* phInstPtr, bool skip
                         Core::Hook::CallMethod<void>(0x688F70, dynBound, 0);
 
                         if (CallVFunc<int32>(dynInst, 1) == 15 ||
-                            ((*reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(dynInst) + 0x60) >> 3) & 1u) != 0)
+                            ((*reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(dynInst) + 0x60) >> 3) & 1u) == 0)
                         {
-                            CallVFunc<void>(dynInst, 49);
+                            CallVFunc<void>(dynInst, 28);
                         }
                         else
                         {
-                            CallVFunc<void>(dynInst, 28);
+                            CallVFunc<void>(dynInst, 49);
                         }
 
                         if (oldZ != *reinterpret_cast<float*>(reinterpret_cast<uint8*>(dynBound) + 8))
@@ -1236,12 +1234,10 @@ void __thiscall CPhysical::ApplyImpactImpulse(
     if (magSq <= peakImpulse * peakImpulse && peakImpulse != 0.0f)
     {
         updatePeak = false;
-        void* attackerCol = Core::Hook::CallMethod<void*>(0x9E86F0, attacker);
-        const float m1 = CallVFunc<float>(attackerCol, 9);
-        void* selfCol = Core::Hook::CallMethod<void*>(0x9E86F0, this);
-        const float m2 = CallVFunc<float>(selfCol, 9);
-
-        if (magSq > (0.01f * 0.01f * m1 * m2))
+        void* selfArch = Core::Hook::CallMethod<void*>(0x9E86F0, this);
+        const float mass = CallVFunc<float>(selfArch, 9);
+        const float coeff = Core::StaticRef<float>(0xF35B78);
+        if (magSq > (coeff * coeff * mass * mass))
             totalImpulse += std::sqrt(magSq);
     }
 
@@ -1395,11 +1391,14 @@ double __thiscall CPhysical::CalcEffectiveMass(const CVector* dir, const CVector
         const float ry = pos->y - com->y;
         const float rz = pos->z - com->z;
 
-        const float cx = dir->y * rz - dir->z * ry;
+        // IDA: v11 = a2[2]*v5 - a2[1]*v6; v12 = a2[0]*v6 - a2[2]*v13; v14 = a2[1]*v13 - a2[0]*v5;
+        const float cx = dir->z * ry - dir->y * rz;
         const float cy = dir->x * rz - dir->z * rx;
         const float cz = dir->y * rx - dir->x * ry;
 
-        const float* invInertia = CallVFunc<const float*>(collider, 12);
+        // IDA: *(this[14] + 4) = m_pPhysicsInst->m_pArchetype (NOT collider!)
+        void* arch = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(m_pPhysicsInst) + 4);
+        const float* invInertia = CallVFunc<const float*>(arch, 12);
         const float ix = invInertia[0] * cx;
         const float iy = invInertia[1] * cy;
         const float iz = invInertia[2] * cz;
@@ -1409,8 +1408,8 @@ double __thiscall CPhysical::CalcEffectiveMass(const CVector* dir, const CVector
         const float tz = ry * ix - iy * rx;
 
         const float angTerm = dir->x * tx + dir->y * ty + dir->z * tz;
-        const float invMass = CallVFunc<float>(collider, 10);
-        return 1.0f / (invMass + angTerm);
+        const float invMass = CallVFunc<float>(arch, 10);
+        return 1.0 / (static_cast<double>(invMass) + static_cast<double>(angTerm));
     }
 
     if (m_pPhysicsInst)
@@ -1716,7 +1715,7 @@ void __thiscall CPhysical::AttachToEntity(CEntity* target, int16 targetBoneId, i
 
     if (((m_nPhysUnk1E2 >> 5) & 1) != 0)
     {
-        void* constraint = Core::Hook::CallMethod<void*>(0x6B69D0, physWorld, &pos2, &pos1, target->m_pPhysicsInst, m_pPhysicsInst, targetBoneIdx, selfBoneIdx, 0.0f, 1, 0);
+        void* constraint = Core::Hook::CallMethod<void*>(0x6B69D0, physWorld, &pos1, &pos2, target->m_pPhysicsInst, m_pPhysicsInst, targetBoneIdx, selfBoneIdx, 0.0f, 1, 0);
         if (constraint && breakStrength > 0.0f)
             *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(constraint) + 0x138) = breakStrength;
 
@@ -1726,7 +1725,7 @@ void __thiscall CPhysical::AttachToEntity(CEntity* target, int16 targetBoneId, i
 
     if (((m_nPhysUnk1E2 >> 6) & 1) != 0)
     {
-        void* constraint = Core::Hook::CallMethod<void*>(0x6B69D0, physWorld, &pos2, &pos1, target->m_pPhysicsInst, m_pPhysicsInst, targetBoneIdx, selfBoneIdx, 0.0f, 1, 0);
+        void* constraint = Core::Hook::CallMethod<void*>(0x6B69D0, physWorld, &pos1, &pos2, target->m_pPhysicsInst, m_pPhysicsInst, targetBoneIdx, selfBoneIdx, 0.0f, 1, 0);
         if (constraint)
             Core::Hook::CallMethod<void>(0x6FA810, constraint);
 
@@ -1761,25 +1760,17 @@ void __thiscall CPhysical::UpdateAttachRotation(const CVector* pos, const CVecto
         if ((constraint[0xB8] & 1) == 0 || !rot)
             continue;
 
-        const float sz = std::sin(rot->z);
-        const float cz = std::cos(rot->z);
-        const float sx = std::sin(rot->x);
-        const float cx = std::cos(rot->x);
-        const float sy = std::sin(rot->y);
-        const float cy = std::cos(rot->y);
+        const float sa = std::sin(rot->z);
+        const float ca = std::cos(rot->z);
+        const float sb = std::sin(rot->x);
+        const float cb = std::cos(rot->x);
+        const float sc = std::sin(rot->y);
+        const float cc = std::cos(rot->y);
 
         CMatrix rotMat{};
-        rotMat.right.x = sy * sz - cx * cz * cy;
-        rotMat.right.y = sy * cz + cx * sz * cy;
-        rotMat.right.z = -sx * cy;
-
-        rotMat.up.x = -sx * cz;
-        rotMat.up.y = sx * sz;
-        rotMat.up.z = cx;
-
-        rotMat.at.x = cy * sz + cx * cz * sy;
-        rotMat.at.y = cy * cz - cx * sz * sy;
-        rotMat.at.z = sx * sy;
+        rotMat.right = { cc * ca - sa * sb * sc, cc * sa + ca * sb * sc, -cb * sc };
+        rotMat.up    = { -sa * cb,               ca * cb,                sb };
+        rotMat.at    = { sc * ca + sa * sb * cc, sc * sa - ca * sb * cc, cb * cc };
 
         float quat[4]{};
         Core::Hook::CallMethod<void>(0x506DB0, quat, &rotMat);
@@ -1841,26 +1832,24 @@ void __thiscall CPhysical::ProcessAttach(uint32 flags)
                             attachMat.right = { 1.0f, 0.0f, 0.0f };
                             attachMat.up    = { 0.0f, 1.0f, 0.0f };
                             attachMat.at    = { 0.0f, 0.0f, 1.0f };
-                            attachMat.pos   = { 0.0f, 0.0f, 0.0f };
+                            attachMat.pos   = m_vecAttachOffset;
+                            attachMat.pad3  = *reinterpret_cast<const float*>(&m_nPhysPad1CC);
 
                             Core::Hook::CallMethod<void>(0x5BE050, &attachMat, m_vecAttachQuat);
 
-                            CMatrix worldMat = attachMat;
-                            worldMat.pos = m_vecAttachOffset;
-                            worldMat.pad3 = *reinterpret_cast<const float*>(&m_nPhysPad1CC);
-
-                            Core::Hook::CallMethod<void>(0x513430, &worldMat, &mat1);
-                            const CMatrix* targetFragMat = reinterpret_cast<const CMatrix*(__thiscall*)(void*)>((*reinterpret_cast<void***>(getTargetFrag(target)))[3])(getTargetFrag(target));
-                            Core::Hook::CallMethod<void>(0x513430, &worldMat, targetFragMat);
+                            void* curFrag = getTargetFrag(target);
+                            const CMatrix* targetFragMat = reinterpret_cast<const CMatrix*(__thiscall*)(void*)>((*reinterpret_cast<void***>(curFrag))[3])(curFrag);
+                            Core::Hook::CallMethod<void>(0x513430, &mat1, &attachMat);
+                            Core::Hook::CallMethod<void>(0x513430, &mat1, targetFragMat);
 
                             Core::Hook::CallMethod<void>(0x513430, &mat2, &attachMat);
-                            Core::Hook::CallMethod<void>(0x513430, &mat2, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(getTargetFrag(target)) + 0x10));
+                            Core::Hook::CallMethod<void>(0x513430, &mat2, reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(curFrag) + 0x10));
 
                             const float invDt = Core::StaticRef<float>(0x11DDE80);
                             CVector vel{};
-                            vel.x = (worldMat.pos.x - mat2.pos.x) * invDt;
-                            vel.y = (worldMat.pos.y - mat2.pos.y) * invDt;
-                            vel.z = (worldMat.pos.z - mat2.pos.z) * invDt;
+                            vel.x = (mat2.pos.x - mat1.pos.x) * invDt;
+                            vel.y = (mat2.pos.y - mat1.pos.y) * invDt;
+                            vel.z = (mat2.pos.z - mat1.pos.z) * invDt;
 
                             if (vel.x * vel.x + vel.y * vel.y + vel.z * vel.z > 900.0f)
                             {
@@ -1873,7 +1862,7 @@ void __thiscall CPhysical::ProcessAttach(uint32 flags)
                             Core::Hook::CallMethod<void>(0xA47750, this, &vel);
 
                             CMatrix deltaMat{};
-                            Core::Hook::CallMethod<void>(0x516970, &deltaMat, &mat2, &worldMat);
+                            Core::Hook::CallMethod<void>(0x516970, &deltaMat, &mat2, &mat1);
 
                             CVector4 axisAngle{};
                             Core::Hook::CallMethod<void>(0x5BE130, &deltaMat, &axisAngle);
@@ -1939,7 +1928,7 @@ void __thiscall CPhysical::ProcessAttach(uint32 flags)
         reinterpret_cast<void(__thiscall*)(CPhysical*)>(m_vftable[0x110 / 4])(this);
     }
 
-    if (Core::Hook::CallMethod<bool>(0x9E6F20, this))
+    if (!Core::Hook::CallMethod<bool>(0x9E6F20, this))
         Core::Hook::Call<void>(0xBC49F0, this);
 }
 
@@ -2220,11 +2209,11 @@ bool __thiscall CPhysical::CanBeDamaged(CEntity* inflictor, int32 weaponType, bo
     }
     else if (damageType == 4)
     {
-        if ((m_nPhysFlags118 & 0x80) == 0)
+        if ((m_nPhysFlags118 & 0x80) != 0)
             return false;
     }
 
-    if ((weaponType == 0x2E || weaponType == 0x31 || weaponType == 0x32) &&
+    if ((weaponType == 0x2E || weaponType == 0x31 || weaponType == 0x32 || weaponType == 0x36) &&
         (m_nPhysFlags118 & 0x100) != 0)
     {
         return false;
@@ -2304,7 +2293,7 @@ void __thiscall CPhysical::UpdateSubmersion()
         const bool aboveWater = (waterZ >= bottomZ);
         CVector p1 = { worldCenter.x, worldCenter.y, bottomZ };
         CVector p2 = { worldCenter.x, worldCenter.y, waterZ };
-        const bool blocked = Core::Hook::Call<bool>(0x9933E0, &p1, &p2, 0, 6, 0, 4);
+        const bool blocked = Core::Hook::Call<bool>(0x9933E0, &p1, &p2, 0, 6, 0);
         const bool submerged = (aboveWater && !blocked);
         const bool hasLowFlag = (m_nPhysFlags118 & 3u) != 0;
 

@@ -18,6 +18,8 @@
 #include "Game/PedIntelligence.h"
 #include "Game/Vehicle.h"
 #include "Game/Object.h"
+#include "Game/PedMoveBlend.h"
+#include "Game/PedAudio.h"
 #include "Game/LoadingScreens.h"
 #include "Game/World.h"
 #include "Game/WeaponInfo.h"
@@ -54,6 +56,7 @@
 #include "Tools/DebugMenu.h"
 
 #include <DbgHelp.h>
+#include <cstdarg>
 
 namespace {
     using SymSetOptionsFn              = DWORD(WINAPI*)(DWORD);
@@ -81,7 +84,73 @@ namespace {
         bool                       ready = false;
     } g_DbgHelp{};
 
+    struct ModuleRange {
+        uintptr_t start = 0;
+        uintptr_t end = 0;
+    };
+
     HMODULE g_SelfModule = nullptr;
+    ModuleRange g_GameRange{};
+    ModuleRange g_SelfRange{};
+
+    // Lock-free 32-entry breadcrumb ring buffer (zero heap allocations).
+    constexpr uint32 BREADCRUMB_COUNT = 32;
+    struct BreadcrumbEntry {
+        volatile LONG seq;
+        DWORD tick;
+        DWORD tid;
+        char text[160];
+    };
+    BreadcrumbEntry g_Breadcrumbs[BREADCRUMB_COUNT]{};
+    volatile LONG g_BreadcrumbWriteSeq = 0;
+
+    // Last observed CPed::UpdateMovementAndSpeech state for crash diagnostics.
+    volatile uint32 g_LastMoveBlendPed = 0;
+    volatile uint32 g_LastMoveBlendObj = 0;
+    volatile uint32 g_LastMoveBlendVtbl = 0;
+    volatile uint32 g_LastMoveBlendFn1 = 0;
+    volatile LONG   g_LastRecordedMoveBlendFn1 = 0;
+
+    ModuleRange GetModuleRange(HMODULE mod) {
+        ModuleRange r{};
+        if (!mod) {
+            return r;
+        }
+        const auto base = reinterpret_cast<uintptr_t>(mod);
+        const auto* dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(base);
+        if (dos->e_magic != IMAGE_DOS_SIGNATURE) {
+            return r;
+        }
+        const auto* nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+        if (nt->Signature != IMAGE_NT_SIGNATURE) {
+            return r;
+        }
+        r.start = base;
+        r.end = base + nt->OptionalHeader.SizeOfImage;
+        return r;
+    }
+
+    bool IsReadableMemory(uintptr_t addr, size_t size) {
+        if (addr < 0x10000u) {
+            return false;
+        }
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (!VirtualQuery(reinterpret_cast<LPCVOID>(addr), &mbi, sizeof(mbi))) {
+            return false;
+        }
+        if (mbi.State != MEM_COMMIT) {
+            return false;
+        }
+        if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS)) {
+            return false;
+        }
+        if (!(mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY |
+                             PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY))) {
+            return false;
+        }
+        const uintptr_t regionEnd = reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+        return (addr + size) <= regionEnd;
+    }
 
     void EnsureDbgHelpInitialized() {
         if (g_DbgHelp.triedInit) {
@@ -135,12 +204,29 @@ namespace {
 
     const char* GetExceptionName(DWORD code) {
         switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION:    return "Access Violation";
-        case EXCEPTION_ILLEGAL_INSTRUCTION: return "Illegal Instruction";
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:  return "Integer Divide by Zero";
-        case EXCEPTION_STACK_OVERFLOW:      return "Stack Overflow";
-        case EXCEPTION_PRIV_INSTRUCTION:    return "Privileged Instruction";
-        default:                            return "Unhandled Exception";
+        case EXCEPTION_ACCESS_VIOLATION:         return "Access Violation";
+        case EXCEPTION_IN_PAGE_ERROR:            return "In Page Error";
+        case EXCEPTION_ILLEGAL_INSTRUCTION:      return "Illegal Instruction";
+        case EXCEPTION_INT_DIVIDE_BY_ZERO:       return "Integer Divide by Zero";
+        case EXCEPTION_INT_OVERFLOW:             return "Integer Overflow";
+        case EXCEPTION_PRIV_INSTRUCTION:         return "Privileged Instruction";
+        case EXCEPTION_STACK_OVERFLOW:           return "Stack Overflow";
+        case 0xC0000409u:                        return "Stack Buffer Overrun (/GS)";
+        case 0xC0000374u:                        return "Heap Corruption";
+        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:    return "Array Bounds Exceeded";
+        case EXCEPTION_FLT_DENORMAL_OPERAND:     return "Float Denormal Operand";
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO:       return "Float Divide by Zero";
+        case EXCEPTION_FLT_INEXACT_RESULT:       return "Float Inexact Result";
+        case EXCEPTION_FLT_INVALID_OPERATION:    return "Float Invalid Operation";
+        case EXCEPTION_FLT_OVERFLOW:             return "Float Overflow";
+        case EXCEPTION_FLT_STACK_CHECK:          return "Float Stack Check";
+        case EXCEPTION_FLT_UNDERFLOW:            return "Float Underflow";
+        case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "Noncontinuable Exception";
+        case EXCEPTION_INVALID_DISPOSITION:      return "Invalid Disposition";
+        case EXCEPTION_DATATYPE_MISALIGNMENT:    return "Datatype Misalignment";
+        case EXCEPTION_BREAKPOINT:               return "Breakpoint";
+        case EXCEPTION_SINGLE_STEP:              return "Single Step";
+        default:                                 return "Unhandled Exception";
         }
     }
 
@@ -156,7 +242,81 @@ namespace {
     }
 }
 
-static void FormatAddressDetailed(uintptr_t addr, char* out, size_t outSize) {
+void RecordBreadcrumb(const char* fmt, ...) {
+    char msg[160]{};
+    va_list args;
+    va_start(args, fmt);
+    std::vsnprintf(msg, sizeof(msg), fmt, args);
+    va_end(args);
+
+    const LONG seq = InterlockedIncrement(&g_BreadcrumbWriteSeq);
+    const uint32 idx = static_cast<uint32>(seq - 1) & (BREADCRUMB_COUNT - 1);
+    BreadcrumbEntry& entry = g_Breadcrumbs[idx];
+    // Mark slot in-progress (0) while writing so concurrent readers skip torn entries.
+    InterlockedExchange(&entry.seq, 0);
+    entry.tick = GetTickCount();
+    entry.tid = GetCurrentThreadId();
+    std::memcpy(entry.text, msg, sizeof(entry.text));
+    entry.text[sizeof(entry.text) - 1] = '\0';
+    InterlockedExchange(&entry.seq, seq);
+}
+
+void ValidateAndRecordPedMoveBlend(const void* ped, const void* objA90, const void* vtable, const void* fn1) {
+    const uint32 pedU = static_cast<uint32>(reinterpret_cast<uintptr_t>(ped));
+    const uint32 objU = static_cast<uint32>(reinterpret_cast<uintptr_t>(objA90));
+    const uint32 vtblU = static_cast<uint32>(reinterpret_cast<uintptr_t>(vtable));
+    const uint32 fnU = static_cast<uint32>(reinterpret_cast<uintptr_t>(fn1));
+
+    g_LastMoveBlendPed = pedU;
+    g_LastMoveBlendObj = objU;
+    g_LastMoveBlendVtbl = vtblU;
+    g_LastMoveBlendFn1 = fnU;
+
+    const bool inGame = (g_GameRange.start != 0 && fnU >= g_GameRange.start && fnU < g_GameRange.end);
+    const bool inSelf = (g_SelfRange.start != 0 && fnU >= g_SelfRange.start && fnU < g_SelfRange.end);
+    const uint32 idaAddr = inGame ? static_cast<uint32>(0x400000u + (fnU - g_GameRange.start)) : 0u;
+    const bool near9AC = (idaAddr >= 0x9AC000u && idaAddr < 0x9AD000u);
+
+    if (!objA90 || !vtable || !fn1 || (!inGame && !inSelf) || near9AC) {
+        RecordBreadcrumb("ERR MoveBlend ped=%08X obj=%08X vtbl=%08X fn1=%08X IDA=%08X",
+            pedU, objU, vtblU, fnU, idaAddr);
+        Core::Log::Error(
+            "[Ped] Suspicious m_pMoveBlend in UpdateMovementAndSpeech: ped=0x%08X objA90=0x%08X vtable=0x%08X vtable[1]=0x%08X (IDA=0x%08X)",
+            pedU, objU, vtblU, fnU, idaAddr);
+        return;
+    }
+
+    if (static_cast<uint32>(g_LastRecordedMoveBlendFn1) != fnU) {
+        InterlockedExchange(&g_LastRecordedMoveBlendFn1, static_cast<LONG>(fnU));
+        RecordBreadcrumb("MoveBlend ped=%08X obj=%08X fn1=%08X", pedU, objU, fnU);
+    }
+}
+
+static void DumpBreadcrumbs() {
+    Core::Log::Error("=== RECENT BREADCRUMBS ===");
+    const LONG head = InterlockedCompareExchange(&g_BreadcrumbWriteSeq, 0, 0);
+    if (head <= 0) {
+        Core::Log::Error("  (none)");
+        return;
+    }
+    const LONG start = (head > static_cast<LONG>(BREADCRUMB_COUNT)) ? (head - static_cast<LONG>(BREADCRUMB_COUNT)) : 0;
+    for (LONG s = start; s < head; ++s) {
+        const uint32 idx = static_cast<uint32>(s) & (BREADCRUMB_COUNT - 1);
+        const BreadcrumbEntry& entry = g_Breadcrumbs[idx];
+        const LONG entrySeq = InterlockedCompareExchange(const_cast<volatile LONG*>(&entry.seq), 0, 0);
+        if (entrySeq == s + 1) {
+            Core::Log::Error("  [#%ld t=%lu tid=%lu] %s",
+                entrySeq, static_cast<unsigned long>(entry.tick), static_cast<unsigned long>(entry.tid), entry.text);
+        }
+    }
+}
+
+static bool FormatAddressDetailed(uintptr_t addr, char* out, size_t outSize) {
+    if (addr < 0x10000u) {
+        std::snprintf(out, outSize, "unknown");
+        return false;
+    }
+
     const uintptr_t gameBase = Core::GetBaseAddr();
     char modPart[160]{};
     HMODULE mod = nullptr;
@@ -178,6 +338,8 @@ static void FormatAddressDetailed(uintptr_t addr, char* out, size_t outSize) {
         }
     } else {
         std::snprintf(modPart, sizeof(modPart), "unknown");
+        std::snprintf(out, outSize, "%s", modPart);
+        return false;
     }
 
     if (g_DbgHelp.ready && mod && g_DbgHelp.pSymFromAddr) {
@@ -198,17 +360,54 @@ static void FormatAddressDetailed(uintptr_t addr, char* out, size_t outSize) {
                 }
             }
             std::snprintf(out, outSize, "%s -> %s+0x%llX%s", modPart, sym->Name, disp, linePart);
-            return;
+            return true;
         }
     }
 
     std::snprintf(out, outSize, "%s", modPart);
+    return true;
+}
+
+static void AnnotateValue(uint32 val, uint32 esp, char* out, size_t outSize) {
+    if (val == 0) {
+        std::snprintf(out, outSize, "NULL");
+        return;
+    }
+    if (val < 0x10000u) {
+        std::snprintf(out, outSize, "[NULL+0x%X]", val);
+        return;
+    }
+    if (esp >= 0x10000u) {
+        if (val >= esp && val < esp + 0x10000u) {
+            std::snprintf(out, outSize, "[STACK+0x%X]", val - esp);
+            return;
+        }
+        if (val < esp && (esp - val) <= 0x4000u) {
+            std::snprintf(out, outSize, "[STACK-0x%X]", esp - val);
+            return;
+        }
+    }
+    if (FormatAddressDetailed(val, out, outSize)) {
+        return;
+    }
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (VirtualQuery(reinterpret_cast<LPCVOID>(val), &mbi, sizeof(mbi)) && mbi.State == MEM_COMMIT) {
+        std::snprintf(out, outSize, "[MEM prot=0x%02lX]", static_cast<unsigned long>(mbi.Protect));
+        return;
+    }
+    std::snprintf(out, outSize, "unmapped");
 }
 
 static LONG WINAPI CrashHandler(EXCEPTION_POINTERS* ex) {
     if (!ex || !ex->ExceptionRecord || !ex->ContextRecord) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
+
+    static thread_local bool t_inCrashHandler = false;
+    if (t_inCrashHandler) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+    t_inCrashHandler = true;
 
     EnsureDbgHelpInitialized();
 
@@ -226,7 +425,8 @@ static LONG WINAPI CrashHandler(EXCEPTION_POINTERS* ex) {
         static_cast<uint32>(addr),
         addrInfo);
 
-    if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && rec->NumberParameters >= 2) {
+    if ((rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || rec->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
+        rec->NumberParameters >= 2) {
         const ULONG_PTR op = rec->ExceptionInformation[0];
         const char* opName = (op == 0) ? "READ" : (op == 1) ? "WRITE" : (op == 8) ? "DEP/EXECUTE" : "UNKNOWN";
         Core::Log::Error("Reason: Invalid memory %s at address 0x%08X%s",
@@ -235,10 +435,27 @@ static LONG WINAPI CrashHandler(EXCEPTION_POINTERS* ex) {
             (rec->ExceptionInformation[1] < 0x10000u) ? " (likely NULL/offset pointer dereference)" : "");
     }
 
-    Core::Log::Error("Registers: EAX=%08X EBX=%08X ECX=%08X EDX=%08X",
-        ctx->Eax, ctx->Ebx, ctx->Ecx, ctx->Edx);
-    Core::Log::Error("           ESI=%08X EDI=%08X EBP=%08X ESP=%08X EIP=%08X",
-        ctx->Esi, ctx->Edi, ctx->Ebp, ctx->Esp, ctx->Eip);
+    struct RegEntry { const char* name; DWORD val; };
+    const RegEntry regs[] = {
+        { "EAX", ctx->Eax }, { "EBX", ctx->Ebx }, { "ECX", ctx->Ecx },
+        { "EDX", ctx->Edx }, { "ESI", ctx->Esi }, { "EDI", ctx->Edi },
+        { "EBP", ctx->Ebp }, { "ESP", ctx->Esp }, { "EIP", ctx->Eip },
+    };
+    Core::Log::Error("Registers:");
+    for (const auto& r : regs) {
+        char regInfo[384]{};
+        AnnotateValue(r.val, ctx->Esp, regInfo, sizeof(regInfo));
+        Core::Log::Error("  %s=0x%08X (%s)", r.name, static_cast<uint32>(r.val), regInfo);
+    }
+
+    if (g_LastMoveBlendPed || g_LastMoveBlendObj || g_LastMoveBlendFn1) {
+        char fn1Info[384]{};
+        AnnotateValue(g_LastMoveBlendFn1, ctx->Esp, fn1Info, sizeof(fn1Info));
+        Core::Log::Error("Last CPed::UpdateMovementAndSpeech: ped=0x%08X objA90=0x%08X vtbl=0x%08X fn1=0x%08X (%s)",
+            g_LastMoveBlendPed, g_LastMoveBlendObj, g_LastMoveBlendVtbl, g_LastMoveBlendFn1, fn1Info);
+    }
+
+    DumpBreadcrumbs();
 
     if (g_DbgHelp.ready && g_DbgHelp.pStackWalk64 && g_DbgHelp.pSymFunctionTableAccess64 && g_DbgHelp.pSymGetModuleBase64) {
         CONTEXT walkCtx = *ctx;
@@ -250,10 +467,10 @@ static LONG WINAPI CrashHandler(EXCEPTION_POINTERS* ex) {
         frame.AddrStack.Offset = ctx->Esp;
         frame.AddrStack.Mode = AddrModeFlat;
 
-        Core::Log::Error("Call Stack (PDB symbols %s):", g_DbgHelp.ready ? "loaded" : "unavailable");
+        Core::Log::Error("Call Stack (up to 64 frames, PDB symbols %s):", g_DbgHelp.ready ? "loaded" : "unavailable");
         const HANDLE proc = GetCurrentProcess();
         const HANDLE thd = GetCurrentThread();
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 64; ++i) {
             if (!g_DbgHelp.pStackWalk64(
                     IMAGE_FILE_MACHINE_I386, proc, thd, &frame, &walkCtx, nullptr,
                     g_DbgHelp.pSymFunctionTableAccess64, g_DbgHelp.pSymGetModuleBase64, nullptr)) {
@@ -268,24 +485,21 @@ static LONG WINAPI CrashHandler(EXCEPTION_POINTERS* ex) {
         }
     }
 
-    MEMORY_BASIC_INFORMATION mbi{};
-    if (VirtualQuery(reinterpret_cast<LPCVOID>(ctx->Esp), &mbi, sizeof(mbi)) &&
-        mbi.State == MEM_COMMIT &&
-        (mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY))) {
-        Core::Log::Error("Raw Stack (ESP):");
-        const uintptr_t regionEnd = reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
-        for (int i = 0; i < 12; ++i) {
+    if (IsReadableMemory(static_cast<uintptr_t>(ctx->Esp), 4)) {
+        Core::Log::Error("Raw Stack (ESP, 0x100 bytes / 64 dwords):");
+        for (int i = 0; i < 64; ++i) {
             const uintptr_t sp = static_cast<uintptr_t>(ctx->Esp) + static_cast<uintptr_t>(i * 4);
-            if (sp + 4 > regionEnd) {
+            if (!IsReadableMemory(sp, 4)) {
                 break;
             }
             const uint32 val = *reinterpret_cast<const uint32*>(sp);
             char stackMod[384]{};
-            FormatAddressDetailed(val, stackMod, sizeof(stackMod));
+            AnnotateValue(val, ctx->Esp, stackMod, sizeof(stackMod));
             Core::Log::Error("  Stack[+%02X]: 0x%08X (%s)", i * 4, val, stackMod);
         }
     }
 
+    t_inCrashHandler = false;
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -295,11 +509,25 @@ static LONG WINAPI VectoredCrashHandler(EXCEPTION_POINTERS* ex) {
     }
 
     const DWORD code = ex->ExceptionRecord->ExceptionCode;
-    if (code != EXCEPTION_ACCESS_VIOLATION &&
-        code != EXCEPTION_ILLEGAL_INSTRUCTION &&
-        code != EXCEPTION_INT_DIVIDE_BY_ZERO &&
-        code != EXCEPTION_STACK_OVERFLOW &&
-        code != EXCEPTION_PRIV_INSTRUCTION) {
+    switch (code) {
+    case EXCEPTION_ACCESS_VIOLATION:
+    case EXCEPTION_IN_PAGE_ERROR:
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+    case EXCEPTION_INT_OVERFLOW:
+    case EXCEPTION_PRIV_INSTRUCTION:
+    case EXCEPTION_STACK_OVERFLOW:
+    case 0xC0000409u: // STATUS_STACK_BUFFER_OVERRUN
+    case 0xC0000374u: // STATUS_HEAP_CORRUPTION
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+    case EXCEPTION_FLT_INVALID_OPERATION:
+    case EXCEPTION_FLT_OVERFLOW:
+    case EXCEPTION_FLT_STACK_CHECK:
+    case EXCEPTION_DATATYPE_MISALIGNMENT:
+    case EXCEPTION_BREAKPOINT:
+        break;
+    default:
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -389,11 +617,37 @@ static void InstallCompatibilityHooks() {
     Core::Log::Info("Complete Edition compatibility hooks installed");
 }
 
+static int32 __cdecl HookedOnEpisodeChangedBreadcrumb() {
+    RecordBreadcrumb("CGame::OnEpisodeChanged");
+    return CGame::OnEpisodeChanged();
+}
+
+static int32 __cdecl HookedPickupsInitBreadcrumb() {
+    RecordBreadcrumb("CPickups::Init");
+    return CPickups::Init();
+}
+
+static void __fastcall HookedPlayerInfoClearBreadcrumb(CPlayerInfo* self, void*) {
+    RecordBreadcrumb("CPlayerInfo::Clear (self=%p)", self);
+    self->Clear();
+}
+
+static void InstallBreadcrumbHooks() {
+    Core::Hook::Install(0x4202A0, &HookedOnEpisodeChangedBreadcrumb);
+    Core::Hook::Install(0x9357E0, &HookedPickupsInitBreadcrumb);
+    Core::Hook::Install(0x878AF0, &HookedPlayerInfoClearBreadcrumb);
+}
+
 static void InitPlugin() {
     const uintptr_t base = Core::GetBaseAddr();
+    g_GameRange = GetModuleRange(GetModuleHandleA(nullptr));
+    g_SelfRange = GetModuleRange(g_SelfModule);
+
     Core::Log::Init();
     AddVectoredExceptionHandler(1, VectoredCrashHandler);
     SetUnhandledExceptionFilter(CrashHandler);
+    RecordBreadcrumb("InitPlugin start (GTAIV=%08X Self=%08X)",
+        static_cast<uint32>(g_GameRange.start), static_cast<uint32>(g_SelfRange.start));
 
     Core::Log::Info("gta4_reversed loaded!");
     Core::Log::Info("GTAIV.exe Base: 0x%08X (ASLR delta: 0x%08X)",
@@ -417,6 +671,8 @@ static void InitPlugin() {
     CPed::InjectHooks();
     CPedData::InjectHooks();
     CPedIntelligence::InjectHooks();
+    CPedMoveBlend::InjectHooks();
+    CPedAudio::InjectHooks();
     CVehicle::InjectHooks();
     CObject::InjectHooks();
     CLoadingScreens::InjectHooks();
@@ -455,6 +711,8 @@ static void InitPlugin() {
     rage::phSimulator::InjectHooks();
 
     Tools::DebugMenu::Init();
+    InstallBreadcrumbHooks();
+    RecordBreadcrumb("InitPlugin complete");
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID) {

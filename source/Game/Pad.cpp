@@ -174,7 +174,7 @@ void __thiscall tPadValues::AllocHistory()
 {
     if (!m_pHistory)
     {
-        m_pHistory = static_cast<tValueHistory*>(RageAlloc(sizeof(tValueHistory)));
+        m_pHistory = Core::Hook::Call<tValueHistory*>(0x4011D0, sizeof(tValueHistory));
         for (int32 i = 0; i < 64; ++i)
         {
             m_pHistory->m_aItems[i].m_nValue = 0;
