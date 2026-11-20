@@ -134,6 +134,91 @@ public:
 
     static int32 __stdcall SeatToPassengerIndex(int32 seat);
     static int32 __stdcall PassengerIndexToSeat(int32 index);
+
+    void        __thiscall Unk_9C52C0();
+    bool        __thiscall Unk_9C5360();
+    bool        __thiscall Unk_9C5370(bool updateTimer);
+    bool        __thiscall Unk_9C53C0(float* outProgress);
+    bool        __thiscall Unk_9C5430();
+    static int32 __stdcall Unk_9C6DF0(int32 seat);
+    int32       __thiscall GetPedSeat(CPed* pPed);
+    int32       __thiscall Unk_9C6E90(int32 targetId);
+    int32       __thiscall Unk_9C6EF0(int32 a1);
+    const char* __thiscall Unk_9C6F20(int32 id);
+    void        __thiscall Unk_9C6F90(float t);
+    bool        __thiscall IsPlayerInVehicle();
+
+    bool        __thiscall Unk_9C5440();
+    bool        __thiscall Unk_9C5480();
+    bool        __thiscall Unk_9C54C0();
+    void*       __thiscall Unk_9C5510(int32 key);
+    int32       __thiscall Unk_9C5570();
+    void*       __thiscall Unk_9C55E0(int32 key);
+    static void __cdecl    Unk_9C5630(int32 modelIdx, float* outA, float* outB, uint8 a4);
+    void        __thiscall Unk_9C5650();
+    static bool __stdcall  Unk_9C56E0(const uint8* pObj);
+    void        __thiscall Unk_9C5760(CPed* pPed);
+    void*       __thiscall Unk_9C6AF0(int32 idx);
+    int32       __thiscall Unk_9C6B20();
+
+    bool        __thiscall Unk_9C6B40();
+    int32       __thiscall Unk_9C6B70(int32 key);
+    void*       __thiscall Unk_9C6BA0(int32 idx);
+    void*       __thiscall Unk_9C6BC0(int32 val);
+    static void __cdecl    Unk_9C6C00();
+    int32       __thiscall GetPassengerCount();
+    void        __thiscall Unk_9C7010(bool setFlag);
+    void        __thiscall Unk_9C7170(const float* pVec3);
+    void        __thiscall Unk_9C71C0(const float* pVec3);
+    void        __thiscall Unk_9C7210(const float* pA, const float* pB);
+    bool        __thiscall Unk_9C72B0();
+    void        __thiscall Unk_9C72D0();
+
+    void        __thiscall Unk_9C7380();
+    int32       __thiscall Unk_9C7560();
+    void        __thiscall Unk_9C7580(int32 val);
+    void*       __thiscall Unk_9C7710(int32 boneIdx);
+
+    static void __cdecl    InitSystem();
+    int32       __thiscall Unk_9C80B0(int32 a2, int32 a3, int32 a4, int32 a5, int32 a6);
+    int32       __thiscall Unk_9C80C0();
+    int32       __thiscall Unk_9C80D0();
+    void*       __thiscall Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5);
+    bool        __thiscall Unk_9C8700(int32 boneIdx, float* outVec4);
+    void        __thiscall Unk_9C8900(int32 boneId, float* outMat4x4);
+    void        __thiscall Unk_9C8A70();
+    bool        __thiscall Unk_9C8C70(bool a2, bool a3, int32 a4, int32 a5, bool a6, bool a7, bool a8);
+    bool        __thiscall Unk_9C8D80();
+    bool        __thiscall Unk_9C8DC0(bool a2, bool a3, int32 a4);
+
+    bool        __thiscall Unk_9C8F30();
+    bool        __thiscall Unk_9C9020();
+    void        __thiscall Unk_9C91A0();
+    bool        __thiscall Unk_9C9210();
+    void        __thiscall Unk_9C93B0(void** outArr, int32* pCount, int32 maxCount, void* pExtra);
+    bool        __thiscall Unk_9C9BA0();
+    void        __thiscall Unk_9C9E60(uint8* pArg, bool bFlag);
+    bool        __thiscall Unk_9CA080(CPed* pPed);
+    bool        __thiscall Unk_9CA250(CPed* pPed, uint32 seatIdx);
+    void        __thiscall Unk_9CA440(void* a2, int32 a3);
+    bool        __thiscall Unk_9CA600();
+    bool        __thiscall Unk_9CA620();
+
+    bool        __thiscall Unk_9CA650(uint8* pPed);
+    bool        __thiscall Unk_9CA710(bool bSkipVelCheck);
+    bool        __thiscall Unk_9CA8E0(CPed* pPed);
+    bool        __thiscall Unk_9CA9B0();
+    static bool __cdecl    Unk_9CA9E0(int32 modelIdx);
+    void        __thiscall Unk_9CAA30();
+    void        __thiscall Unk_9CC990(uint8* pPed, int32 a3);
+    bool        __thiscall Unk_9D4A50();
+    CVehicle*   __thiscall ScalarDeletingDtor(uint8 flags);
+    void        __thiscall Unk_9D5F00();
+    void        __thiscall Unk_9D5FC0();
+    void        __thiscall Unk_9D6170(void* a2, float angle, int32 a4);
+
+private:
+    void        ApplyPassengerImpulse(CPed* pPed);
 };
 
 VALIDATE_SIZE(CVehicle, 0x1350);
