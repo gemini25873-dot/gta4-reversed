@@ -14,10 +14,10 @@ The long-term goal is to document every engine/game class and incrementally reim
 See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and per-module `Hook::Call` dependency status.
 
 - **Target Binary:** `GTAIV.exe` `1.0.7.0` (x86, `43,740` functions)
-- **Hooked Functions:** `966` implemented (`~2.21%`)
+- **Hooked Functions:** `1,160` implemented (`~2.65%`)
 - **Pure C++ Modules (`0` `Core::Hook::Call` fallbacks):**
   - `Core`: `Matrix.cpp`, `Pool.cpp`, `Vector.cpp`
-  - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`, `Pad.cpp`
+  - `Game`: `General.cpp`, `IplStore.cpp`, `LoadingScreens.cpp`
   - `Rage`: `phBound.cpp`, `phBoundComposite.cpp`, `phCollider.cpp`, `phInst.cpp`, `phArticulatedCollider.cpp`, `phConstraint.cpp`, `phLevelNew.cpp`
 
 ### Module Breakdown
@@ -29,41 +29,43 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Core | `source/Core/Vector.cpp` | 2 | 0 | Pure C++ |
 | Game | `source/Game/Building.cpp` | 5 | 3 | |
 | Game | `source/Game/Cam.cpp` | 14 | 9 | |
-| Game | `source/Game/Camera.cpp` | 15 | 5 |
+| Game | `source/Game/Camera.cpp` | 15 | 6 | |
 | Game | `source/Game/Cheat.cpp` | 40 | 21 | |
-| Game | `source/Game/Clock.cpp` | 10 | 1 | |
+| Game | `source/Game/Clock.cpp` | 10 | 2 | |
 | Game | `source/Game/DummyObject.cpp` | 8 | 1 | |
-| Game | `source/Game/DynamicEntity.cpp` | 40 | 11 | |
-| Game | `source/Game/Entity.cpp` | 85 | 4 | |
+| Game | `source/Game/DynamicEntity.cpp` | 40 | 88 | |
+| Game | `source/Game/Entity.cpp` | 85 | 173 | |
 | Game | `source/Game/Explosion.cpp` | 10 | 6 | |
 | Game | `source/Game/FileMgr.cpp` | 14 | 3 | |
-| Game | `source/Game/Font.cpp` | 71 | 16 | |
-| Game | `source/Game/Game.cpp` | 7 | 22 | |
+| Game | `source/Game/Font.cpp` | 71 | 26 | |
+| Game | `source/Game/Game.cpp` | 7 | 29 | |
 | Game | `source/Game/Garages.cpp` | 13 | 5 | |
 | Game | `source/Game/General.cpp` | 4 | 0 | Pure C++ |
 | Game | `source/Game/IplStore.cpp` | 15 | 0 | Pure C++ |
 | Game | `source/Game/LoadingScreens.cpp` | 1 | 0 | Pure C++ (intro skip enabled) |
 | Game | `source/Game/ModelInfo.cpp` | 11 | 1 | |
 | Game | `source/Game/Object.cpp` | 4 | 10 | |
-| Game | `source/Game/Pad.cpp` | 14 | 0 | Pure C++ |
+| Game | `source/Game/Pad.cpp` | 14 | 1 | |
 | Game | `source/Game/Ped.cpp` | 159 | 534 | |
+| Game | `source/Game/PedAudio.cpp` | 79 | 371 | |
 | Game | `source/Game/PedData.cpp` | 29 | 36 | |
 | Game | `source/Game/PedIntelligence.cpp` | 78 | 197 | |
-| Game | `source/Game/Physical.cpp` | 62 | 202 | |
+| Game | `source/Game/PedMoveBlend.cpp` | 45 | 284 | `ProcessMovement` (`0xA3A200`) currently disabled |
+| Game | `source/Game/Physical.cpp` | 62 | 208 | |
 | Game | `source/Game/Pickups.cpp` | 10 | 12 | |
-| Game | `source/Game/PlayerInfo.cpp` | 18 | 13 | |
-| Game | `source/Game/Radar.cpp` | 25 | 19 | |
+| Game | `source/Game/PlayerInfo.cpp` | 34 | 120 | |
+| Game | `source/Game/Radar.cpp` | 25 | 63 | |
 | Game | `source/Game/Stats.cpp` | 19 | 8 | |
 | Game | `source/Game/Streaming.cpp` | 19 | 7 | |
-| Game | `source/Game/Timer.cpp` | 10 | 15 | |
+| Game | `source/Game/Timer.cpp` | 10 | 16 | |
 | Game | `source/Game/TxdStore.cpp` | 23 | 3 | |
 | Game | `source/Game/Vehicle.cpp` | 4 | 13 | |
 | Game | `source/Game/Wanted.cpp` | 10 | 8 | |
-| Game | `source/Game/WeaponInfo.cpp` | 13 | 15 | |
-| Game | `source/Game/Weather.cpp` | 5 | 8 | |
+| Game | `source/Game/WeaponInfo.cpp` | 70 | 139 | |
+| Game | `source/Game/Weather.cpp` | 5 | 9 | |
 | Game | `source/Game/World.cpp` | 4 | 3 | `CPhysicsWorld::InjectHooks()` currently disabled in `CWorld::InjectHooks()` |
 | Game | `source/Game/Zones.cpp` | 8 | 10 | |
-| Rage | `source/Rage/fiStream.cpp` | 7 | 5 | |
+| Rage | `source/Rage/fiStream.cpp` | 7 | 6 | |
 | Rage | `source/Rage/phArchetype.cpp` | 15 | 6 | |
 | Rage | `source/Rage/phArticulatedCollider.cpp` | 4 | 0 | Pure C++ |
 | Rage | `source/Rage/phBound.cpp` | 4 | 0 | Pure C++ |
