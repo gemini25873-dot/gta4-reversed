@@ -11,8 +11,18 @@ public:
     uint8  pad251[0xF];                   // +0x251..+0x25F
     uint8  m_vehSubObj260[0xB50];         // +0x260..+0xDAF
     uint8  m_vehAudioEntity[0x58];        // +0xDB0..+0xE07
-    uint8  m_audPlaceableTracker[0x1C];   // +0xE08..+0xE23
-    uint8  m_vehSubObjE24[0x140];         // +0xE24..+0xF63
+    uint8  m_audPlaceableTracker[0x0C];   // +0xE08..+0xE13
+    void*  m_pFragInstE14;                // +0xE14
+    uint8  padE18[8];                     // +0xE18..+0xE1F
+    uint32 m_nVehBoneMaskE20;             // +0xE20
+    uint8  m_vehSubObjE24[0x10];          // +0xE24..+0xE33
+    uint16 m_nVehSubObjE34;               // +0xE34
+    uint8  padE36[0x52];                  // +0xE36..+0xE87
+    uint32 m_nVehPretendOccTimeMs;        // +0xE88
+    uint8  padE8C[0x64];                  // +0xE8C..+0xEEF
+    uint8  m_bHasPretendOccupants;        // +0xEF0
+    uint8  padEF1[3];                     // +0xEF1..+0xEF3
+    uint8  m_vehSubObjEF4[0x70];          // +0xEF4..+0xF63
     uint8  m_nVehFlagsF64;                // +0xF64
     uint8  m_nVehFlagsF65;                // +0xF65
     uint8  m_nVehFlagsF66;                // +0xF66
@@ -87,8 +97,18 @@ public:
     int16  m_nVehUnk1114;                 // +0x1114
     uint8  pad1116[2];                    // +0x1116..+0x1117
     float  m_fVehUnk1118;                 // +0x1118
-    uint8  pad111C[4];                    // +0x111C..+0x111F
-    uint8  m_vehSubObj1120[0x1C0];        // +0x1120..+0x12DF
+    float  m_fVehFadeScale111C;           // +0x111C
+    uint8  m_vehSubObj1120[8];            // +0x1120..+0x1127
+    float  m_fVehUnk1128;                 // +0x1128
+    uint8  pad112C[0x94];                 // +0x112C..+0x11BF
+    uint8  m_nVehUnk11C0;                 // +0x11C0
+    uint8  pad11C1[0x1F];                 // +0x11C1..+0x11DF
+    uint8  m_nVehBoneResetMaskA[13];      // +0x11E0..+0x11EC
+    uint8  pad11ED;                       // +0x11ED
+    uint8  m_bVehBoneResetA;              // +0x11EE
+    uint8  m_bVehBoneResetB;              // +0x11EF
+    uint8  m_nVehBoneResetMaskB[8];       // +0x11F0..+0x11F7
+    uint8  pad11F8[0xE8];                 // +0x11F8..+0x12DF
     uint32 m_nVehUnk12E0;                 // +0x12E0
     uint32 m_nVehUnk12E4;                 // +0x12E4
     uint32 m_nVehUnk12E8;                 // +0x12E8
@@ -106,7 +126,7 @@ public:
     uint32 m_nVehUnk1314;                 // +0x1314
     float  m_fVehUnk1318;                 // +0x1318
     float  m_fVehUnk131C;                 // +0x131C
-    int32  m_nVehUnk1320;                 // +0x1320
+    int32  m_nVehDoorLockState1320;       // +0x1320
     float  m_fVehUnk1324;                 // +0x1324
     float  m_fVehUnk1328;                 // +0x1328
     float  m_fVehUnk132C;                 // +0x132C
@@ -135,87 +155,92 @@ public:
     static int32 __stdcall SeatToPassengerIndex(int32 seat);
     static int32 __stdcall PassengerIndexToSeat(int32 index);
 
-    void        __thiscall Unk_9C52C0();
-    bool        __thiscall Unk_9C5360();
-    bool        __thiscall Unk_9C5370(bool updateTimer);
-    bool        __thiscall Unk_9C53C0(float* outProgress);
-    bool        __thiscall Unk_9C5430();
-    static int32 __stdcall Unk_9C6DF0(int32 seat);
+    int32 GetVehicleSubType() const { return *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(this) + 0x1350); }
+    int32 GetVehicleType() const    { return *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(this) + 0x1354); }
+    float GetHeliRotorSpeed() const { return *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(this) + 0x1F24); }
+    int8  GetBoatUnk1F40(int32 idx) const { return *reinterpret_cast<const int8*>(reinterpret_cast<const uint8*>(this) + 0x1F40 + idx); }
+
+    void        __thiscall ResetSubObjAndAudio();
+    bool        __thiscall IsFlagF6D10Set();
+    bool        __thiscall TrySetFlagF6D10(bool updateTimer);
+    bool        __thiscall GetTimer12F4Progress(float* outProgress);
+    bool        __thiscall IsUsingPretendOccupants();
+    static int32 __stdcall SeatToDoorIndex(int32 seat);
     int32       __thiscall GetPedSeat(CPed* pPed);
-    int32       __thiscall Unk_9C6E90(int32 targetId);
-    int32       __thiscall Unk_9C6EF0(int32 a1);
-    const char* __thiscall Unk_9C6F20(int32 id);
-    void        __thiscall Unk_9C6F90(float t);
+    int32       __thiscall GetSeatForTargetId(int32 targetId);
+    int32       __thiscall GetAdjustedSeatIndex(int32 a1);
+    const char* __thiscall GetSeatNameById(int32 id);
+    void        __thiscall UpdateVehUnkF84(float t);
     bool        __thiscall IsPlayerInVehicle();
 
-    bool        __thiscall Unk_9C5440();
-    bool        __thiscall Unk_9C5480();
-    bool        __thiscall Unk_9C54C0();
-    void*       __thiscall Unk_9C5510(int32 key);
-    int32       __thiscall Unk_9C5570();
-    void*       __thiscall Unk_9C55E0(int32 key);
-    static void __cdecl    Unk_9C5630(int32 modelIdx, float* outA, float* outB, uint8 a4);
-    void        __thiscall Unk_9C5650();
-    static bool __stdcall  Unk_9C56E0(const uint8* pObj);
-    void        __thiscall Unk_9C5760(CPed* pPed);
-    void*       __thiscall Unk_9C6AF0(int32 idx);
-    int32       __thiscall Unk_9C6B20();
+    bool        __thiscall HasDummyOccupants();
+    bool        __thiscall HasAnyOccupants();
+    bool        __thiscall HasAnyUninjuredOccupants();
+    void*       __thiscall FindSubObjFD0(int32 key);
+    int32       __thiscall CountActiveSubObjFD0();
+    void*       __thiscall FindSubObjFD8(int32 key);
+    static void __cdecl    GetModelBounds(int32 modelIdx, float* outA, float* outB, uint8 a4);
+    void        __thiscall UpdateTimer130E();
+    static bool __stdcall  IsObjectFlagSet(const uint8* pObj);
+    void        __thiscall RemovePassenger(CPed* pPed);
+    void*       __thiscall GetModelSeatEntry(int32 idx);
+    int32       __thiscall GetModelSeatCount();
 
-    bool        __thiscall Unk_9C6B40();
-    int32       __thiscall Unk_9C6B70(int32 key);
-    void*       __thiscall Unk_9C6BA0(int32 idx);
-    void*       __thiscall Unk_9C6BC0(int32 val);
-    static void __cdecl    Unk_9C6C00();
+    bool        __thiscall HasAnyActiveLink();
+    int32       __thiscall FindLinkIndexByKey(int32 key);
+    void*       __thiscall GetLink(int32 idx);
+    void*       __thiscall AllocateLink(int32 val);
+    static void __cdecl    InitVehicleConfig();
     int32       __thiscall GetPassengerCount();
-    void        __thiscall Unk_9C7010(bool setFlag);
-    void        __thiscall Unk_9C7170(const float* pVec3);
-    void        __thiscall Unk_9C71C0(const float* pVec3);
-    void        __thiscall Unk_9C7210(const float* pA, const float* pB);
-    bool        __thiscall Unk_9C72B0();
-    void        __thiscall Unk_9C72D0();
+    void        __thiscall SetOccupantsPropFlag100(bool setFlag);
+    void        __thiscall AddVehUnk10A0(const float* pVec3);
+    void        __thiscall AddVehUnk10B0(const float* pVec3);
+    void        __thiscall AddCrossVehUnk10B0(const float* pA, const float* pB);
+    bool        __thiscall IsAudioSubTypeF();
+    void        __thiscall ProcessMovingAudio1348();
 
-    void        __thiscall Unk_9C7380();
-    int32       __thiscall Unk_9C7560();
-    void        __thiscall Unk_9C7580(int32 val);
-    void*       __thiscall Unk_9C7710(int32 boneIdx);
+    void        __thiscall ProcessOccupantDamageF67();
+    int32       __thiscall GetDrawHandlerUnkD8();
+    void        __thiscall SetDrawHandlerUnkD8(int32 val);
+    void*       __thiscall GetBoneLocalMatrix(int32 boneIdx);
 
     static void __cdecl    InitSystem();
-    int32       __thiscall Unk_9C80B0(int32 a2, int32 a3, int32 a4, int32 a5, int32 a6);
-    int32       __thiscall Unk_9C80C0();
-    int32       __thiscall Unk_9C80D0();
-    void*       __thiscall Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5);
-    bool        __thiscall Unk_9C8700(int32 boneIdx, float* outVec4);
-    void        __thiscall Unk_9C8900(int32 boneId, float* outMat4x4);
-    void        __thiscall Unk_9C8A70();
-    bool        __thiscall Unk_9C8C70(bool a2, bool a3, int32 a4, int32 a5, bool a6, bool a7, bool a8);
-    bool        __thiscall Unk_9C8D80();
-    bool        __thiscall Unk_9C8DC0(bool a2, bool a3, int32 a4);
+    int32       __thiscall ProcessControlStub(int32 a2, int32 a3, int32 a4, int32 a5, int32 a6);
+    int32       __thiscall GetDefaultMaxPassengers();
+    int32       __thiscall PreRender();
+    void*       __thiscall CreateModelInstance(int32 a2, int32 a3, int32 a4, int32 a5);
+    bool        __thiscall GetBoneWorldPos(int32 boneIdx, float* outVec4);
+    void        __thiscall GetBoneMatrix(int32 boneId, float* outMat4x4);
+    void        __thiscall UpdateDamageBoneTable();
+    bool        __thiscall CanBeConvertedToDummy(bool a2, bool a3, int32 a4, int32 a5, bool a6, bool a7, bool a8);
+    bool        __thiscall CanUsePretendOccupants();
+    bool        __thiscall TrySpawnInWorld(bool a2, bool a3, int32 a4);
 
-    bool        __thiscall Unk_9C8F30();
-    bool        __thiscall Unk_9C9020();
-    void        __thiscall Unk_9C91A0();
-    bool        __thiscall Unk_9C9210();
-    void        __thiscall Unk_9C93B0(void** outArr, int32* pCount, int32 maxCount, void* pExtra);
-    bool        __thiscall Unk_9C9BA0();
-    void        __thiscall Unk_9C9E60(uint8* pArg, bool bFlag);
-    bool        __thiscall Unk_9CA080(CPed* pPed);
-    bool        __thiscall Unk_9CA250(CPed* pPed, uint32 seatIdx);
-    void        __thiscall Unk_9CA440(void* a2, int32 a3);
-    bool        __thiscall Unk_9CA600();
-    bool        __thiscall Unk_9CA620();
+    bool        __thiscall IsEnterable();
+    bool        __thiscall TryEnablePretendOccupants();
+    void        __thiscall ClearOccupantsAndSetFlag400();
+    bool        __thiscall TryDisablePretendOccupants();
+    void        __thiscall CollectEntityAndOccupants(void** outArr, int32* pCount, int32 maxCount, void* pExtra);
+    bool        __thiscall CheckVehicleUprightAndState();
+    void        __thiscall UpdateWheelSteerOrLean(uint8* pArg, bool bFlag);
+    bool        __thiscall AddPassenger(CPed* pPed);
+    bool        __thiscall AddPassengerAtSeat(CPed* pPed, uint32 seatIdx);
+    void        __thiscall ProcessBurningOccupants(void* a2, int32 a3);
+    bool        __thiscall IsUpsideDown();
+    bool        __thiscall IsOnSide();
 
-    bool        __thiscall Unk_9CA650(CPed* pPed);
-    bool        __thiscall Unk_9CA710(bool bSkipVelCheck);
-    bool        __thiscall Unk_9CA8E0(CPed* pPed);
-    bool        __thiscall Unk_9CA9B0();
-    static bool __cdecl    Unk_9CA9E0(int32 modelIdx);
-    void        __thiscall Unk_9CAA30();
-    void        __thiscall Unk_9CC990(CPed* pPed, int32 a3);
-    bool        __thiscall Unk_9D4A50();
+    bool        __thiscall CanPedEnterWithLockState(CPed* pPed);
+    bool        __thiscall IsVehicleStationaryAndLevel(bool bSkipVelCheck);
+    bool        __thiscall ShouldPedBailFromSpeed(CPed* pPed);
+    bool        __thiscall TryStartTimerF98();
+    static bool __cdecl    IsSpecialModelIndex(int32 modelIdx);
+    void        __thiscall ResetHealthAndSubObjFD0();
+    void        __thiscall PlayPedEnterAnim(CPed* pPed, int32 a3);
+    bool        __thiscall InitPretendOccupants();
     CVehicle*   __thiscall ScalarDeletingDtor(uint8 flags);
-    void        __thiscall Unk_9D5F00();
-    void        __thiscall Unk_9D5FC0();
-    void        __thiscall Unk_9D6170(void* a2, float angle, int32 a4);
+    void        __thiscall InitFragAndPhysics();
+    void        __thiscall CleanupPhysicsAndAudio();
+    void        __thiscall SetHeading(void* a2, float angle, int32 a4);
 
 private:
     void        ApplyPassengerImpulse(CPed* pPed);

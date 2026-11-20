@@ -2,6 +2,7 @@
 #include "Game/Vehicle.h"
 #include "Game/ModelInfo.h"
 #include "Game/Ped.h"
+#include "Game/Timer.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
 #include <cassert>
@@ -43,48 +44,48 @@ void CVehicle::InjectHooks()
     Core::Hook::Install(0x9C6D20, &CVehicle::GetPassenger);
     Core::Hook::Install(0x9C6D70, &CVehicle::SeatToPassengerIndex);
     Core::Hook::Install(0x9C6DB0, &CVehicle::PassengerIndexToSeat);
-    Core::Hook::Install(0x9C52C0, &CVehicle::Unk_9C52C0);
-    Core::Hook::Install(0x9C5360, &CVehicle::Unk_9C5360);
-    Core::Hook::Install(0x9C5370, &CVehicle::Unk_9C5370);
-    Core::Hook::Install(0x9C53C0, &CVehicle::Unk_9C53C0);
-    Core::Hook::Install(0x9C5430, &CVehicle::Unk_9C5430);
-    Core::Hook::Install(0x9C6DF0, &CVehicle::Unk_9C6DF0);
+    Core::Hook::Install(0x9C52C0, &CVehicle::ResetSubObjAndAudio);
+    Core::Hook::Install(0x9C5360, &CVehicle::IsFlagF6D10Set);
+    Core::Hook::Install(0x9C5370, &CVehicle::TrySetFlagF6D10);
+    Core::Hook::Install(0x9C53C0, &CVehicle::GetTimer12F4Progress);
+    Core::Hook::Install(0x9C5430, &CVehicle::IsUsingPretendOccupants);
+    Core::Hook::Install(0x9C6DF0, &CVehicle::SeatToDoorIndex);
     Core::Hook::Install(0x9C6E40, &CVehicle::GetPedSeat);
-    Core::Hook::Install(0x9C6E90, &CVehicle::Unk_9C6E90);
-    Core::Hook::Install(0x9C6EF0, &CVehicle::Unk_9C6EF0);
-    Core::Hook::Install(0x9C6F20, &CVehicle::Unk_9C6F20);
-    Core::Hook::Install(0x9C6F90, &CVehicle::Unk_9C6F90);
+    Core::Hook::Install(0x9C6E90, &CVehicle::GetSeatForTargetId);
+    Core::Hook::Install(0x9C6EF0, &CVehicle::GetAdjustedSeatIndex);
+    Core::Hook::Install(0x9C6F20, &CVehicle::GetSeatNameById);
+    Core::Hook::Install(0x9C6F90, &CVehicle::UpdateVehUnkF84);
     Core::Hook::Install(0x9C6FD0, &CVehicle::IsPlayerInVehicle);
-    Core::Hook::Install(0x9C5440, &CVehicle::Unk_9C5440);
-    Core::Hook::Install(0x9C5480, &CVehicle::Unk_9C5480);
-    Core::Hook::Install(0x9C54C0, &CVehicle::Unk_9C54C0);
-    Core::Hook::Install(0x9C5510, &CVehicle::Unk_9C5510);
-    Core::Hook::Install(0x9C5570, &CVehicle::Unk_9C5570);
-    Core::Hook::Install(0x9C55E0, &CVehicle::Unk_9C55E0);
-    Core::Hook::Install(0x9C5630, &CVehicle::Unk_9C5630);
-    Core::Hook::Install(0x9C5650, &CVehicle::Unk_9C5650);
-    Core::Hook::Install(0x9C56E0, &CVehicle::Unk_9C56E0);
-    Core::Hook::Install(0x9C5760, &CVehicle::Unk_9C5760);
-    Core::Hook::Install(0x9C6AF0, &CVehicle::Unk_9C6AF0);
-    Core::Hook::Install(0x9C6B20, &CVehicle::Unk_9C6B20);
-    Core::Hook::Install(0x9C6B40, &CVehicle::Unk_9C6B40);
-    Core::Hook::Install(0x9C6B70, &CVehicle::Unk_9C6B70);
-    Core::Hook::Install(0x9C6BA0, &CVehicle::Unk_9C6BA0);
-    Core::Hook::Install(0x9C6BC0, &CVehicle::Unk_9C6BC0);
-    Core::Hook::Install(0x9C6C00, &CVehicle::Unk_9C6C00);
+    Core::Hook::Install(0x9C5440, &CVehicle::HasDummyOccupants);
+    Core::Hook::Install(0x9C5480, &CVehicle::HasAnyOccupants);
+    Core::Hook::Install(0x9C54C0, &CVehicle::HasAnyUninjuredOccupants);
+    Core::Hook::Install(0x9C5510, &CVehicle::FindSubObjFD0);
+    Core::Hook::Install(0x9C5570, &CVehicle::CountActiveSubObjFD0);
+    Core::Hook::Install(0x9C55E0, &CVehicle::FindSubObjFD8);
+    Core::Hook::Install(0x9C5630, &CVehicle::GetModelBounds);
+    Core::Hook::Install(0x9C5650, &CVehicle::UpdateTimer130E);
+    Core::Hook::Install(0x9C56E0, &CVehicle::IsObjectFlagSet);
+    Core::Hook::Install(0x9C5760, &CVehicle::RemovePassenger);
+    Core::Hook::Install(0x9C6AF0, &CVehicle::GetModelSeatEntry);
+    Core::Hook::Install(0x9C6B20, &CVehicle::GetModelSeatCount);
+    Core::Hook::Install(0x9C6B40, &CVehicle::HasAnyActiveLink);
+    Core::Hook::Install(0x9C6B70, &CVehicle::FindLinkIndexByKey);
+    Core::Hook::Install(0x9C6BA0, &CVehicle::GetLink);
+    Core::Hook::Install(0x9C6BC0, &CVehicle::AllocateLink);
+    Core::Hook::Install(0x9C6C00, &CVehicle::InitVehicleConfig);
     Core::Hook::Install(0x9C6CF0, &CVehicle::GetPassengerCount);
-    Core::Hook::Install(0x9C7010, &CVehicle::Unk_9C7010);
-    Core::Hook::Install(0x9C7170, &CVehicle::Unk_9C7170);
-    Core::Hook::Install(0x9C71C0, &CVehicle::Unk_9C71C0);
-    Core::Hook::Install(0x9C7210, &CVehicle::Unk_9C7210);
-    Core::Hook::Install(0x9C72B0, &CVehicle::Unk_9C72B0);
-    Core::Hook::Install(0x9C72D0, &CVehicle::Unk_9C72D0);
-    Core::Hook::Install(0x9C7380, &CVehicle::Unk_9C7380);
-    Core::Hook::Install(0x9C7560, &CVehicle::Unk_9C7560);
-    Core::Hook::Install(0x9C7580, &CVehicle::Unk_9C7580);
+    Core::Hook::Install(0x9C7010, &CVehicle::SetOccupantsPropFlag100);
+    Core::Hook::Install(0x9C7170, &CVehicle::AddVehUnk10A0);
+    Core::Hook::Install(0x9C71C0, &CVehicle::AddVehUnk10B0);
+    Core::Hook::Install(0x9C7210, &CVehicle::AddCrossVehUnk10B0);
+    Core::Hook::Install(0x9C72B0, &CVehicle::IsAudioSubTypeF);
+    Core::Hook::Install(0x9C72D0, &CVehicle::ProcessMovingAudio1348);
+    Core::Hook::Install(0x9C7380, &CVehicle::ProcessOccupantDamageF67);
+    Core::Hook::Install(0x9C7560, &CVehicle::GetDrawHandlerUnkD8);
+    Core::Hook::Install(0x9C7580, &CVehicle::SetDrawHandlerUnkD8);
     Core::Hook::Install(0x9C75A0, &CVehicleStateSnapshot::Save);
     Core::Hook::Install(0x9C7670, &CVehicleStateSnapshot::Restore);
-    Core::Hook::Install(0x9C7710, &CVehicle::Unk_9C7710);
+    Core::Hook::Install(0x9C7710, &CVehicle::GetBoneLocalMatrix);
     Core::Hook::Install(0x9C7960, &CVehicleLink::GetBoneIndex);
     Core::Hook::Install(0x9C7970, &CVehicleLink::UpdateAudio);
     Core::Hook::Install(0x9C79F0, &CVehicleLink::Set);
@@ -93,40 +94,40 @@ void CVehicle::InjectHooks()
     Core::Hook::Install(0x9C7B00, &CVehicleLink::Process);
     Core::Hook::Install(0x9C77F0, &CVehicleSubObjE24::Ctor);
     Core::Hook::Install(0x9C7BF0, &CVehicle::InitSystem);
-    Core::Hook::Install(0x9C80B0, &CVehicle::Unk_9C80B0);
-    Core::Hook::Install(0x9C80C0, &CVehicle::Unk_9C80C0);
-    Core::Hook::Install(0x9C80D0, &CVehicle::Unk_9C80D0);
-    Core::Hook::Install(0x9C83A0, &CVehicle::Unk_9C83A0);
-    Core::Hook::Install(0x9C8700, &CVehicle::Unk_9C8700);
-    Core::Hook::Install(0x9C8900, &CVehicle::Unk_9C8900);
-    Core::Hook::Install(0x9C8A70, &CVehicle::Unk_9C8A70);
-    Core::Hook::Install(0x9C8C70, &CVehicle::Unk_9C8C70);
-    Core::Hook::Install(0x9C8D80, &CVehicle::Unk_9C8D80);
-    Core::Hook::Install(0x9C8DC0, &CVehicle::Unk_9C8DC0);
-    Core::Hook::Install(0x9C8F30, &CVehicle::Unk_9C8F30);
-    Core::Hook::Install(0x9C9020, &CVehicle::Unk_9C9020);
-    Core::Hook::Install(0x9C91A0, &CVehicle::Unk_9C91A0);
-    Core::Hook::Install(0x9C9210, &CVehicle::Unk_9C9210);
-    Core::Hook::Install(0x9C93B0, &CVehicle::Unk_9C93B0);
-    Core::Hook::Install(0x9C9BA0, &CVehicle::Unk_9C9BA0);
-    Core::Hook::Install(0x9C9E60, &CVehicle::Unk_9C9E60);
-    Core::Hook::Install(0x9CA080, &CVehicle::Unk_9CA080);
-    Core::Hook::Install(0x9CA250, &CVehicle::Unk_9CA250);
-    Core::Hook::Install(0x9CA440, &CVehicle::Unk_9CA440);
-    Core::Hook::Install(0x9CA600, &CVehicle::Unk_9CA600);
-    Core::Hook::Install(0x9CA620, &CVehicle::Unk_9CA620);
-    Core::Hook::Install(0x9CA650, &CVehicle::Unk_9CA650);
-    Core::Hook::Install(0x9CA710, &CVehicle::Unk_9CA710);
-    Core::Hook::Install(0x9CA8E0, &CVehicle::Unk_9CA8E0);
-    Core::Hook::Install(0x9CA9B0, &CVehicle::Unk_9CA9B0);
-    Core::Hook::Install(0x9CA9E0, &CVehicle::Unk_9CA9E0);
-    Core::Hook::Install(0x9CAA30, &CVehicle::Unk_9CAA30);
-    Core::Hook::Install(0x9CC990, &CVehicle::Unk_9CC990);
-    Core::Hook::Install(0x9D4A50, &CVehicle::Unk_9D4A50);
+    Core::Hook::Install(0x9C80B0, &CVehicle::ProcessControlStub);
+    Core::Hook::Install(0x9C80C0, &CVehicle::GetDefaultMaxPassengers);
+    Core::Hook::Install(0x9C80D0, &CVehicle::PreRender);
+    Core::Hook::Install(0x9C83A0, &CVehicle::CreateModelInstance);
+    Core::Hook::Install(0x9C8700, &CVehicle::GetBoneWorldPos);
+    Core::Hook::Install(0x9C8900, &CVehicle::GetBoneMatrix);
+    Core::Hook::Install(0x9C8A70, &CVehicle::UpdateDamageBoneTable);
+    Core::Hook::Install(0x9C8C70, &CVehicle::CanBeConvertedToDummy);
+    Core::Hook::Install(0x9C8D80, &CVehicle::CanUsePretendOccupants);
+    Core::Hook::Install(0x9C8DC0, &CVehicle::TrySpawnInWorld);
+    Core::Hook::Install(0x9C8F30, &CVehicle::IsEnterable);
+    Core::Hook::Install(0x9C9020, &CVehicle::TryEnablePretendOccupants);
+    Core::Hook::Install(0x9C91A0, &CVehicle::ClearOccupantsAndSetFlag400);
+    Core::Hook::Install(0x9C9210, &CVehicle::TryDisablePretendOccupants);
+    Core::Hook::Install(0x9C93B0, &CVehicle::CollectEntityAndOccupants);
+    Core::Hook::Install(0x9C9BA0, &CVehicle::CheckVehicleUprightAndState);
+    Core::Hook::Install(0x9C9E60, &CVehicle::UpdateWheelSteerOrLean);
+    Core::Hook::Install(0x9CA080, &CVehicle::AddPassenger);
+    Core::Hook::Install(0x9CA250, &CVehicle::AddPassengerAtSeat);
+    Core::Hook::Install(0x9CA440, &CVehicle::ProcessBurningOccupants);
+    Core::Hook::Install(0x9CA600, &CVehicle::IsUpsideDown);
+    Core::Hook::Install(0x9CA620, &CVehicle::IsOnSide);
+    Core::Hook::Install(0x9CA650, &CVehicle::CanPedEnterWithLockState);
+    Core::Hook::Install(0x9CA710, &CVehicle::IsVehicleStationaryAndLevel);
+    Core::Hook::Install(0x9CA8E0, &CVehicle::ShouldPedBailFromSpeed);
+    Core::Hook::Install(0x9CA9B0, &CVehicle::TryStartTimerF98);
+    Core::Hook::Install(0x9CA9E0, &CVehicle::IsSpecialModelIndex);
+    Core::Hook::Install(0x9CAA30, &CVehicle::ResetHealthAndSubObjFD0);
+    Core::Hook::Install(0x9CC990, &CVehicle::PlayPedEnterAnim);
+    Core::Hook::Install(0x9D4A50, &CVehicle::InitPretendOccupants);
     Core::Hook::Install(0x9D5ED0, &CVehicle::ScalarDeletingDtor);
-    Core::Hook::Install(0x9D5F00, &CVehicle::Unk_9D5F00);
-    Core::Hook::Install(0x9D5FC0, &CVehicle::Unk_9D5FC0);
-    Core::Hook::Install(0x9D6170, &CVehicle::Unk_9D6170);
+    Core::Hook::Install(0x9D5F00, &CVehicle::InitFragAndPhysics);
+    Core::Hook::Install(0x9D5FC0, &CVehicle::CleanupPhysicsAndAudio);
+    Core::Hook::Install(0x9D6170, &CVehicle::SetHeading);
 
     Core::Log::Info("CVehicle hooks installed (88 functions)");
 }
@@ -232,12 +233,12 @@ CVehicle* __thiscall CVehicle::Ctor(uint8 createdBy)
     m_fVehUnk1328 = defaultF;
     m_fVehUnk132C = oneF;
 
-    m_nVehUnk12E4 = Core::StaticRef<uint32>(0x11DDE74);
+    m_nVehUnk12E4 = CTimer::ms_nTimeMs;
     m_nVehUnk12E8 = 0;
     m_nVehUnk12EC = 0;
     m_nVehUnk1300 = 0;
     m_nVehUnkF98 = 0;
-    m_nVehUnk1320 = 1;
+    m_nVehDoorLockState1320 = 1;
     m_fVehUnk1318 = 0.0f;
     m_nVehUnk1335 = 0;
     m_nVehUnk1336 = 0;
@@ -268,7 +269,7 @@ CVehicle* __thiscall CVehicle::Ctor(uint8 createdBy)
     m_nVehUnk1112 &= 0xF3u;
 
     m_fVehUnk1118 = static_cast<float>(Core::Hook::Call<int32>(0xD0D21A) % 15);
-    m_nVehUnkF74 = Core::StaticRef<uint32>(0x11DDE74);
+    m_nVehUnkF74 = CTimer::ms_nTimeMs;
     m_nVehUnkFCC = 0;
     m_nVehUnkFE0 = 0;
     m_nVehUnk1338 = 0;
@@ -332,25 +333,25 @@ int32 __stdcall CVehicle::PassengerIndexToSeat(int32 index)
     }
 }
 
-void __thiscall CVehicle::Unk_9C52C0()
+void __thiscall CVehicle::ResetSubObjAndAudio()
 {
     Core::Hook::CallMethod<void>(0x8B2850, m_vehSubObj1120 + 0x10);
     Core::Hook::CallMethod<void>(0x9E22A0, this);
 }
 
-bool __thiscall CVehicle::Unk_9C5360()
+bool __thiscall CVehicle::IsFlagF6D10Set()
 {
     return (m_nVehFlagsF6D & 0x10) != 0;
 }
 
-bool __thiscall CVehicle::Unk_9C5370(bool updateTimer)
+bool __thiscall CVehicle::TrySetFlagF6D10(bool updateTimer)
 {
     using Fn = bool(__thiscall*)(CVehicle*);
     if (!reinterpret_cast<Fn>(m_vftable[0x12C / 4])(this))
         return false;
 
     if (updateTimer)
-        m_nVehUnk12F4 = Core::StaticRef<uint32>(0x11DDE74);
+        m_nVehUnk12F4 = CTimer::ms_nTimeMs;
 
     m_nVehFlagsF6D |= 0x10u;
     m_nFlags &= ~8u;
@@ -358,14 +359,14 @@ bool __thiscall CVehicle::Unk_9C5370(bool updateTimer)
     return true;
 }
 
-bool __thiscall CVehicle::Unk_9C53C0(float* outProgress)
+bool __thiscall CVehicle::GetTimer12F4Progress(float* outProgress)
 {
     *outProgress = Core::StaticRef<float>(0xD50398);
     if (Core::StaticRef<uint8>(0x11DC82A) == 0)
         return false;
 
     uint32 start = m_nVehUnk12F4;
-    uint32 cur = Core::StaticRef<uint32>(0x11DDE74);
+    uint32 cur = CTimer::ms_nTimeMs;
     uint32 dur = Core::StaticRef<uint32>(0xF1D984);
     if (cur > start + dur || cur < start)
         return false;
@@ -374,12 +375,12 @@ bool __thiscall CVehicle::Unk_9C53C0(float* outProgress)
     return true;
 }
 
-bool __thiscall CVehicle::Unk_9C5430()
+bool __thiscall CVehicle::IsUsingPretendOccupants()
 {
     return (m_nVehFlagsF6D & 0x40) != 0;
 }
 
-int32 __stdcall CVehicle::Unk_9C6DF0(int32 seat)
+int32 __stdcall CVehicle::SeatToDoorIndex(int32 seat)
 {
     switch (seat)
     {
@@ -404,24 +405,24 @@ int32 __thiscall CVehicle::GetPedSeat(CPed* pPed)
     return -1;
 }
 
-int32 __thiscall CVehicle::Unk_9C6E90(int32 targetId)
+int32 __thiscall CVehicle::GetSeatForTargetId(int32 targetId)
 {
-    const int32 count = Unk_9C6B20();
+    const int32 count = GetModelSeatCount();
     if (count <= 0)
         return 1;
 
     for (int32 i = 0; i < count; ++i)
     {
-        void* entry = Unk_9C6AF0(i);
+        void* entry = GetModelSeatEntry(i);
         if (Core::Hook::CallMethod<int32>(0x8EFD40, entry, 0) == targetId)
             return Core::Hook::CallMethod<int32>(0xBE6220, entry, this);
     }
     return 1;
 }
 
-int32 __thiscall CVehicle::Unk_9C6EF0(int32 a1)
+int32 __thiscall CVehicle::GetAdjustedSeatIndex(int32 a1)
 {
-    int32 val = *reinterpret_cast<int32*>(reinterpret_cast<uint8*>(this) + 0x1354);
+    int32 val = GetVehicleType();
     if (val != 1)
         return a1 + 1;
     if (a1 == 0)
@@ -429,7 +430,7 @@ int32 __thiscall CVehicle::Unk_9C6EF0(int32 a1)
     return (a1 == 2) ? 2 : 1;
 }
 
-const char* __thiscall CVehicle::Unk_9C6F20(int32 id)
+const char* __thiscall CVehicle::GetSeatNameById(int32 id)
 {
     struct Entry
     {
@@ -437,7 +438,7 @@ const char* __thiscall CVehicle::Unk_9C6F20(int32 id)
         int32 id;
     };
 
-    int32 vehType = *reinterpret_cast<int32*>(reinterpret_cast<uint8*>(this) + 0x1354);
+    int32 vehType = GetVehicleType();
     void* mgr = Core::StaticRef<void*>(0x15F5514);
     void** mgrVtbl = *reinterpret_cast<void***>(mgr);
 
@@ -456,7 +457,7 @@ const char* __thiscall CVehicle::Unk_9C6F20(int32 id)
     return Core::StaticRef<const char*>(0xF33A98);
 }
 
-void __thiscall CVehicle::Unk_9C6F90(float t)
+void __thiscall CVehicle::UpdateVehUnkF84(float t)
 {
     int32 idx = Core::StaticRef<int32>(0x10F9AC0);
     float baseVal = *reinterpret_cast<float*>(Core::Rebase(0x11F5D34) + idx * 0x210);
@@ -479,7 +480,7 @@ bool __thiscall CVehicle::IsPlayerInVehicle()
     return false;
 }
 
-bool __thiscall CVehicle::Unk_9C5440()
+bool __thiscall CVehicle::HasDummyOccupants()
 {
     if (m_pDriver != nullptr && m_pDriver->m_nDummyConvertState == 2)
         return true;
@@ -492,7 +493,7 @@ bool __thiscall CVehicle::Unk_9C5440()
     return false;
 }
 
-bool __thiscall CVehicle::Unk_9C5480()
+bool __thiscall CVehicle::HasAnyOccupants()
 {
     if ((m_nVehFlagsF6D & 0x40) != 0)
         return true;
@@ -507,7 +508,7 @@ bool __thiscall CVehicle::Unk_9C5480()
     return false;
 }
 
-bool __thiscall CVehicle::Unk_9C54C0()
+bool __thiscall CVehicle::HasAnyUninjuredOccupants()
 {
     if ((m_nVehFlagsF6D & 0x40) != 0)
         return true;
@@ -522,7 +523,7 @@ bool __thiscall CVehicle::Unk_9C54C0()
     return false;
 }
 
-void* __thiscall CVehicle::Unk_9C5510(int32 key)
+void* __thiscall CVehicle::FindSubObjFD0(int32 key)
 {
     int32 count = static_cast<int32>(m_nVehUnkFD4);
     if (count <= 0)
@@ -537,7 +538,7 @@ void* __thiscall CVehicle::Unk_9C5510(int32 key)
     return nullptr;
 }
 
-int32 __thiscall CVehicle::Unk_9C5570()
+int32 __thiscall CVehicle::CountActiveSubObjFD0()
 {
     void* pSub = Core::Hook::CallMethod<void*>(0x9E7080, this);
     bool flag = false;
@@ -572,7 +573,7 @@ int32 __thiscall CVehicle::Unk_9C5570()
     return total;
 }
 
-void* __thiscall CVehicle::Unk_9C55E0(int32 key)
+void* __thiscall CVehicle::FindSubObjFD8(int32 key)
 {
     int32 count = static_cast<int32>(m_nVehUnkFDC);
     if (count <= 0)
@@ -587,18 +588,18 @@ void* __thiscall CVehicle::Unk_9C55E0(int32 key)
     return nullptr;
 }
 
-void __cdecl CVehicle::Unk_9C5630(int32 modelIdx, float* outA, float* outB, uint8 a4)
+void __cdecl CVehicle::GetModelBounds(int32 modelIdx, float* outA, float* outB, uint8 a4)
 {
     CBaseModelInfo* modelInfo = CModelInfo::ms_modelInfoPtrs[modelIdx];
     Core::Hook::CallMethod<void>(0xBE63A0, modelInfo, outA, outB, a4);
 }
 
-void __thiscall CVehicle::Unk_9C5650()
+void __thiscall CVehicle::UpdateTimer130E()
 {
     uint16 val = static_cast<uint16>(m_nVehUnk130E);
     if (val != 0)
     {
-        float dt = Core::StaticRef<float>(0x11DDE7C);
+        float dt = CTimer::ms_fFrameTimeStep;
         uint32 dec = static_cast<uint32>(static_cast<int64>(dt * Core::StaticRef<float>(0xD82154)));
         if (static_cast<uint32>(val) > dec)
             m_nVehUnk130E = static_cast<int16>(val - dec);
@@ -613,7 +614,7 @@ void __thiscall CVehicle::Unk_9C5650()
     }
 }
 
-bool __stdcall CVehicle::Unk_9C56E0(const uint8* pObj)
+bool __stdcall CVehicle::IsObjectFlagSet(const uint8* pObj)
 {
     if (!pObj)
         return false;
@@ -635,13 +636,13 @@ bool __stdcall CVehicle::Unk_9C56E0(const uint8* pObj)
     return static_cast<uint8>(pObj[0x296E] ^ pObj[0x296C]) > 0x7Fu;
 }
 
-void __thiscall CVehicle::Unk_9C5760(CPed* pPed)
+void __thiscall CVehicle::RemovePassenger(CPed* pPed)
 {
     if (!pPed)
         return;
 
     int32 idx = 0;
-    if (*reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(this) + 0x1350) == 3)
+    if (GetVehicleSubType() == 3)
     {
         for (idx = 0; idx < 8; ++idx)
         {
@@ -672,19 +673,19 @@ void __thiscall CVehicle::Unk_9C5760(CPed* pPed)
     *slot = nullptr;
 }
 
-void* __thiscall CVehicle::Unk_9C6AF0(int32 idx)
+void* __thiscall CVehicle::GetModelSeatEntry(int32 idx)
 {
     uint8* modelInfo = reinterpret_cast<uint8*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
     return modelInfo + 12 * idx + 0x350;
 }
 
-int32 __thiscall CVehicle::Unk_9C6B20()
+int32 __thiscall CVehicle::GetModelSeatCount()
 {
     const uint8* modelInfo = reinterpret_cast<const uint8*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
     return *reinterpret_cast<const int32*>(modelInfo + 0x3BC);
 }
 
-bool __thiscall CVehicle::Unk_9C6B40()
+bool __thiscall CVehicle::HasAnyActiveLink()
 {
     uint32 count = m_nVehUnkFF8;
     if (count == 0)
@@ -698,7 +699,7 @@ bool __thiscall CVehicle::Unk_9C6B40()
     return false;
 }
 
-int32 __thiscall CVehicle::Unk_9C6B70(int32 key)
+int32 __thiscall CVehicle::FindLinkIndexByKey(int32 key)
 {
     uint32 count = m_nVehUnkFF8;
     if (count == 0)
@@ -712,12 +713,12 @@ int32 __thiscall CVehicle::Unk_9C6B70(int32 key)
     return -1;
 }
 
-void* __thiscall CVehicle::Unk_9C6BA0(int32 idx)
+void* __thiscall CVehicle::GetLink(int32 idx)
 {
     return m_vehSubObjFFC + idx * 0x14;
 }
 
-void* __thiscall CVehicle::Unk_9C6BC0(int32 val)
+void* __thiscall CVehicle::AllocateLink(int32 val)
 {
     uint8* entry = m_vehSubObjFFC + m_nVehUnkFF8 * 0x14;
     Core::Hook::CallMethod<void>(0x9C5200, entry, val);
@@ -725,7 +726,7 @@ void* __thiscall CVehicle::Unk_9C6BC0(int32 val)
     return entry;
 }
 
-void __cdecl CVehicle::Unk_9C6C00()
+void __cdecl CVehicle::InitVehicleConfig()
 {
     if (Core::StaticRef<uint8>(0x11E917C) == 0)
         return;
@@ -759,7 +760,7 @@ int32 __thiscall CVehicle::GetPassengerCount()
     return count;
 }
 
-void __thiscall CVehicle::Unk_9C7010(bool setFlag)
+void __thiscall CVehicle::SetOccupantsPropFlag100(bool setFlag)
 {
     auto updatePedFlag = [setFlag](CPed* pPed)
     {
@@ -777,34 +778,34 @@ void __thiscall CVehicle::Unk_9C7010(bool setFlag)
         updatePedFlag(m_pPassengers[i]);
 }
 
-void __thiscall CVehicle::Unk_9C7170(const float* pVec3)
+void __thiscall CVehicle::AddVehUnk10A0(const float* pVec3)
 {
     m_fVehUnk10A0 += pVec3[0];
     m_fVehUnk10A4 += pVec3[1];
     m_fVehUnk10A8 += pVec3[2];
 }
 
-void __thiscall CVehicle::Unk_9C71C0(const float* pVec3)
+void __thiscall CVehicle::AddVehUnk10B0(const float* pVec3)
 {
     m_fVehUnk10B0 += pVec3[0];
     m_fVehUnk10B4 += pVec3[1];
     m_fVehUnk10B8 += pVec3[2];
 }
 
-void __thiscall CVehicle::Unk_9C7210(const float* pA, const float* pB)
+void __thiscall CVehicle::AddCrossVehUnk10B0(const float* pA, const float* pB)
 {
     m_fVehUnk10B0 += pA[2] * pB[1] - pA[1] * pB[2];
     m_fVehUnk10B4 += pA[0] * pB[2] - pA[2] * pB[0];
     m_fVehUnk10B8 += pA[1] * pB[0] - pA[0] * pB[1];
 }
 
-bool __thiscall CVehicle::Unk_9C72B0()
+bool __thiscall CVehicle::IsAudioSubTypeF()
 {
     uint8* pSub = Core::Hook::Call<uint8*>(0xA26FC0, this);
     return pSub != nullptr && pSub[0x26] == 0xF;
 }
 
-void __thiscall CVehicle::Unk_9C72D0()
+void __thiscall CVehicle::ProcessMovingAudio1348()
 {
     float vec[4] = {};
     using GetVelFn = void(__thiscall*)(CVehicle*, float*);
@@ -813,7 +814,7 @@ void __thiscall CVehicle::Unk_9C72D0()
     if (m_nVehUnk134C != 0 && (vec[1] * vec[1] + vec[0] * vec[0]) > Core::StaticRef<float>(0xDCB2A0))
     {
         m_nVehUnk134C = 0;
-        m_fVehUnk1348 += Core::StaticRef<float>(0x11DDE7C);
+        m_fVehUnk1348 += CTimer::ms_fFrameTimeStep;
         if (m_fVehUnk1348 >= Core::StaticRef<float>(0xF33AA8))
         {
             uint32 arg1 = reinterpret_cast<uint32>(&m_pMatrix->pos);
@@ -826,7 +827,7 @@ void __thiscall CVehicle::Unk_9C72D0()
     }
 }
 
-void __thiscall CVehicle::Unk_9C7380()
+void __thiscall CVehicle::ProcessOccupantDamageF67()
 {
     if ((m_nVehFlagsF67 & 8) == 0)
         return;
@@ -854,10 +855,10 @@ void __thiscall CVehicle::Unk_9C7380()
         }
 
         uint8 eventBuf[0x24] = {};
-        Core::Hook::CallMethod<void>(0xAB9A00, eventBuf, this, Core::StaticRef<uint32>(0x11DDE74), 0x3A);
+        Core::Hook::CallMethod<void>(0xAB9A00, eventBuf, this, CTimer::ms_nTimeMs, 0x3A);
 
         uint8 dmgInfo[0x14] = {};
-        float dmg = Core::StaticRef<float>(0x11DDE7C) * Core::StaticRef<float>(0xD81E7C);
+        float dmg = CTimer::ms_fFrameTimeStep * Core::StaticRef<float>(0xD81E7C);
         Core::Hook::CallMethod<void>(0xAB9470, dmgInfo, this, dmg, 0x3A, 0, 0);
 
         uint8 resp[0x18] = {};
@@ -880,7 +881,7 @@ void __thiscall CVehicle::Unk_9C7380()
     }
 }
 
-int32 __thiscall CVehicle::Unk_9C7560()
+int32 __thiscall CVehicle::GetDrawHandlerUnkD8()
 {
     uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
     if (!p34)
@@ -889,7 +890,7 @@ int32 __thiscall CVehicle::Unk_9C7560()
     return p4 ? *reinterpret_cast<int32*>(p4 + 0xD8) : -1;
 }
 
-void __thiscall CVehicle::Unk_9C7580(int32 val)
+void __thiscall CVehicle::SetDrawHandlerUnkD8(int32 val)
 {
     uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
     if (!p34)
@@ -937,7 +938,7 @@ void __thiscall CVehicleStateSnapshot::Restore(CVehicle* pVeh)
     std::memcpy(&pVeh->m_nVehFlagsF64, base + 0x58, 0xE);
 }
 
-void* __thiscall CVehicle::Unk_9C7710(int32 boneIdx)
+void* __thiscall CVehicle::GetBoneLocalMatrix(int32 boneIdx)
 {
     void* v40 = reinterpret_cast<void*(__thiscall*)(CVehicle*)>(m_vftable[40])(this);
     uint8* pObj = v40
@@ -971,7 +972,7 @@ void* __thiscall CVehicle::Unk_9C7710(int32 boneIdx)
 
 int32 __thiscall CVehicleLink::GetBoneIndex()
 {
-    return m_pOwner->Unk_9C6B70(m_nBoneId);
+    return m_pOwner->FindLinkIndexByKey(m_nBoneId);
 }
 
 void __thiscall CVehicleLink::UpdateAudio(bool bUsePending)
@@ -1054,7 +1055,7 @@ void __thiscall CVehicleLink::Process()
 
     if (m_nTimer > 0)
     {
-        m_nTimer -= static_cast<int16>(static_cast<int32>(Core::StaticRef<float>(0x11DDE7C) * Core::StaticRef<float>(0xDAF864)));
+        m_nTimer -= static_cast<int16>(static_cast<int32>(CTimer::ms_fFrameTimeStep * Core::StaticRef<float>(0xDAF864)));
         if (m_nTimer <= 0)
         {
             m_nTimer = 0;
@@ -1123,7 +1124,7 @@ CVehicleSubObjE24* __thiscall CVehicleSubObjE24::Ctor()
     base[0xCC] = 0;
     base[0x124] &= 7u;
     base[0x125] &= ~1u;
-    *reinterpret_cast<uint32*>(base + 0x64) = Core::StaticRef<uint32>(0x11DDE74);
+    *reinterpret_cast<uint32*>(base + 0x64) = CTimer::ms_nTimeMs;
     *reinterpret_cast<uint32*>(base + 0x68) = 0;
     base[0x11A] = 0;
     *reinterpret_cast<float*>(base + 0x11C) = Core::StaticRef<float>(0xD50398);
@@ -1156,23 +1157,23 @@ CVehicleSubObjE24* __thiscall CVehicleSubObjE24::Ctor()
 void __cdecl CVehicle::InitSystem()
 {
     Core::Hook::Call<void>(0x9718C0);
-    CVehicle::Unk_9C6C00();
+    CVehicle::InitVehicleConfig();
     Core::StaticRef<uint32>(0x1619258) = Core::Hook::Call<uint32>(0x5B1C30, "headlights", 0);
     Core::StaticRef<uint32>(0x161925C) = Core::Hook::Call<uint32>(0x5B1C30, "carbottom", 0);
     Core::StaticRef<uint32>(0x1619260) = Core::Hook::Call<uint32>(0x5B1C30, "bikebottom", 0);
 }
 
-int32 __thiscall CVehicle::Unk_9C80B0(int32, int32, int32, int32, int32)
+int32 __thiscall CVehicle::ProcessControlStub(int32, int32, int32, int32, int32)
 {
     return 0;
 }
 
-int32 __thiscall CVehicle::Unk_9C80C0()
+int32 __thiscall CVehicle::GetDefaultMaxPassengers()
 {
     return 10;
 }
 
-int32 __thiscall CVehicle::Unk_9C80D0()
+int32 __thiscall CVehicle::PreRender()
 {
     CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
     int32* pCC = reinterpret_cast<int32*>(modelInfo->m_pVehicleStruct);
@@ -1186,44 +1187,43 @@ int32 __thiscall CVehicle::Unk_9C80D0()
         m[12] = m[13] = m[14] = 0.0f;
     };
 
-    uint32 maskE20 = *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(this) + 0xE20);
-    if (maskE20 != 0)
+    if (m_nVehBoneMaskE20 != 0)
     {
         for (int32 i = 0x59; i <= 0x62; ++i)
         {
-            if (((1u << (i - 0x58)) & maskE20) != 0)
+            if (((1u << (i - 0x58)) & m_nVehBoneMaskE20) != 0)
                 zeroBoneMat(pCC[i]);
         }
     }
 
     uint8* self = reinterpret_cast<uint8*>(this);
-    if (self[0x11EE] != 0)
+    if (m_bVehBoneResetA != 0)
     {
         for (int32 k = 0; k <= 12; ++k)
         {
-            if (self[0x11E0 + k] != 0)
+            if (m_nVehBoneResetMaskA[k] != 0)
                 zeroBoneMat(*reinterpret_cast<int32*>(reinterpret_cast<uint8*>(pCC) + 0xC8 + k * 4));
         }
-        self[0x11EE] = 0;
+        m_bVehBoneResetA = 0;
     }
 
-    if ((m_nVehFlagsF6E & 0x20) != 0 && self[0x11EF] != 0)
+    if ((m_nVehFlagsF6E & 0x20) != 0 && m_bVehBoneResetB != 0)
     {
         for (int32 k = 0; k <= 7; ++k)
         {
-            if (self[0x11F0 + k] != 0)
+            if (m_nVehBoneResetMaskB[k] != 0)
                 zeroBoneMat(*reinterpret_cast<int32*>(reinterpret_cast<uint8*>(pCC) + 0x104 + k * 4));
         }
-        self[0x11EF] = 0;
+        m_bVehBoneResetB = 0;
     }
 
     if (Core::StaticRef<uint8>(0x15BFF22) == 0)
     {
-        float scale = *reinterpret_cast<float*>(self + 0x111C);
+        float scale = m_fVehFadeScale111C;
         if (scale >= 0.0f)
         {
             self[0x5B] = static_cast<uint8>(static_cast<int32>(static_cast<float>(self[0x5B]) * scale));
-            *reinterpret_cast<float*>(self + 0x111C) = Core::StaticRef<float>(0xEBDED4);
+            m_fVehFadeScale111C = Core::StaticRef<float>(0xEBDED4);
         }
     }
 
@@ -1271,9 +1271,8 @@ int32 __thiscall CVehicle::Unk_9C80D0()
     return Core::Hook::CallMethod<int32>(0x9E1480, this);
 }
 
-void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
+void* __thiscall CVehicle::CreateModelInstance(int32 a2, int32 a3, int32 a4, int32 a5)
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     if ((m_nFlags2 & 0x20000000u) != 0 && a2 == 1 && a3 != 0x40)
         return nullptr;
 
@@ -1324,7 +1323,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
 
     if (pRet != nullptr)
     {
-        if (self[0x11C0] != 0 && Core::StaticRef<uint8>(0x1135B85) == 0)
+        if (m_nVehUnk11C0 != 0 && Core::StaticRef<uint8>(0x1135B85) == 0)
             pRet[0x59] |= 0x40u;
 
         if (m_nVehUnkFD4 != 0)
@@ -1363,11 +1362,11 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
             if (IsPlayerInVehicle())
                 pRet[0x59] |= 8u;
 
-            if (*reinterpret_cast<const int32*>(self + 0x1354) == 4)
+            if (GetVehicleType() == 4)
             {
                 uint8* pCC = reinterpret_cast<uint8*>(modelInfo->m_pVehicleStruct);
                 if (*reinterpret_cast<const int16*>(pCC + 0x206) > -1 || *reinterpret_cast<const int16*>(pCC + 0x208) > -1)
-                    pRet[0x59] |= (*reinterpret_cast<const float*>(self + 0x1F24) > Core::StaticRef<float>(0xD85DB0)) ? 0x30u : 0x10u;
+                    pRet[0x59] |= (GetHeliRotorSpeed() > Core::StaticRef<float>(0xD85DB0)) ? 0x30u : 0x10u;
             }
             else if (Core::Hook::Call<bool>(0x462E60))
             {
@@ -1377,7 +1376,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
     }
 
     if (a2 == 0 && a3 != 1 && a3 != 2)
-        m_nVehUnk12E4 = Core::StaticRef<uint32>(0x11DDE74);
+        m_nVehUnk12E4 = CTimer::ms_nTimeMs;
 
     if (savedPtr)
     {
@@ -1392,7 +1391,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
     return pRet;
 }
 
-bool __thiscall CVehicle::Unk_9C8700(int32 boneIdx, float* outVec4)
+bool __thiscall CVehicle::GetBoneWorldPos(int32 boneIdx, float* outVec4)
 {
     outVec4[0] = 0.0f;
     outVec4[1] = 0.0f;
@@ -1440,9 +1439,9 @@ bool __thiscall CVehicle::Unk_9C8700(int32 boneIdx, float* outVec4)
     return true;
 }
 
-void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
+void __thiscall CVehicle::GetBoneMatrix(int32 boneId, float* outMat4x4)
 {
-    const float* m = static_cast<const float*>(Unk_9C7710(boneId));
+    const float* m = static_cast<const float*>(GetBoneLocalMatrix(boneId));
     for (int32 row = 0; row < 4; ++row)
     {
         outMat4x4[row * 4 + 0] = m[row * 4 + 0];
@@ -1459,7 +1458,7 @@ void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
          node != nullptr;
          node = *reinterpret_cast<uint8**>(node + 0x10))
     {
-        const float* pm = static_cast<const float*>(Unk_9C7710(static_cast<int32>(*reinterpret_cast<const uint16*>(node + 0x16))));
+        const float* pm = static_cast<const float*>(GetBoneLocalMatrix(static_cast<int32>(*reinterpret_cast<const uint16*>(node + 0x16))));
         float tmp[16] = {};
         for (int32 row = 0; row < 4; ++row)
         {
@@ -1473,10 +1472,9 @@ void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
     Core::Hook::CallMethod<void>(0x513430, outMat4x4, m_pMatrix);
 }
 
-void __thiscall CVehicle::Unk_9C8A70()
+void __thiscall CVehicle::UpdateDamageBoneTable()
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
-    uint8* pE14 = *reinterpret_cast<uint8**>(self + 0xE14);
+    uint8* pE14 = static_cast<uint8*>(m_pFragInstE14);
     uint8* pC = *reinterpret_cast<uint8**>(*reinterpret_cast<uint8**>(pE14 + 4) + 0xC);
     uint32* tbl = *reinterpret_cast<uint32**>(pC + 0x94);
     if (!tbl)
@@ -1515,7 +1513,7 @@ void __thiscall CVehicle::Unk_9C8A70()
     for (uint32 off = 0x164; off <= 0x188; off += 4)
         applyBone(*reinterpret_cast<const int32*>(pCC + off), 0x7BFE);
 
-    int32 vehSubType = *reinterpret_cast<const int32*>(self + 0x1354);
+    int32 vehSubType = GetVehicleType();
     if (vehSubType == 0)
     {
         for (uint32 off = 0x124; off <= 0x140; off += 4)
@@ -1527,19 +1525,18 @@ void __thiscall CVehicle::Unk_9C8A70()
         if (b > -1)
             applyBone(b, 0x7BFE);
 
-        int8 c0 = *reinterpret_cast<const int8*>(self + 0x1F40);
+        int8 c0 = GetBoatUnk1F40(0);
         if (c0 > 0)
             tbl[c0 * 2 + 1] = 0x3DE;
 
-        int8 c1 = *reinterpret_cast<const int8*>(self + 0x1F41);
+        int8 c1 = GetBoatUnk1F40(1);
         if (c1 > 0)
             tbl[c1 * 2 + 1] = 0x3DE;
     }
 }
 
-bool __thiscall CVehicle::Unk_9C8C70(bool a2, bool a3, int32, int32, bool a6, bool a7, bool a8)
+bool __thiscall CVehicle::CanBeConvertedToDummy(bool a2, bool a3, int32, int32, bool a6, bool a7, bool a8)
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     if (a3)
     {
         uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
@@ -1547,7 +1544,7 @@ bool __thiscall CVehicle::Unk_9C8C70(bool a2, bool a3, int32, int32, bool a6, bo
             return false;
     }
 
-    if (*reinterpret_cast<const int32*>(self + 0x1354) == 3)
+    if (GetVehicleType() == 3)
         return false;
 
     if (Core::Hook::Call<bool>(0x83B940, this) && a6)
@@ -1573,11 +1570,11 @@ bool __thiscall CVehicle::Unk_9C8C70(bool a2, bool a3, int32, int32, bool a6, bo
     }
 }
 
-bool __thiscall CVehicle::Unk_9C8D80()
+bool __thiscall CVehicle::CanUsePretendOccupants()
 {
     if (Core::Hook::CallMethod<bool>(0x9C61E0, this))
         return false;
-    if (*reinterpret_cast<const uint16*>(reinterpret_cast<const uint8*>(this) + 0xE34) == 0xFFFF)
+    if (m_nVehSubObjE34 == 0xFFFF)
         return false;
 
     uint32 tmp = 0;
@@ -1587,7 +1584,7 @@ bool __thiscall CVehicle::Unk_9C8D80()
     return (m_nVehFlagsF6D & 0x20) != 0;
 }
 
-bool __thiscall CVehicle::Unk_9C8DC0(bool a2, bool a3, int32 a4)
+bool __thiscall CVehicle::TrySpawnInWorld(bool a2, bool a3, int32 a4)
 {
     if (Core::StaticRef<uint8>(0xF33AB0) != 0 && !a3)
     {
@@ -1609,7 +1606,7 @@ bool __thiscall CVehicle::Unk_9C8DC0(bool a2, bool a3, int32 a4)
     }
 
     if (a2)
-        m_nVehUnk12F4 = m_nVehUnk12F8 = Core::StaticRef<uint32>(0x11DDE74);
+        m_nVehUnk12F4 = m_nVehUnk12F8 = CTimer::ms_nTimeMs;
 
     uint8* pRes = Core::Hook::CallMethod<uint8*>(0x928000, Core::StaticRef<void*>(0x1544AD0), this, 0);
     if (pRes)
@@ -1632,18 +1629,17 @@ bool __thiscall CVehicle::Unk_9C8DC0(bool a2, bool a3, int32 a4)
     return true;
 }
 
-bool __thiscall CVehicle::Unk_9C8F30()
+bool __thiscall CVehicle::IsEnterable()
 {
     if (Core::StaticRef<uint8>(0xF1D926) == 0)
         return false;
     if (m_nCreatedBy == 2 || m_nCreatedBy == 3)
         return false;
 
-    const uint8* self = reinterpret_cast<const uint8*>(this);
-    if (*reinterpret_cast<const int32*>(self + 0x1350) == 1)
+    if (GetVehicleSubType() == 1)
         return false;
 
-    int32 vt = *reinterpret_cast<const int32*>(self + 0x1354);
+    int32 vt = GetVehicleType();
     if (vt == 4 || vt == 5)
         return false;
 
@@ -1678,12 +1674,11 @@ bool __thiscall CVehicle::Unk_9C8F30()
     return true;
 }
 
-bool __thiscall CVehicle::Unk_9C9020()
+bool __thiscall CVehicle::TryEnablePretendOccupants()
 {
     if ((m_nVehFlagsF6D & 0x40) != 0)
         return true;
 
-    uint8* self = reinterpret_cast<uint8*>(this);
     uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
     if (p6C && (p6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, p6C)))
         return false;
@@ -1695,7 +1690,7 @@ bool __thiscall CVehicle::Unk_9C9020()
     if (Core::Hook::Call<bool>(0x96A350, this, &tmp))
         return false;
 
-    if (!Unk_9C5480() || Unk_9C5440())
+    if (!HasAnyOccupants() || HasDummyOccupants())
         return false;
 
     if (m_pDriver && m_pDriver->m_nPedUnk219 != 0)
@@ -1709,8 +1704,8 @@ bool __thiscall CVehicle::Unk_9C9020()
         void* p = Core::Hook::Call<void*>(0xA26FC0, this);
         if (!p)
             return false;
-        self[0xEF0] = 1;
-        Core::Hook::CallMethod<void>(0xA33830, self + 0xEF4, p);
+        m_bHasPretendOccupants = 1;
+        Core::Hook::CallMethod<void>(0xA33830, m_vehSubObjEF4, p);
     }
 
     auto checkPed = [](CPed* p) -> bool
@@ -1748,9 +1743,9 @@ bool __thiscall CVehicle::Unk_9C9020()
     return true;
 }
 
-void __thiscall CVehicle::Unk_9C91A0()
+void __thiscall CVehicle::ClearOccupantsAndSetFlag400()
 {
-    if (Unk_9C5440())
+    if (HasDummyOccupants())
         return;
 
     if (m_pDriver)
@@ -1770,12 +1765,11 @@ void __thiscall CVehicle::Unk_9C91A0()
         m_nFlags |= 0x400u;
 }
 
-bool __thiscall CVehicle::Unk_9C9210()
+bool __thiscall CVehicle::TryDisablePretendOccupants()
 {
     if ((m_nVehFlagsF6D & 0x40) == 0)
         return true;
 
-    uint8* self = reinterpret_cast<uint8*>(this);
     uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
     if (p6C && (p6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, p6C)))
     {
@@ -1838,17 +1832,17 @@ bool __thiscall CVehicle::Unk_9C9210()
     if (m_pDriver)
     {
         void* p = Core::Hook::Call<void*>(0xA26FC0, this);
-        if (p && self[0xEF0] != 0)
-            Core::Hook::CallMethod<void>(0xA33830, p, self + 0xEF4);
+        if (p && m_bHasPretendOccupants != 0)
+            Core::Hook::CallMethod<void>(0xA33830, p, m_vehSubObjEF4);
     }
 
-    self[0xEF0] = 0;
-    Core::Hook::CallMethod<void>(0xA338F0, self + 0xEF4);
+    m_bHasPretendOccupants = 0;
+    Core::Hook::CallMethod<void>(0xA338F0, m_vehSubObjEF4);
     m_nVehFlagsF6D &= ~0x40u;
     return true;
 }
 
-void __thiscall CVehicle::Unk_9C93B0(void** outArr, int32* pCount, int32 maxCount, void* pExtra)
+void __thiscall CVehicle::CollectEntityAndOccupants(void** outArr, int32* pCount, int32 maxCount, void* pExtra)
 {
     Core::Hook::CallStdcall<void>(0x9E7140, outArr, pCount, maxCount, pExtra);
 
@@ -1870,7 +1864,7 @@ void __thiscall CVehicle::Unk_9C93B0(void** outArr, int32* pCount, int32 maxCoun
     }
 }
 
-bool __thiscall CVehicle::Unk_9C9BA0()
+bool __thiscall CVehicle::CheckVehicleUprightAndState()
 {
     const uint8* self = reinterpret_cast<const uint8*>(this);
     const uint8* p38 = static_cast<const uint8*>(m_pPhysicsInst);
@@ -1956,7 +1950,7 @@ bool __thiscall CVehicle::Unk_9C9BA0()
     return false;
 }
 
-void __thiscall CVehicle::Unk_9C9E60(uint8* pArg, bool bFlag)
+void __thiscall CVehicle::UpdateWheelSteerOrLean(uint8* pArg, bool bFlag)
 {
     float vec[4] = {};
     float* v = reinterpret_cast<float*(__thiscall*)(CVehicle*, float*)>(m_vftable[59])(this, vec);
@@ -2030,7 +2024,6 @@ void __thiscall CVehicle::Unk_9C9E60(uint8* pArg, bool bFlag)
 
 void CVehicle::ApplyPassengerImpulse(CPed* pPed)
 {
-    const uint8* self = reinterpret_cast<const uint8*>(this);
     const uint8* p6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
         return;
@@ -2041,7 +2034,7 @@ void CVehicle::ApplyPassengerImpulse(CPed* pPed)
 
     float vec1[3];
     float vec2[3];
-    if (*reinterpret_cast<const int32*>(self + 0x1350) == 1)
+    if (GetVehicleSubType() == 1)
     {
         float s1 = Core::StaticRef<float>(0xEBE0D8);
         vec1[0] = m_pMatrix->up.x * s1;
@@ -2074,7 +2067,7 @@ void CVehicle::ApplyPassengerImpulse(CPed* pPed)
     Core::Hook::CallMethod<void>(0xA47B80, this, vec1, vec2, 0);
 }
 
-bool __thiscall CVehicle::Unk_9CA080(CPed* pPed)
+bool __thiscall CVehicle::AddPassenger(CPed* pPed)
 {
     bool added = false;
     int32 maxPass = static_cast<int32>(m_nMaxPassengers);
@@ -2096,7 +2089,7 @@ bool __thiscall CVehicle::Unk_9CA080(CPed* pPed)
     return added;
 }
 
-bool __thiscall CVehicle::Unk_9CA250(CPed* pPed, uint32 seatIdx)
+bool __thiscall CVehicle::AddPassengerAtSeat(CPed* pPed, uint32 seatIdx)
 {
     if (reinterpret_cast<bool(__thiscall*)(CVehicle*)>(m_vftable[74])(this) &&
         pPed->m_nPedUnk218 == 0 &&
@@ -2118,13 +2111,12 @@ bool __thiscall CVehicle::Unk_9CA250(CPed* pPed, uint32 seatIdx)
     return added;
 }
 
-void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
+void __thiscall CVehicle::ProcessBurningOccupants(void* a2, int32 a3)
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     if ((m_nVehFlagsF6D & 0x40) != 0 && !reinterpret_cast<bool(__thiscall*)(CVehicle*)>(m_vftable[83])(this))
     {
-        self[0xEF0] = 0;
-        Core::Hook::CallMethod<void>(0xA338F0, self + 0xEF4);
+        m_bHasPretendOccupants = 0;
+        Core::Hook::CallMethod<void>(0xA338F0, m_vehSubObjEF4);
         m_nVehFlagsF6D &= ~0x40u;
     }
 
@@ -2138,7 +2130,7 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
         if (p6C && p6C[0xE] != 0)
             continue;
 
-        if (*reinterpret_cast<const int32*>(self + 0x1354) == 4 ||
+        if (GetVehicleType() == 4 ||
             reinterpret_cast<bool(__thiscall*)(CPed*)>(pPed->m_vftable[74])(pPed) ||
             pPed->m_nDummyConvertState == 2 ||
             static_cast<float>(reinterpret_cast<double(__thiscall*)(CPed*)>(pPed->m_vftable[63])(pPed)) > Core::StaticRef<float>(0xD8D70C) ||
@@ -2149,7 +2141,7 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
             uint8 eventBuf[0x24] = {};
             uint8 resp[0x18] = {};
             Core::Hook::CallMethod<void>(0xAB9470, dmgInfo, a2, Core::StaticRef<float>(0xD81CE0), a3, 0, 0);
-            Core::Hook::CallMethod<void>(0xAB9A00, eventBuf, a2, Core::StaticRef<uint32>(0x11DDE74), a3);
+            Core::Hook::CallMethod<void>(0xAB9A00, eventBuf, a2, CTimer::ms_nTimeMs, a3);
             Core::Hook::CallMethod<void>(0xABB170, dmgInfo, pPed, resp);
             if (Core::Hook::CallMethod<bool>(0x9164C0, eventBuf, pPed))
                 Core::Hook::CallMethod<void>(0xAA80D0, static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x84, eventBuf, 0, 1);
@@ -2167,18 +2159,18 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
     }
 }
 
-bool __thiscall CVehicle::Unk_9CA600()
+bool __thiscall CVehicle::IsUpsideDown()
 {
     return m_pMatrix->at.z <= Core::StaticRef<float>(0xEBE708);
 }
 
-bool __thiscall CVehicle::Unk_9CA620()
+bool __thiscall CVehicle::IsOnSide()
 {
     float v = m_pMatrix->right.z;
     return v >= Core::StaticRef<float>(0xDCA2A8) || v <= Core::StaticRef<float>(0xEBE21C);
 }
 
-bool __thiscall CVehicle::Unk_9CA650(CPed* pPed)
+bool __thiscall CVehicle::CanPedEnterWithLockState(CPed* pPed)
 {
     uint8* p6C = reinterpret_cast<uint8*>(pPed->m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
@@ -2209,13 +2201,12 @@ bool __thiscall CVehicle::Unk_9CA650(CPed* pPed)
     return pPed->m_nPedUnk219 == 0 || st != 3;
 }
 
-bool __thiscall CVehicle::Unk_9CA710(bool bSkipVelCheck)
+bool __thiscall CVehicle::IsVehicleStationaryAndLevel(bool bSkipVelCheck)
 {
-    const uint8* self = reinterpret_cast<const uint8*>(this);
     if (m_nModelIndex == Core::StaticRef<int32>(0x123097C))
         return false;
 
-    if (*reinterpret_cast<const int32*>(self + 0x1350) == 2)
+    if (GetVehicleSubType() == 2)
         return true;
 
     float upZ = m_pMatrix->at.z;
@@ -2252,18 +2243,17 @@ bool __thiscall CVehicle::Unk_9CA710(bool bSkipVelCheck)
     return (a[1] * a[1] + a[2] * a[2] + a[0] * a[0]) <= Core::StaticRef<float>(0xD82320);
 }
 
-bool __thiscall CVehicle::Unk_9CA8E0(CPed* pPed)
+bool __thiscall CVehicle::ShouldPedBailFromSpeed(CPed* pPed)
 {
     float vec[4] = {};
     float* v = reinterpret_cast<float*(__thiscall*)(CVehicle*, float*)>(m_vftable[59])(this, vec);
     float spdSq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 
-    const uint8* self = reinterpret_cast<const uint8*>(this);
     int32 model = m_nModelIndex;
     if (model == Core::StaticRef<int32>(0x123097C))
         return false;
 
-    float thr = (*reinterpret_cast<const int32*>(self + 0x1354) == 1)
+    float thr = (GetVehicleType() == 1)
         ? Core::StaticRef<float>(0xF33AA0)
         : Core::StaticRef<float>(0xD8F340);
     if (spdSq < thr)
@@ -2283,21 +2273,20 @@ bool __thiscall CVehicle::Unk_9CA8E0(CPed* pPed)
     return true;
 }
 
-bool __thiscall CVehicle::Unk_9CA9B0()
+bool __thiscall CVehicle::TryStartTimerF98()
 {
-    const uint8* self = reinterpret_cast<const uint8*>(this);
     const uint8* p6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
         return false;
 
-    if (*reinterpret_cast<const int32*>(self + 0x1354) != 0 || m_nVehUnkF98 != -1)
+    if (GetVehicleType() != 0 || m_nVehUnkF98 != -1)
         return false;
 
     m_nVehUnkF98 = 15000;
     return true;
 }
 
-bool __cdecl CVehicle::Unk_9CA9E0(int32 modelIdx)
+bool __cdecl CVehicle::IsSpecialModelIndex(int32 modelIdx)
 {
     if (modelIdx == Core::StaticRef<int32>(0x1230898) ||
         modelIdx == Core::StaticRef<int32>(0x12309DC) ||
@@ -2313,7 +2302,7 @@ bool __cdecl CVehicle::Unk_9CA9E0(int32 modelIdx)
     return Core::Hook::Call<bool>(0x9C5F50, modelIdx);
 }
 
-void __thiscall CVehicle::Unk_9CAA30()
+void __thiscall CVehicle::ResetHealthAndSubObjFD0()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
     if ((m_nFlags2 & 0x7C00u) != 0xC00u)
@@ -2331,11 +2320,11 @@ void __thiscall CVehicle::Unk_9CAA30()
     Core::Hook::CallMethod<void>(0xA292B0, reinterpret_cast<void*>(Core::Rebase(0x164B030)), this);
 
     float f10FC = *reinterpret_cast<const float*>(self + 0x10FC);
-    float f1128 = *reinterpret_cast<const float*>(self + 0x1128);
+    float f1128 = m_fVehUnk1128;
     if ((f10FC < 0.0f && f10FC > Core::StaticRef<float>(0xD6A9A4)) ||
         (f1128 > Core::StaticRef<float>(0xEBE00C) && f1128 < 0.0f))
     {
-        *reinterpret_cast<float*>(self + 0x1128) = 1.0f;
+        m_fVehUnk1128 = 1.0f;
         *reinterpret_cast<float*>(self + 0x10FC) = Core::StaticRef<float>(0xD6A9A4);
     }
 
@@ -2344,7 +2333,7 @@ void __thiscall CVehicle::Unk_9CAA30()
         Core::Hook::CallMethod<void>(0xB42E30, reinterpret_cast<uint8*>(m_nVehUnkFD0) + i * 0x170);
 }
 
-void __thiscall CVehicle::Unk_9CC990(CPed* pPed, int32)
+void __thiscall CVehicle::PlayPedEnterAnim(CPed* pPed, int32)
 {
     bool cond = Core::Hook::CallMethod<bool>(0x9C6270, this, pPed);
     if (!cond)
@@ -2366,17 +2355,17 @@ void __thiscall CVehicle::Unk_9CC990(CPed* pPed, int32)
     }
 }
 
-bool __thiscall CVehicle::Unk_9D4A50()
+bool __thiscall CVehicle::InitPretendOccupants()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
     Core::Hook::CallMethod<void>(0x9D3600, this, 0);
-    *reinterpret_cast<uint32*>(self + 0xE88) = Core::StaticRef<uint32>(0x11DDE74);
-    Core::Hook::CallMethod<void>(0xA338F0, self + 0xEF4);
+    m_nVehPretendOccTimeMs = CTimer::ms_nTimeMs;
+    Core::Hook::CallMethod<void>(0xA338F0, m_vehSubObjEF4);
     m_nVehFlagsF6D |= 0x40u;
     self[0xF1C] = 0;
     self[0xF1B] = 10;
     self[0xF1A] = 1;
-    self[0xEF0] = 1;
+    m_bHasPretendOccupants = 1;
     return true;
 }
 
@@ -2388,9 +2377,8 @@ CVehicle* __thiscall CVehicle::ScalarDeletingDtor(uint8 flags)
     return this;
 }
 
-void __thiscall CVehicle::Unk_9D5F00()
+void __thiscall CVehicle::InitFragAndPhysics()
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     CBaseModelInfo* modelInfo = CModelInfo::ms_modelInfoPtrs[m_nModelIndex];
     if (modelInfo->m_pFragType != nullptr)
     {
@@ -2399,7 +2387,7 @@ void __thiscall CVehicle::Unk_9D5F00()
         uint8* pEnt = pPool
             ? Core::Hook::CallMethod<uint8*>(0xC711F0, pPool, 0xE, modelInfo->m_pFragType, m_pMatrix, 0)
             : nullptr;
-        *reinterpret_cast<void**>(self + 0xE14) = pEnt;
+        m_pFragInstE14 = pEnt;
         Core::Hook::CallMethod<void>(0x686AD0, pEnt, 4, 1);
         *reinterpret_cast<uint32*>(pEnt + 0x60) |= 8u;
         Core::Hook::CallMethod<void>(0x9E6FA0, this, pEnt, 1);
@@ -2412,7 +2400,7 @@ void __thiscall CVehicle::Unk_9D5F00()
     Core::Hook::CallMethod<void>(0x9D4AC0, this);
 }
 
-void __thiscall CVehicle::Unk_9D5FC0()
+void __thiscall CVehicle::CleanupPhysicsAndAudio()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
     uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
@@ -2451,9 +2439,8 @@ void __thiscall CVehicle::Unk_9D5FC0()
         *reinterpret_cast<uint32*>(self + 0x118) &= ~0x10000u;
 }
 
-void __thiscall CVehicle::Unk_9D6170(void* a2, float angle, int32)
+void __thiscall CVehicle::SetHeading(void* a2, float angle, int32)
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     if (angle >= Core::StaticRef<float>(0xEBDFFC) && angle <= Core::StaticRef<float>(0xEBDEE4))
     {
         if (m_pMatrix)
@@ -2486,7 +2473,7 @@ void __thiscall CVehicle::Unk_9D6170(void* a2, float angle, int32)
             Core::Hook::CallMethod<void>(0x69AE50, p18, 1);
     }
 
-    *reinterpret_cast<uint32*>(self + 0x118) &= ~0x80000u;
+    *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x118) &= ~0x80000u;
     Core::Hook::CallMethod<void>(0x9D6090, this, 1);
     Core::Hook::CallMethod<void>(0x7C8C00, reinterpret_cast<void*>(Core::Rebase(0x110A890)), this);
 }
