@@ -1,7 +1,10 @@
 #include "StdInc.h"
 #include "Game/Vehicle.h"
+#include "Game/ModelInfo.h"
+#include "Game/Ped.h"
 #include "Core/Hook.h"
 #include "Core/Log.h"
+#include <cassert>
 #include <cmath>
 #include <cstring>
 
@@ -350,7 +353,7 @@ bool __thiscall CVehicle::Unk_9C5370(bool updateTimer)
         m_nVehUnk12F4 = Core::StaticRef<uint32>(0x11DDE74);
 
     m_nVehFlagsF6D |= 0x10u;
-    *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x24) &= ~8u;
+    m_nFlags &= ~8u;
     Core::Hook::Call<void>(0xA27B30, this, 0);
     return true;
 }
@@ -403,18 +406,15 @@ int32 __thiscall CVehicle::GetPedSeat(CPed* pPed)
 
 int32 __thiscall CVehicle::Unk_9C6E90(int32 targetId)
 {
-    int32 count = Core::Hook::CallMethod<int32>(0x9C6B20, this);
+    const int32 count = Unk_9C6B20();
     if (count <= 0)
         return 1;
 
-    for (int32 i = 0; i < Core::Hook::CallMethod<int32>(0x9C6B20, this); ++i)
+    for (int32 i = 0; i < count; ++i)
     {
-        void* entry = Core::Hook::CallMethod<void*>(0x9C6AF0, this, i);
+        void* entry = Unk_9C6AF0(i);
         if (Core::Hook::CallMethod<int32>(0x8EFD40, entry, 0) == targetId)
-        {
-            void* matched = Core::Hook::CallMethod<void*>(0x9C6AF0, this, i);
-            return Core::Hook::CallMethod<int32>(0xBE6220, matched, this);
-        }
+            return Core::Hook::CallMethod<int32>(0xBE6220, entry, this);
     }
     return 1;
 }
@@ -481,12 +481,12 @@ bool __thiscall CVehicle::IsPlayerInVehicle()
 
 bool __thiscall CVehicle::Unk_9C5440()
 {
-    if (m_pDriver != nullptr && *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0xA70) == 2)
+    if (m_pDriver != nullptr && m_pDriver->m_nDummyConvertState == 2)
         return true;
 
     for (int32 i = 0; i < 8; ++i)
     {
-        if (m_pPassengers[i] != nullptr && *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pPassengers[i]) + 0xA70) == 2)
+        if (m_pPassengers[i] != nullptr && m_pPassengers[i]->m_nDummyConvertState == 2)
             return true;
     }
     return false;
@@ -511,12 +511,12 @@ bool __thiscall CVehicle::Unk_9C54C0()
 {
     if ((m_nVehFlagsF6D & 0x40) != 0)
         return true;
-    if (m_pDriver != nullptr && *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0x211) == 0)
+    if (m_pDriver != nullptr && m_pDriver->m_bIsInjured == 0)
         return true;
 
     for (int32 i = 0; i < 8; ++i)
     {
-        if (m_pPassengers[i] != nullptr && *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pPassengers[i]) + 0x211) == 0)
+        if (m_pPassengers[i] != nullptr && m_pPassengers[i]->m_bIsInjured == 0)
             return true;
     }
     return false;
@@ -589,7 +589,7 @@ void* __thiscall CVehicle::Unk_9C55E0(int32 key)
 
 void __cdecl CVehicle::Unk_9C5630(int32 modelIdx, float* outA, float* outB, uint8 a4)
 {
-    void* modelInfo = reinterpret_cast<void**>(Core::Rebase(0x15F73B0))[modelIdx];
+    CBaseModelInfo* modelInfo = CModelInfo::ms_modelInfoPtrs[modelIdx];
     Core::Hook::CallMethod<void>(0xBE63A0, modelInfo, outA, outB, a4);
 }
 
@@ -668,22 +668,20 @@ void __thiscall CVehicle::Unk_9C5760(CPed* pPed)
 
     CPed** slot = &m_pPassengers[idx];
     if (*slot != nullptr)
-        Core::Hook::CallMethod<void>(0x9E6580, *slot, slot);
+        (*slot)->CleanUpOldReference(reinterpret_cast<CEntity**>(slot));
     *slot = nullptr;
 }
 
 void* __thiscall CVehicle::Unk_9C6AF0(int32 idx)
 {
-    int16 modelIdx = *reinterpret_cast<const int16*>(reinterpret_cast<const uint8*>(this) + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
+    uint8* modelInfo = reinterpret_cast<uint8*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
     return modelInfo + 12 * idx + 0x350;
 }
 
 int32 __thiscall CVehicle::Unk_9C6B20()
 {
-    int16 modelIdx = *reinterpret_cast<const int16*>(reinterpret_cast<const uint8*>(this) + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
-    return *reinterpret_cast<int32*>(modelInfo + 0x3BC);
+    const uint8* modelInfo = reinterpret_cast<const uint8*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
+    return *reinterpret_cast<const int32*>(modelInfo + 0x3BC);
 }
 
 bool __thiscall CVehicle::Unk_9C6B40()
@@ -767,11 +765,10 @@ void __thiscall CVehicle::Unk_9C7010(bool setFlag)
     {
         if (pPed != nullptr)
         {
-            uint32& flags = *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(pPed) + 0x264);
             if (setFlag)
-                flags |= 0x100u;
+                pPed->m_nPropFlags |= 0x100u;
             else
-                flags &= ~0x100u;
+                pPed->m_nPropFlags &= ~0x100u;
         }
     };
 
@@ -819,7 +816,7 @@ void __thiscall CVehicle::Unk_9C72D0()
         m_fVehUnk1348 += Core::StaticRef<float>(0x11DDE7C);
         if (m_fVehUnk1348 >= Core::StaticRef<float>(0xF33AA8))
         {
-            uint32 arg1 = *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x20) + 0x30;
+            uint32 arg1 = reinterpret_cast<uint32>(&m_pMatrix->pos);
             Core::Hook::Call<void>(0x987730, 23, arg1, this, 0, 0, 0.0f);
         }
     }
@@ -839,7 +836,7 @@ void __thiscall CVehicle::Unk_9C7380()
         if (!pPed)
             return;
 
-        uint8* p224 = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(pPed) + 0x224);
+        uint8* p224 = static_cast<uint8*>(pPed->m_pPedIntelligence);
         uint32* node = *reinterpret_cast<uint32**>(p224 + 0x2E0);
         if (node != nullptr)
         {
@@ -885,14 +882,18 @@ void __thiscall CVehicle::Unk_9C7380()
 
 int32 __thiscall CVehicle::Unk_9C7560()
 {
-    uint8* p34 = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(this) + 0x34);
+    uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
+    if (!p34)
+        return -1;
     uint8* p4 = *reinterpret_cast<uint8**>(p34 + 4);
     return p4 ? *reinterpret_cast<int32*>(p4 + 0xD8) : -1;
 }
 
 void __thiscall CVehicle::Unk_9C7580(int32 val)
 {
-    uint8* p34 = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(this) + 0x34);
+    uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
+    if (!p34)
+        return;
     uint8* p4 = *reinterpret_cast<uint8**>(p34 + 4);
     if (p4)
         *reinterpret_cast<int32*>(p4 + 0xD8) = val;
@@ -901,7 +902,7 @@ void __thiscall CVehicle::Unk_9C7580(int32 val)
 void __thiscall CVehicleStateSnapshot::Save(CVehicle* pVeh)
 {
     uint8* base = reinterpret_cast<uint8*>(this);
-    const float* mat = *reinterpret_cast<const float* const*>(reinterpret_cast<const uint8*>(pVeh) + 0x20);
+    const float* mat = reinterpret_cast<const float*>(pVeh->m_pMatrix);
     float* dstMat = reinterpret_cast<float*>(base);
     for (int32 row = 0; row < 4; ++row)
     {
@@ -970,22 +971,22 @@ void* __thiscall CVehicle::Unk_9C7710(int32 boneIdx)
 
 int32 __thiscall CVehicleLink::GetBoneIndex()
 {
-    return Core::Hook::CallMethod<int32>(0x9C6B70, m_pOwner, m_nBoneId);
+    return m_pOwner->Unk_9C6B70(m_nBoneId);
 }
 
 void __thiscall CVehicleLink::UpdateAudio(bool bUsePending)
 {
     CVehicle* pA = m_pOwner;
-    void* pB = bUsePending ? m_pPending : m_pAttached;
+    CEntity* pB = static_cast<CEntity*>(bUsePending ? m_pPending : m_pAttached);
     uint8 argFlag = bUsePending ? 1 : 0;
 
     if (pA != nullptr && pB != nullptr)
     {
-        void* p6Ca = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(pA) + 0x6C);
-        void* p6Cb = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(pB) + 0x6C);
+        void* p6Ca = reinterpret_cast<void*>(pA->m_nUnk6C);
+        void* p6Cb = reinterpret_cast<void*>(pB->m_nUnk6C);
         if (p6Ca != nullptr && p6Cb != nullptr)
         {
-            int32 bone = Core::Hook::CallMethod<int32>(0x9C7960, this);
+            int32 bone = GetBoneIndex();
             int32 idB = Core::Hook::CallMethod<int32>(0x49F370, p6Cb);
             int32 idA = Core::Hook::CallMethod<int32>(0x49F370, p6Ca);
             Core::Hook::CallMethod<void>(0x470980, reinterpret_cast<void*>(Core::Rebase(0x18CF5C8)), idA, idB, bone, argFlag, -1);
@@ -1010,19 +1011,20 @@ void __thiscall CVehicleLink::Set(void* pEntity, bool bSet, bool bDoUpdate)
 
 bool __thiscall CVehicleLink::Attach(void* pEntity)
 {
-    uint8* p6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(pEntity) + 0x6C);
+    CEntity* pEnt = static_cast<CEntity*>(pEntity);
+    uint8* p6C = reinterpret_cast<uint8*>(pEnt->m_nUnk6C);
     if (!p6C || p6C[0xE] == 0)
     {
         m_pPending = pEntity;
-        Core::Hook::CallMethod<void>(0x9E6550, pEntity, &m_pPending);
+        pEnt->RegisterReference(reinterpret_cast<CEntity**>(&m_pPending));
     }
 
-    uint8* pOwner6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pOwner) + 0x6C);
+    uint8* pOwner6C = reinterpret_cast<uint8*>(m_pOwner->m_nUnk6C);
     if (pOwner6C != nullptr && (pOwner6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, pOwner6C)))
         return false;
 
     m_pAttached = pEntity;
-    Core::Hook::CallMethod<void>(0x9E6550, pEntity, &m_pAttached);
+    pEnt->RegisterReference(reinterpret_cast<CEntity**>(&m_pAttached));
     return true;
 }
 
@@ -1031,23 +1033,23 @@ bool __thiscall CVehicleLink::Detach(void* pEntity)
     if (m_pPending == pEntity)
     {
         if (m_pPending)
-            Core::Hook::CallMethod<void>(0x9E6580, m_pPending, &m_pPending);
+            static_cast<CEntity*>(m_pPending)->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_pPending));
         m_pPending = nullptr;
     }
 
-    uint8* pOwner6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pOwner) + 0x6C);
+    uint8* pOwner6C = reinterpret_cast<uint8*>(m_pOwner->m_nUnk6C);
     if (pOwner6C != nullptr && (pOwner6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, pOwner6C)))
         return false;
 
     if (m_pAttached)
-        Core::Hook::CallMethod<void>(0x9E6580, m_pAttached, &m_pAttached);
+        static_cast<CEntity*>(m_pAttached)->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_pAttached));
     m_pAttached = nullptr;
     return true;
 }
 
 void __thiscall CVehicleLink::Process()
 {
-    uint8* pOwner6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pOwner) + 0x6C);
+    uint8* pOwner6C = reinterpret_cast<uint8*>(m_pOwner->m_nUnk6C);
     bool canModify = (!pOwner6C || pOwner6C[0xE] == 0) && (!pOwner6C || !Core::Hook::CallMethod<bool>(0x49F3F0, pOwner6C));
 
     if (m_nTimer > 0)
@@ -1062,38 +1064,40 @@ void __thiscall CVehicleLink::Process()
 
     if (m_pPending != nullptr)
     {
-        uint8* pPend6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pPending) + 0x6C);
+        CEntity* pPendEnt = static_cast<CEntity*>(m_pPending);
+        uint8* pPend6C = reinterpret_cast<uint8*>(pPendEnt->m_nUnk6C);
         if ((!pPend6C || pPend6C[0xE] == 0) && m_pAttached == nullptr)
         {
             if (canModify)
             {
                 m_pAttached = m_pPending;
-                Core::Hook::CallMethod<void>(0x9E6550, m_pPending, &m_pAttached);
+                pPendEnt->RegisterReference(reinterpret_cast<CEntity**>(&m_pAttached));
                 m_bFlag = 0;
             }
             else if (m_bFlag == 0)
             {
-                Core::Hook::CallMethod<void>(0x9C7970, this, 1);
+                UpdateAudio(true);
             }
         }
 
         if (m_pPending)
-            Core::Hook::CallMethod<void>(0x9E6580, m_pPending, &m_pPending);
+            static_cast<CEntity*>(m_pPending)->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_pPending));
         m_pPending = nullptr;
     }
     else if (m_pAttached != nullptr)
     {
-        uint8* pAtt6C = *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pAttached) + 0x6C);
+        CEntity* pAttEnt = static_cast<CEntity*>(m_pAttached);
+        uint8* pAtt6C = reinterpret_cast<uint8*>(pAttEnt->m_nUnk6C);
         if (!pAtt6C || pAtt6C[0xE] == 0)
         {
             if (canModify)
             {
-                Core::Hook::CallMethod<void>(0x9E6580, m_pAttached, &m_pAttached);
+                pAttEnt->CleanUpOldReference(reinterpret_cast<CEntity**>(&m_pAttached));
                 m_pAttached = nullptr;
             }
             else if (m_bFlag == 0)
             {
-                Core::Hook::CallMethod<void>(0x9C7970, this, 0);
+                UpdateAudio(false);
             }
         }
     }
@@ -1152,7 +1156,7 @@ CVehicleSubObjE24* __thiscall CVehicleSubObjE24::Ctor()
 void __cdecl CVehicle::InitSystem()
 {
     Core::Hook::Call<void>(0x9718C0);
-    Core::Hook::Call<void>(0x9C6C00);
+    CVehicle::Unk_9C6C00();
     Core::StaticRef<uint32>(0x1619258) = Core::Hook::Call<uint32>(0x5B1C30, "headlights", 0);
     Core::StaticRef<uint32>(0x161925C) = Core::Hook::Call<uint32>(0x5B1C30, "carbottom", 0);
     Core::StaticRef<uint32>(0x1619260) = Core::Hook::Call<uint32>(0x5B1C30, "bikebottom", 0);
@@ -1170,9 +1174,8 @@ int32 __thiscall CVehicle::Unk_9C80C0()
 
 int32 __thiscall CVehicle::Unk_9C80D0()
 {
-    int16 modelIdx = *reinterpret_cast<const int16*>(reinterpret_cast<const uint8*>(this) + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
-    int32* pCC = *reinterpret_cast<int32**>(modelInfo + 0xCC);
+    CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
+    int32* pCC = reinterpret_cast<int32*>(modelInfo->m_pVehicleStruct);
 
     auto zeroBoneMat = [this](int32 bone)
     {
@@ -1224,31 +1227,29 @@ int32 __thiscall CVehicle::Unk_9C80D0()
         }
     }
 
-    *reinterpret_cast<uint32*>(modelInfo + 0x40) |= 0x2000000u;
+    modelInfo->m_nIDEFlags |= 0x2000000u;
 
-    bool hasPlayer = Core::Hook::CallMethod<bool>(0x9C6FD0, this);
-    uint32& flags28 = *reinterpret_cast<uint32*>(self + 0x28);
+    bool hasPlayer = IsPlayerInVehicle();
     if (hasPlayer)
-        flags28 |= 0x10000000u;
+        m_nFlags2 |= 0x10000000u;
     else
-        flags28 &= ~0x10000000u;
+        m_nFlags2 &= ~0x10000000u;
 
     bool bit29 = hasPlayer && ((Core::StaticRef<uint8>(0x11DC582) & 2) != 0 || Core::StaticRef<uint8>(0x1111D88) != 0);
     if (bit29)
-        flags28 |= 0x20000000u;
+        m_nFlags2 |= 0x20000000u;
     else
-        flags28 &= ~0x20000000u;
+        m_nFlags2 &= ~0x20000000u;
 
-    bool bit28 = (flags28 & 0x10000000u) != 0;
+    bool bit28 = (m_nFlags2 & 0x10000000u) != 0;
     auto propagateBit28 = [bit28](CPed* pPed)
     {
         if (pPed != nullptr)
         {
-            uint32& pf = *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(pPed) + 0x28);
             if (bit28)
-                pf |= 0x10000000u;
+                pPed->m_nFlags2 |= 0x10000000u;
             else
-                pf &= ~0x10000000u;
+                pPed->m_nFlags2 &= ~0x10000000u;
         }
     };
 
@@ -1273,22 +1274,22 @@ int32 __thiscall CVehicle::Unk_9C80D0()
 void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    if ((*reinterpret_cast<uint32*>(self + 0x28) & 0x20000000u) != 0 && a2 == 1 && a3 != 0x40)
+    if ((m_nFlags2 & 0x20000000u) != 0 && a2 == 1 && a3 != 0x40)
         return nullptr;
 
-    int32 modelIdx = *reinterpret_cast<const int16*>(self + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
+    int32 modelIdx = m_nModelIndex;
+    CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIdx]);
     int32 effModel = (a5 != -1) ? a5 : modelIdx;
     void* savedPtr = nullptr;
 
     if ((m_nVehFlagsF70 & 0x40) != 0)
     {
-        int32 altModel = *reinterpret_cast<const int32*>(modelInfo + 0x34C);
-        if (Core::Hook::Call<bool>(0x832DD0, altModel, Core::StaticRef<int32>(0x15F73A0)))
+        int32 altModel = *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(modelInfo) + 0x34C);
+        if (Core::Hook::Call<bool>(0x832DD0, altModel, CModelInfo::ms_nStreamingModuleId))
         {
             effModel = altModel;
             Core::Hook::CallMethod<void>(0x7B7130, reinterpret_cast<void*>(Core::Rebase(0x10F5F80)), altModel);
-            uint8* p34 = *reinterpret_cast<uint8**>(self + 0x34);
+            uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
             savedPtr = p34 ? *reinterpret_cast<void**>(p34 + 4) : nullptr;
             if (p34)
                 *reinterpret_cast<uint32*>(p34 + 4) = m_nVehUnkFEC;
@@ -1310,7 +1311,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
     };
 
     uint8* pRet = nullptr;
-    if ((*reinterpret_cast<uint32*>(self + 0x28) & 0x10000000u) != 0)
+    if ((m_nFlags2 & 0x10000000u) != 0)
     {
         makeDC(0xB41300);
         pRet = Core::Hook::CallMethod<uint8*>(0x9E15D0, this, a2, a3, a4, effModel);
@@ -1350,6 +1351,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
                             w = 0.0f;
                     }
                     int32 slot = *reinterpret_cast<const int32*>(item);
+                    assert(slot >= 0 && slot < 6);
                     arrB[slot] = w;
                     arrA[slot] = Core::Hook::CallMethod<float>(0xB49520, item);
                     any = true;
@@ -1358,12 +1360,12 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
             if (any)
                 Core::Hook::CallMethod<void>(0x7BFE60, pRet, arrB, arrA);
 
-            if (Core::Hook::CallMethod<bool>(0x9C6FD0, this))
+            if (IsPlayerInVehicle())
                 pRet[0x59] |= 8u;
 
             if (*reinterpret_cast<const int32*>(self + 0x1354) == 4)
             {
-                uint8* pCC = *reinterpret_cast<uint8**>(modelInfo + 0xCC);
+                uint8* pCC = reinterpret_cast<uint8*>(modelInfo->m_pVehicleStruct);
                 if (*reinterpret_cast<const int16*>(pCC + 0x206) > -1 || *reinterpret_cast<const int16*>(pCC + 0x208) > -1)
                     pRet[0x59] |= (*reinterpret_cast<const float*>(self + 0x1F24) > Core::StaticRef<float>(0xD85DB0)) ? 0x30u : 0x10u;
             }
@@ -1379,7 +1381,7 @@ void* __thiscall CVehicle::Unk_9C83A0(int32 a2, int32 a3, int32 a4, int32 a5)
 
     if (savedPtr)
     {
-        uint8* p34 = *reinterpret_cast<uint8**>(self + 0x34);
+        uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
         if (p34)
             *reinterpret_cast<void**>(p34 + 4) = savedPtr;
     }
@@ -1396,11 +1398,21 @@ bool __thiscall CVehicle::Unk_9C8700(int32 boneIdx, float* outVec4)
     outVec4[1] = 0.0f;
     outVec4[2] = 0.0f;
 
-    int16 modelIdx = *reinterpret_cast<const int16*>(reinterpret_cast<const uint8*>(this) + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
-    int32 id = (*reinterpret_cast<int32**>(modelInfo + 0xCC))[boneIdx];
+    CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
+    int32 id = static_cast<int32>(modelInfo->m_pVehicleStruct->m_nBones[boneIdx]);
     if (id == -1)
         return false;
+
+    struct BoneNode
+    {
+        uint8    pad00[0x10];
+        BoneNode* pParent;
+        uint8    pad14[0x0C];
+        CVector  vecPos;
+        float    f2C;
+        uint8    pad30[0x10];
+        uint8    quat[0x10];
+    };
 
     void* v40 = reinterpret_cast<void*(__thiscall*)(CVehicle*)>(m_vftable[40])(this);
     uint8* pObj = v40
@@ -1413,18 +1425,16 @@ bool __thiscall CVehicle::Unk_9C8700(int32 boneIdx, float* outVec4)
     outVec4[2] = *reinterpret_cast<const float*>(base + 0x28);
     outVec4[3] = *reinterpret_cast<const float*>(base + 0x2C);
 
-    for (uint8* node = *reinterpret_cast<uint8**>(**reinterpret_cast<uint8***>(pObj + 4) + id * 0xE0 + 0x10);
+    for (BoneNode* node = *reinterpret_cast<BoneNode**>(**reinterpret_cast<uint8***>(pObj + 4) + id * 0xE0 + 0x10);
          node != nullptr;
-         node = *reinterpret_cast<uint8**>(node + 0x10))
+         node = node->pParent)
     {
-        float mat[16];
-        Core::Hook::CallMethod<void>(0x5BE050, mat, node + 0x40);
-        float x = outVec4[0];
-        float y = outVec4[1];
-        float z = outVec4[2];
-        outVec4[0] = mat[0] * x + mat[4] * y + mat[8] * z + *reinterpret_cast<const float*>(node + 0x20);
-        outVec4[1] = mat[1] * x + mat[5] * y + mat[9] * z + *reinterpret_cast<const float*>(node + 0x24);
-        outVec4[2] = mat[2] * x + mat[6] * y + mat[10] * z + *reinterpret_cast<const float*>(node + 0x28);
+        CMatrix mat;
+        Core::Hook::CallMethod<void>(0x5BE050, &mat, node->quat);
+        CVector v(outVec4[0], outVec4[1], outVec4[2]);
+        outVec4[0] = mat.right.x * v.x + mat.up.x * v.y + mat.at.x * v.z + node->vecPos.x;
+        outVec4[1] = mat.right.y * v.x + mat.up.y * v.y + mat.at.y * v.z + node->vecPos.y;
+        outVec4[2] = mat.right.z * v.x + mat.up.z * v.y + mat.at.z * v.z + node->vecPos.z;
     }
 
     return true;
@@ -1432,7 +1442,7 @@ bool __thiscall CVehicle::Unk_9C8700(int32 boneIdx, float* outVec4)
 
 void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
 {
-    const float* m = Core::Hook::CallMethod<float*>(0x9C7710, this, boneId);
+    const float* m = static_cast<const float*>(Unk_9C7710(boneId));
     for (int32 row = 0; row < 4; ++row)
     {
         outMat4x4[row * 4 + 0] = m[row * 4 + 0];
@@ -1449,7 +1459,7 @@ void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
          node != nullptr;
          node = *reinterpret_cast<uint8**>(node + 0x10))
     {
-        const float* pm = Core::Hook::CallMethod<float*>(0x9C7710, this, static_cast<int32>(*reinterpret_cast<const uint16*>(node + 0x16)));
+        const float* pm = static_cast<const float*>(Unk_9C7710(static_cast<int32>(*reinterpret_cast<const uint16*>(node + 0x16))));
         float tmp[16] = {};
         for (int32 row = 0; row < 4; ++row)
         {
@@ -1460,7 +1470,7 @@ void __thiscall CVehicle::Unk_9C8900(int32 boneId, float* outMat4x4)
         Core::Hook::CallMethod<void>(0x513430, outMat4x4, tmp);
     }
 
-    Core::Hook::CallMethod<void>(0x513430, outMat4x4, *reinterpret_cast<void**>(reinterpret_cast<uint8*>(this) + 0x20));
+    Core::Hook::CallMethod<void>(0x513430, outMat4x4, m_pMatrix);
 }
 
 void __thiscall CVehicle::Unk_9C8A70()
@@ -1499,9 +1509,8 @@ void __thiscall CVehicle::Unk_9C8A70()
         }
     };
 
-    int16 modelIdx = *reinterpret_cast<const int16*>(self + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
-    uint8* pCC = *reinterpret_cast<uint8**>(modelInfo + 0xCC);
+    CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
+    uint8* pCC = reinterpret_cast<uint8*>(modelInfo->m_pVehicleStruct);
 
     for (uint32 off = 0x164; off <= 0x188; off += 4)
         applyBone(*reinterpret_cast<const int32*>(pCC + off), 0x7BFE);
@@ -1533,7 +1542,7 @@ bool __thiscall CVehicle::Unk_9C8C70(bool a2, bool a3, int32, int32, bool a6, bo
     uint8* self = reinterpret_cast<uint8*>(this);
     if (a3)
     {
-        uint8* p6C = *reinterpret_cast<uint8**>(self + 0x6C);
+        uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
         if (p6C && (p6C[0xE] != 0 || !reinterpret_cast<bool(__thiscall*)(void*)>((*reinterpret_cast<void***>(p6C))[24])(p6C)))
             return false;
     }
@@ -1544,14 +1553,12 @@ bool __thiscall CVehicle::Unk_9C8C70(bool a2, bool a3, int32, int32, bool a6, bo
     if (Core::Hook::Call<bool>(0x83B940, this) && a6)
         return false;
 
-    if (m_pDriver && ((*reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0xA70) == 2 && a2) ||
-                      (*reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0x219) != 0 && !a8)))
+    if (m_pDriver && ((m_pDriver->m_nDummyConvertState == 2 && a2) || (m_pDriver->m_nPedUnk219 != 0 && !a8)))
         return false;
 
     for (uint32 i = 0; i < 8; ++i)
     {
-        if (m_pPassengers[i] && ((*reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pPassengers[i]) + 0xA70) == 2 && a2) ||
-                                 *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pPassengers[i]) + 0x219) != 0))
+        if (m_pPassengers[i] && ((m_pPassengers[i]->m_nDummyConvertState == 2 && a2) || m_pPassengers[i]->m_nPedUnk219 != 0))
             return false;
     }
 
@@ -1582,22 +1589,21 @@ bool __thiscall CVehicle::Unk_9C8D80()
 
 bool __thiscall CVehicle::Unk_9C8DC0(bool a2, bool a3, int32 a4)
 {
-    uint8* self = reinterpret_cast<uint8*>(this);
     if (Core::StaticRef<uint8>(0xF33AB0) != 0 && !a3)
     {
         uint8 v16[0x600];
         Core::Hook::CallStdcall<void>(0x401020, v16, 0x60, 0x10, reinterpret_cast<void*>(Core::Rebase(0x425360)));
 
         uint8 v14[0x40];
-        Core::Hook::CallMethod<void>(0x441ED0, v14, *reinterpret_cast<void**>(self + 0x20));
+        Core::Hook::CallMethod<void>(0x441ED0, v14, m_pMatrix);
         *reinterpret_cast<float*>(v14 + 0x38) += Core::StaticRef<float>(0xF33AAC);
 
         int32 v13[2] = { reinterpret_cast<int32>(this), a4 };
         int32 cnt = Core::Hook::Call<int32>(0x99BE70, v14, this, -1, v13, 2, v16, 0x10, 0xA8);
         for (int32 i = 0; i < cnt; ++i)
         {
-            void* p = Core::Hook::Call<void*>(0xA72220, *reinterpret_cast<const uint32*>(v16 + i * 0x60));
-            if (p && (*reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(p) + 0x24) & 1) != 0)
+            CEntity* p = Core::Hook::Call<CEntity*>(0xA72220, *reinterpret_cast<const uint32*>(v16 + i * 0x60));
+            if (p && (p->m_nFlags & 1u) != 0)
                 return false;
         }
     }
@@ -1609,8 +1615,8 @@ bool __thiscall CVehicle::Unk_9C8DC0(bool a2, bool a3, int32 a4)
     if (pRes)
     {
         reinterpret_cast<void(__thiscall*)(CVehicle*)>(m_vftable[54])(this);
-        int32 h = *reinterpret_cast<const int32*>(self + 0x48);
-        int32 idx = *reinterpret_cast<const int8*>(self + 0x40);
+        int32 h = m_nInteriorHash;
+        int32 idx = m_nInteriorIndex;
         if (h != -1 && idx != -1 && idx != 0)
         {
             void* pPool = Core::Hook::CallMethod<void*>(0xA4C560, Core::StaticRef<void*>(0x165D2E4), h);
@@ -1641,7 +1647,7 @@ bool __thiscall CVehicle::Unk_9C8F30()
     if (vt == 4 || vt == 5)
         return false;
 
-    int32 model = *reinterpret_cast<const int16*>(self + 0x2E);
+    int32 model = m_nModelIndex;
     if (model == Core::StaticRef<int32>(0x1230778) ||
         model == Core::StaticRef<int32>(0x12308EC) ||
         model == Core::StaticRef<int32>(0x1230310))
@@ -1657,15 +1663,15 @@ bool __thiscall CVehicle::Unk_9C8F30()
 
     for (int32 i = 0; i <= 3; ++i)
     {
-        uint8* pPed = Core::Hook::CallMethod<uint8*>(0x9C6D20, this, i);
+        CPed* pPed = GetPassenger(i);
         if (pPed)
         {
-            if (pPed[0x211] != 0)
+            if (pPed->m_bIsInjured != 0)
                 return false;
-            if (*reinterpret_cast<const int32*>(*reinterpret_cast<const uint8* const*>(pPed + 0x21C) + 0x12C) == 2 && flag)
+            if (*reinterpret_cast<const int32*>(static_cast<const uint8*>(pPed->m_pPedData) + 0x12C) == 2 && flag)
                 return false;
-            void* player = Core::Hook::Call<void*>(0x817F40);
-            if (player && Core::Hook::CallMethod<void*>(0x9A69E0, *reinterpret_cast<uint8* const*>(pPed + 0x224) + 0x2E0) == player)
+            CPed* player = Core::Hook::Call<CPed*>(0x817F40);
+            if (player && Core::Hook::CallMethod<CPed*>(0x9A69E0, static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x2E0) == player)
                 return false;
         }
     }
@@ -1678,7 +1684,7 @@ bool __thiscall CVehicle::Unk_9C9020()
         return true;
 
     uint8* self = reinterpret_cast<uint8*>(this);
-    uint8* p6C = *reinterpret_cast<uint8**>(self + 0x6C);
+    uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
     if (p6C && (p6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, p6C)))
         return false;
 
@@ -1689,10 +1695,10 @@ bool __thiscall CVehicle::Unk_9C9020()
     if (Core::Hook::Call<bool>(0x96A350, this, &tmp))
         return false;
 
-    if (!Core::Hook::CallMethod<bool>(0x9C5480, this) || Core::Hook::CallMethod<bool>(0x9C5440, this))
+    if (!Unk_9C5480() || Unk_9C5440())
         return false;
 
-    if (m_pDriver && *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0x219) != 0)
+    if (m_pDriver && m_pDriver->m_nPedUnk219 != 0)
         return false;
 
     if ((m_nVehFlagsF6F & 0x20) != 0)
@@ -1707,13 +1713,13 @@ bool __thiscall CVehicle::Unk_9C9020()
         Core::Hook::CallMethod<void>(0xA33830, self + 0xEF4, p);
     }
 
-    auto checkPed = [](uint8* p) -> bool
+    auto checkPed = [](CPed* p) -> bool
     {
         return p && (Core::Hook::CallMethod<bool>(0x4443C0, p) ||
-                     (*reinterpret_cast<void**>(p + 0x6C) && Core::Hook::CallMethod<bool>(0x49F3F0, *reinterpret_cast<void**>(p + 0x6C))));
+                     (p->m_nUnk6C && Core::Hook::CallMethod<bool>(0x49F3F0, reinterpret_cast<void*>(p->m_nUnk6C))));
     };
 
-    if (checkPed(reinterpret_cast<uint8*>(m_pDriver)))
+    if (checkPed(m_pDriver))
         return false;
 
     int32 maxPass = static_cast<int32>(m_nMaxPassengers);
@@ -1721,7 +1727,7 @@ bool __thiscall CVehicle::Unk_9C9020()
     {
         for (int32 i = 0; i < maxPass; ++i)
         {
-            if (checkPed(reinterpret_cast<uint8*>(m_pPassengers[i])))
+            if (checkPed(m_pPassengers[i]))
                 return false;
         }
     }
@@ -1744,7 +1750,7 @@ bool __thiscall CVehicle::Unk_9C9020()
 
 void __thiscall CVehicle::Unk_9C91A0()
 {
-    if (Core::Hook::CallMethod<bool>(0x9C5440, this))
+    if (Unk_9C5440())
         return;
 
     if (m_pDriver)
@@ -1761,7 +1767,7 @@ void __thiscall CVehicle::Unk_9C91A0()
     }
 
     if (m_nCreatedBy != 2)
-        *reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(this) + 0x24) |= 0x400u;
+        m_nFlags |= 0x400u;
 }
 
 bool __thiscall CVehicle::Unk_9C9210()
@@ -1770,7 +1776,7 @@ bool __thiscall CVehicle::Unk_9C9210()
         return true;
 
     uint8* self = reinterpret_cast<uint8*>(this);
-    uint8* p6C = *reinterpret_cast<uint8**>(self + 0x6C);
+    uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
     if (p6C && (p6C[0xE] != 0 || Core::Hook::CallMethod<bool>(0x49F3F0, p6C)))
     {
         if (!p6C || p6C[0xE] == 0)
@@ -1793,7 +1799,7 @@ bool __thiscall CVehicle::Unk_9C9210()
     if (!Core::Hook::CallMethod<bool>(0x8F2210, reinterpret_cast<void*>(Core::Rebase(0x1354040))))
         return false;
 
-    if (Core::Hook::Call<bool>(0x905A80, *reinterpret_cast<const int16*>(self + 0x2E), 0x18) &&
+    if (Core::Hook::Call<bool>(0x905A80, m_nModelIndex, 0x18) &&
         !Core::Hook::CallMethod<bool>(0x8F19A0, reinterpret_cast<void*>(Core::Rebase(0x1354040))))
     {
         return false;
@@ -1824,9 +1830,9 @@ bool __thiscall CVehicle::Unk_9C9210()
 
     for (int32 i = 0; i <= 3; ++i)
     {
-        uint8* p = Core::Hook::CallMethod<uint8*>(0x9C6D20, this, i);
+        CPed* p = GetPassenger(i);
         if (p)
-            p[0x63] = 0;
+            p->m_nUnk63 = 0;
     }
 
     if (m_pDriver)
@@ -1855,7 +1861,7 @@ void __thiscall CVehicle::Unk_9C93B0(void** outArr, int32* pCount, int32 maxCoun
 
     for (int32 i = 0; i <= 3; ++i)
     {
-        CPed* p = Core::Hook::CallMethod<CPed*>(0x9C6D20, this, i);
+        CPed* p = GetPassenger(i);
         if (p && p != m_pDriver && *pCount < maxCount)
         {
             outArr[(*pCount)++] = p;
@@ -1867,8 +1873,8 @@ void __thiscall CVehicle::Unk_9C93B0(void** outArr, int32* pCount, int32 maxCoun
 bool __thiscall CVehicle::Unk_9C9BA0()
 {
     const uint8* self = reinterpret_cast<const uint8*>(this);
-    const uint8* p38 = *reinterpret_cast<const uint8* const*>(self + 0x38);
-    if (!p38 || *reinterpret_cast<const uint16*>(p38 + 8) == 0xFFFF || (*reinterpret_cast<const uint32*>(self + 0x24) & 0x1Cu) != 0)
+    const uint8* p38 = static_cast<const uint8*>(m_pPhysicsInst);
+    if (!p38 || *reinterpret_cast<const uint16*>(p38 + 8) == 0xFFFF || (m_nFlags & 0x1Cu) != 0)
         return true;
 
     bool ok = true;
@@ -1885,7 +1891,7 @@ bool __thiscall CVehicle::Unk_9C9BA0()
         }
         else if (s == 2)
         {
-            if (*reinterpret_cast<const float*>(*reinterpret_cast<const uint8* const*>(self + 0x20) + 0x38) > Core::StaticRef<float>(0xD81E78))
+            if (m_pMatrix->pos.z > Core::StaticRef<float>(0xD81E78))
                 ok = false;
         }
         else if (reinterpret_cast<bool(__thiscall*)(CVehicle*)>(m_vftable[85])(this) ||
@@ -1910,9 +1916,7 @@ bool __thiscall CVehicle::Unk_9C9BA0()
             ok = false;
     }
 
-    if (ok && m_pDriver &&
-        *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0x218) == 0 &&
-        *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(m_pDriver) + 0x219) != 0)
+    if (ok && m_pDriver && m_pDriver->m_nPedUnk218 == 0 && m_pDriver->m_nPedUnk219 != 0)
     {
         void* v24 = Core::Hook::CallMethod<void*>(0x9BE5D0, m_pDriver);
         if (Core::Hook::CallMethod<int32>(0x9C5570, this) != static_cast<int32>(m_nVehUnkFD4))
@@ -1956,8 +1960,8 @@ void __thiscall CVehicle::Unk_9C9E60(uint8* pArg, bool bFlag)
 {
     float vec[4] = {};
     float* v = reinterpret_cast<float*(__thiscall*)(CVehicle*, float*)>(m_vftable[59])(this, vec);
-    const float* mat = *reinterpret_cast<const float* const*>(reinterpret_cast<const uint8*>(this) + 0x20) + 4;
-    float dot = v[2] * mat[2] + v[1] * mat[1] + v[0] * mat[0];
+    const CVector& up = m_pMatrix->up;
+    float dot = v[2] * up.z + v[1] * up.y + v[0] * up.x;
 
     float f1 = Core::Hook::Call<float>(0x8348B0, pArg + 0x2918);
     float f2 = Core::Hook::Call<float>(0x8348B0, pArg + 0x2928);
@@ -1971,7 +1975,7 @@ void __thiscall CVehicle::Unk_9C9E60(uint8* pArg, bool bFlag)
     }
 
     if (((m_nVehFlagsF64 & 8) == 0 && (m_nVehFlagsF67 & 8) != 0) ||
-        (m_pDriver && Core::Hook::CallMethod<bool>(0x426910, *reinterpret_cast<uint8**>(reinterpret_cast<uint8*>(m_pDriver) + 0x224) + 0x2E0, 0x145, 0)))
+        (m_pDriver && Core::Hook::CallMethod<bool>(0x426910, static_cast<uint8*>(m_pDriver->m_pPedIntelligence) + 0x2E0, 0x145, 0)))
     {
         m_fVehUnk10C8 = 0.0f;
         m_fVehUnk10CC = 0.0f;
@@ -2027,11 +2031,11 @@ void __thiscall CVehicle::Unk_9C9E60(uint8* pArg, bool bFlag)
 void CVehicle::ApplyPassengerImpulse(CPed* pPed)
 {
     const uint8* self = reinterpret_cast<const uint8*>(this);
-    const uint8* p6C = *reinterpret_cast<const uint8* const*>(self + 0x6C);
+    const uint8* p6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
         return;
 
-    const uint8* pPed6C = *reinterpret_cast<const uint8* const*>(reinterpret_cast<const uint8*>(pPed) + 0x6C);
+    const uint8* pPed6C = reinterpret_cast<const uint8*>(pPed->m_nUnk6C);
     if (pPed6C && pPed6C[0xE] != 0)
         return;
 
@@ -2039,24 +2043,21 @@ void CVehicle::ApplyPassengerImpulse(CPed* pPed)
     float vec2[3];
     if (*reinterpret_cast<const int32*>(self + 0x1350) == 1)
     {
-        const float* mat = *reinterpret_cast<const float* const*>(self + 0x20);
         float s1 = Core::StaticRef<float>(0xEBE0D8);
-        vec1[0] = mat[4] * s1;
-        vec1[1] = mat[5] * s1;
-        vec1[2] = mat[6] * s1;
+        vec1[0] = m_pMatrix->up.x * s1;
+        vec1[1] = m_pMatrix->up.y * s1;
+        vec1[2] = m_pMatrix->up.z * s1;
 
         void* pInfo = Core::Hook::CallMethod<void*>(0x9E86F0, pPed);
         float s2 = static_cast<float>(reinterpret_cast<double(__thiscall*)(void*)>((*reinterpret_cast<void***>(pInfo))[9])(pInfo)) * Core::StaticRef<float>(0xEBDF88);
-        vec2[0] = s2 * mat[8];
-        vec2[1] = s2 * mat[9];
-        vec2[2] = s2 * mat[10];
+        vec2[0] = s2 * m_pMatrix->at.x;
+        vec2[1] = s2 * m_pMatrix->at.y;
+        vec2[2] = s2 * m_pMatrix->at.z;
     }
     else
     {
-        const float* mA = *reinterpret_cast<const float* const*>(reinterpret_cast<const uint8*>(pPed) + 0x20);
-        const float* mB = *reinterpret_cast<const float* const*>(self + 0x20);
-        float dx = mA[12] - mB[12];
-        float dy = mA[13] - mB[13];
+        float dx = pPed->m_pMatrix->pos.x - m_pMatrix->pos.x;
+        float dy = pPed->m_pMatrix->pos.y - m_pMatrix->pos.y;
         if (static_cast<float>(reinterpret_cast<double(__thiscall*)(CVehicle*)>(m_vftable[22])(this)) <= (dx * dx + dy * dy))
             return;
 
@@ -2084,7 +2085,7 @@ bool __thiscall CVehicle::Unk_9CA080(CPed* pPed)
             if (!added && m_pPassengers[i] == nullptr)
             {
                 m_pPassengers[i] = pPed;
-                Core::Hook::CallMethod<void>(0x9E6550, pPed, &m_pPassengers[i]);
+                pPed->RegisterReference(reinterpret_cast<CEntity**>(&m_pPassengers[i]));
                 added = true;
                 break;
             }
@@ -2098,8 +2099,8 @@ bool __thiscall CVehicle::Unk_9CA080(CPed* pPed)
 bool __thiscall CVehicle::Unk_9CA250(CPed* pPed, uint32 seatIdx)
 {
     if (reinterpret_cast<bool(__thiscall*)(CVehicle*)>(m_vftable[74])(this) &&
-        *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(pPed) + 0x218) == 0 &&
-        *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(pPed) + 0x219) != 0 &&
+        pPed->m_nPedUnk218 == 0 &&
+        pPed->m_nPedUnk219 != 0 &&
         !reinterpret_cast<bool(__thiscall*)(CVehicle*, int32, int32, int32)>(m_vftable[77])(this, 1, 0, 0))
     {
         return false;
@@ -2109,7 +2110,7 @@ bool __thiscall CVehicle::Unk_9CA250(CPed* pPed, uint32 seatIdx)
     if (seatIdx < static_cast<uint32>(m_nMaxPassengers) && m_pPassengers[seatIdx] == nullptr)
     {
         m_pPassengers[seatIdx] = pPed;
-        Core::Hook::CallMethod<void>(0x9E6550, pPed, &m_pPassengers[seatIdx]);
+        pPed->RegisterReference(reinterpret_cast<CEntity**>(&m_pPassengers[seatIdx]));
         added = true;
     }
 
@@ -2129,19 +2130,19 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
 
     for (int32 i = 0; i <= 3; ++i)
     {
-        uint8* pPed = Core::Hook::CallMethod<uint8*>(0x9C6D20, this, i);
+        CPed* pPed = GetPassenger(i);
         if (!pPed)
             continue;
 
-        uint8* p6C = *reinterpret_cast<uint8**>(pPed + 0x6C);
+        uint8* p6C = reinterpret_cast<uint8*>(pPed->m_nUnk6C);
         if (p6C && p6C[0xE] != 0)
             continue;
 
         if (*reinterpret_cast<const int32*>(self + 0x1354) == 4 ||
-            reinterpret_cast<bool(__thiscall*)(uint8*)>((*reinterpret_cast<void***>(pPed))[74])(pPed) ||
-            pPed[0xA70] == 2 ||
-            static_cast<float>(reinterpret_cast<double(__thiscall*)(uint8*)>((*reinterpret_cast<void***>(pPed))[63])(pPed)) > Core::StaticRef<float>(0xD8D70C) ||
-            Core::Hook::CallMethod<bool>(0x426910, *reinterpret_cast<uint8**>(pPed + 0x224) + 0x2E0, 0x2E2, 0) ||
+            reinterpret_cast<bool(__thiscall*)(CPed*)>(pPed->m_vftable[74])(pPed) ||
+            pPed->m_nDummyConvertState == 2 ||
+            static_cast<float>(reinterpret_cast<double(__thiscall*)(CPed*)>(pPed->m_vftable[63])(pPed)) > Core::StaticRef<float>(0xD8D70C) ||
+            Core::Hook::CallMethod<bool>(0x426910, static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x2E0, 0x2E2, 0) ||
             Core::Hook::Call<double>(0x438960, 0.0f, 1.0f) >= Core::StaticRef<float>(0xD50964))
         {
             uint8 dmgInfo[0x1C] = {};
@@ -2151,16 +2152,16 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
             Core::Hook::CallMethod<void>(0xAB9A00, eventBuf, a2, Core::StaticRef<uint32>(0x11DDE74), a3);
             Core::Hook::CallMethod<void>(0xABB170, dmgInfo, pPed, resp);
             if (Core::Hook::CallMethod<bool>(0x9164C0, eventBuf, pPed))
-                Core::Hook::CallMethod<void>(0xAA80D0, *reinterpret_cast<uint8**>(pPed + 0x224) + 0x84, eventBuf, 0, 1);
+                Core::Hook::CallMethod<void>(0xAA80D0, static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x84, eventBuf, 0, 1);
             Core::Hook::CallMethod<void>(0xAB9A80, eventBuf);
             Core::Hook::CallMethod<void>(0xC28820, dmgInfo);
         }
         else
         {
             uint8 fireEvt[0x58] = {};
-            Core::Hook::CallMethod<void>(0x919200, fireEvt, *reinterpret_cast<void**>(pPed + 0xB40));
+            Core::Hook::CallMethod<void>(0x919200, fireEvt, pPed->m_pMyVehicle);
             if (Core::Hook::CallMethod<bool>(0x9164C0, fireEvt, pPed))
-                Core::Hook::CallMethod<void>(0xAA80D0, *reinterpret_cast<uint8**>(pPed + 0x224) + 0x84, fireEvt, 0, 1);
+                Core::Hook::CallMethod<void>(0xAA80D0, static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x84, fireEvt, 0, 1);
             Core::Hook::CallMethod<void>(0x919250, fireEvt);
         }
     }
@@ -2168,27 +2169,25 @@ void __thiscall CVehicle::Unk_9CA440(void* a2, int32 a3)
 
 bool __thiscall CVehicle::Unk_9CA600()
 {
-    const float* mat = *reinterpret_cast<const float* const*>(reinterpret_cast<const uint8*>(this) + 0x20);
-    return mat[10] <= Core::StaticRef<float>(0xEBE708);
+    return m_pMatrix->at.z <= Core::StaticRef<float>(0xEBE708);
 }
 
 bool __thiscall CVehicle::Unk_9CA620()
 {
-    const float* mat = *reinterpret_cast<const float* const*>(reinterpret_cast<const uint8*>(this) + 0x20);
-    float v = mat[2];
+    float v = m_pMatrix->right.z;
     return v >= Core::StaticRef<float>(0xDCA2A8) || v <= Core::StaticRef<float>(0xEBE21C);
 }
 
-bool __thiscall CVehicle::Unk_9CA650(uint8* pPed)
+bool __thiscall CVehicle::Unk_9CA650(CPed* pPed)
 {
-    uint8* p6C = *reinterpret_cast<uint8**>(pPed + 0x6C);
+    uint8* p6C = reinterpret_cast<uint8*>(pPed->m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
         return true;
 
     int32 st = *reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(this) + 0x1320);
-    if (Core::Hook::Call<bool>(0x462F90) && pPed[0x219] != 0 && st >= 9)
+    if (Core::Hook::Call<bool>(0x462F90) && pPed->m_nPedUnk219 != 0 && st >= 9)
     {
-        if (*reinterpret_cast<const int32*>(*reinterpret_cast<const uint8* const*>(pPed + 0x228) + 0x574) != st - 9)
+        if (*reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(pPed->m_pPlayerInfo) + 0x574) != st - 9)
             return false;
     }
 
@@ -2198,29 +2197,28 @@ bool __thiscall CVehicle::Unk_9CA650(uint8* pPed)
     if (st == 4)
     {
         uint8* p = Core::Hook::CallMethod<uint8*>(0x89DD80, pPed);
-        if (pPed[0x219] == 0 && p)
+        if (pPed->m_nPedUnk219 == 0 && p)
         {
-            uint8* pSub = Core::Hook::CallMethod<uint8*>(0xA66B40, p + 8);
-            if (pSub && pSub[0x219] != 0)
+            CPed* pSub = Core::Hook::CallMethod<CPed*>(0xA66B40, p + 8);
+            if (pSub && pSub->m_nPedUnk219 != 0)
                 return true;
         }
         return false;
     }
 
-    return pPed[0x219] == 0 || st != 3;
+    return pPed->m_nPedUnk219 == 0 || st != 3;
 }
 
 bool __thiscall CVehicle::Unk_9CA710(bool bSkipVelCheck)
 {
     const uint8* self = reinterpret_cast<const uint8*>(this);
-    int32 model = *reinterpret_cast<const int16*>(self + 0x2E);
-    if (model == Core::StaticRef<int32>(0x123097C))
+    if (m_nModelIndex == Core::StaticRef<int32>(0x123097C))
         return false;
 
     if (*reinterpret_cast<const int32*>(self + 0x1350) == 2)
         return true;
 
-    float upZ = (*reinterpret_cast<const float* const*>(self + 0x20))[10];
+    float upZ = m_pMatrix->at.z;
     float vec[4] = {};
     using GetVelFn = float*(__thiscall*)(CVehicle*, float*);
 
@@ -2261,7 +2259,7 @@ bool __thiscall CVehicle::Unk_9CA8E0(CPed* pPed)
     float spdSq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 
     const uint8* self = reinterpret_cast<const uint8*>(this);
-    int32 model = *reinterpret_cast<const int16*>(self + 0x2E);
+    int32 model = m_nModelIndex;
     if (model == Core::StaticRef<int32>(0x123097C))
         return false;
 
@@ -2271,13 +2269,13 @@ bool __thiscall CVehicle::Unk_9CA8E0(CPed* pPed)
     if (spdSq < thr)
         return false;
 
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[model];
-    if (*reinterpret_cast<const int32*>(modelInfo + 0xC4) == 0x57)
+    CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[model]);
+    if (*reinterpret_cast<const int32*>(reinterpret_cast<const uint8*>(modelInfo) + 0xC4) == 0x57)
         return false;
 
-    if ((*reinterpret_cast<const uint32*>(modelInfo + 0x94) & 0x20u) != 0)
+    if ((modelInfo->m_nVehicleFlags & 0x20u) != 0)
     {
-        int32 seat = Core::Hook::CallMethod<int32>(0x9C6E40, this, pPed);
+        int32 seat = GetPedSeat(pPed);
         if (seat == 1 || seat == 3)
             return false;
     }
@@ -2288,7 +2286,7 @@ bool __thiscall CVehicle::Unk_9CA8E0(CPed* pPed)
 bool __thiscall CVehicle::Unk_9CA9B0()
 {
     const uint8* self = reinterpret_cast<const uint8*>(this);
-    const uint8* p6C = *reinterpret_cast<const uint8* const*>(self + 0x6C);
+    const uint8* p6C = reinterpret_cast<const uint8*>(m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
         return false;
 
@@ -2318,15 +2316,14 @@ bool __cdecl CVehicle::Unk_9CA9E0(int32 modelIdx)
 void __thiscall CVehicle::Unk_9CAA30()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    if ((*reinterpret_cast<const uint32*>(self + 0x28) & 0x7C00u) != 0xC00u)
+    if ((m_nFlags2 & 0x7C00u) != 0xC00u)
     {
-        const uint8* p6C = *reinterpret_cast<const uint8* const*>(self + 0x6C);
+        const uint8* p6C = reinterpret_cast<const uint8*>(m_nUnk6C);
         if (!p6C || p6C[0xE] == 0)
         {
-            using GetValFn = double(__thiscall*)(CVehicle*);
-            float cur = static_cast<float>(reinterpret_cast<GetValFn>(m_vftable[63])(this));
+            float cur = static_cast<float>(reinterpret_cast<double(__thiscall*)(CVehicle*)>(m_vftable[63])(this));
             float limit = Core::StaticRef<float>(0xD582A0);
-            float target = (cur > limit) ? static_cast<float>(reinterpret_cast<GetValFn>(m_vftable[63])(this)) : limit;
+            float target = (cur > limit) ? cur : limit;
             reinterpret_cast<void(__thiscall*)(CVehicle*, float, int32)>(m_vftable[61])(this, target, 0);
         }
     }
@@ -2347,25 +2344,25 @@ void __thiscall CVehicle::Unk_9CAA30()
         Core::Hook::CallMethod<void>(0xB42E30, reinterpret_cast<uint8*>(m_nVehUnkFD0) + i * 0x170);
 }
 
-void __thiscall CVehicle::Unk_9CC990(uint8* pPed, int32)
+void __thiscall CVehicle::Unk_9CC990(CPed* pPed, int32)
 {
     bool cond = Core::Hook::CallMethod<bool>(0x9C6270, this, pPed);
     if (!cond)
     {
-        uint8* p6C = *reinterpret_cast<uint8**>(pPed + 0x6C);
-        uint8* p2E0 = reinterpret_cast<uint8*>(*reinterpret_cast<void**>(pPed + 0x224)) + 0x2E0;
+        uint8* p6C = reinterpret_cast<uint8*>(pPed->m_nUnk6C);
+        uint8* p2E0 = static_cast<uint8*>(pPed->m_pPedIntelligence) + 0x2E0;
         if (p6C && p6C[0xE] != 0 && p2E0 != nullptr)
             cond = Core::Hook::CallMethod<bool>(0x426910, p2E0, 0x2C5, 0);
     }
 
     if (cond)
     {
-        int16 modelIdx = *reinterpret_cast<const int16*>(reinterpret_cast<const uint8*>(this) + 0x2E);
-        uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
+        CVehicleModelInfo* modelInfo = static_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[m_nModelIndex]);
         int32 id = 0x175;
-        int32 v7 = Core::Hook::Call<int32>(0x8A6E40, *reinterpret_cast<uint32*>(modelInfo + 0xC4), &id, pPed, this, 0, 0, 0, 1);
-        if (Core::Hook::CallMethod<int32>(0x9EBE90, *reinterpret_cast<void**>(pPed + 0x78), v7, id) == 0)
-            Core::Hook::CallMethod<void>(0x9EFEB0, *reinterpret_cast<void**>(pPed + 0x78), v7, id, Core::StaticRef<float>(0xDCB2A0), -1);
+        int32 v7 = Core::Hook::Call<int32>(0x8A6E40, *reinterpret_cast<const uint32*>(reinterpret_cast<const uint8*>(modelInfo) + 0xC4), &id, pPed, this, 0, 0, 0, 1);
+        void* p78 = *reinterpret_cast<void**>(reinterpret_cast<uint8*>(pPed) + 0x78);
+        if (Core::Hook::CallMethod<int32>(0x9EBE90, p78, v7, id) == 0)
+            Core::Hook::CallMethod<void>(0x9EFEB0, p78, v7, id, Core::StaticRef<float>(0xDCB2A0), -1);
     }
 }
 
@@ -2394,14 +2391,13 @@ CVehicle* __thiscall CVehicle::ScalarDeletingDtor(uint8 flags)
 void __thiscall CVehicle::Unk_9D5F00()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    int16 modelIdx = *reinterpret_cast<const int16*>(self + 0x2E);
-    uint8* modelInfo = reinterpret_cast<uint8**>(Core::Rebase(0x15F73B0))[modelIdx];
-    if (*reinterpret_cast<void**>(modelInfo + 8) != nullptr)
+    CBaseModelInfo* modelInfo = CModelInfo::ms_modelInfoPtrs[m_nModelIndex];
+    if (modelInfo->m_pFragType != nullptr)
     {
-        *reinterpret_cast<uint32*>(self + 0x24) |= 0x4000000u;
+        m_nFlags |= 0x4000000u;
         void* pPool = Core::Hook::CallMethod<void*>(0x96D520, Core::StaticRef<void*>(0x170665C));
         uint8* pEnt = pPool
-            ? Core::Hook::CallMethod<uint8*>(0xC711F0, pPool, 0xE, *reinterpret_cast<void**>(modelInfo + 8), *reinterpret_cast<void**>(self + 0x20), 0)
+            ? Core::Hook::CallMethod<uint8*>(0xC711F0, pPool, 0xE, modelInfo->m_pFragType, m_pMatrix, 0)
             : nullptr;
         *reinterpret_cast<void**>(self + 0xE14) = pEnt;
         Core::Hook::CallMethod<void>(0x686AD0, pEnt, 4, 1);
@@ -2419,10 +2415,10 @@ void __thiscall CVehicle::Unk_9D5F00()
 void __thiscall CVehicle::Unk_9D5FC0()
 {
     uint8* self = reinterpret_cast<uint8*>(this);
-    uint8* p6C = *reinterpret_cast<uint8**>(self + 0x6C);
+    uint8* p6C = reinterpret_cast<uint8*>(m_nUnk6C);
     if (p6C && p6C[0xE] != 0)
     {
-        if ((*reinterpret_cast<const uint32*>(self + 0x28) & 0x7C00u) == 0xC00u)
+        if ((m_nFlags2 & 0x7C00u) == 0xC00u)
             return;
     }
     else
@@ -2443,11 +2439,15 @@ void __thiscall CVehicle::Unk_9D5FC0()
     Core::Hook::CallMethod<void>(0x910470, reinterpret_cast<void*>(Core::Rebase(0x13DD760)), this, 0);
     Core::Hook::CallMethod<void>(0xAEAD50, m_vehSubObj260);
 
-    uint8* p4 = *reinterpret_cast<uint8**>(*reinterpret_cast<uint8**>(self + 0x34) + 4);
-    if (p4)
-        p4[0xCC] = 0;
+    uint8* p34 = static_cast<uint8*>(m_pDrawHandler);
+    if (p34)
+    {
+        uint8* p4 = *reinterpret_cast<uint8**>(p34 + 4);
+        if (p4)
+            p4[0xCC] = 0;
+    }
 
-    if ((*reinterpret_cast<const uint32*>(self + 0x28) & 0x7C00u) == 0xC00u)
+    if ((m_nFlags2 & 0x7C00u) == 0xC00u)
         *reinterpret_cast<uint32*>(self + 0x118) &= ~0x10000u;
 }
 
@@ -2456,24 +2456,17 @@ void __thiscall CVehicle::Unk_9D6170(void* a2, float angle, int32)
     uint8* self = reinterpret_cast<uint8*>(this);
     if (angle >= Core::StaticRef<float>(0xEBDFFC) && angle <= Core::StaticRef<float>(0xEBDEE4))
     {
-        float* mat = *reinterpret_cast<float**>(self + 0x20);
-        if (mat)
+        if (m_pMatrix)
         {
             float c = std::cosf(angle);
             float s = std::sinf(angle);
-            mat[0] = c;
-            mat[1] = s;
-            mat[2] = 0.0f;
-            mat[4] = -s;
-            mat[5] = c;
-            mat[6] = 0.0f;
-            mat[8] = 0.0f;
-            mat[9] = 0.0f;
-            mat[10] = 1.0f;
+            m_pMatrix->right = { c, s, 0.0f };
+            m_pMatrix->up = { -s, c, 0.0f };
+            m_pMatrix->at = { 0.0f, 0.0f, 1.0f };
         }
         else
         {
-            *reinterpret_cast<float*>(self + 0x1C) = angle;
+            m_fPad1C = angle;
         }
     }
 

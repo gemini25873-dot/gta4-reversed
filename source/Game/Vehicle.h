@@ -204,13 +204,13 @@ public:
     bool        __thiscall Unk_9CA600();
     bool        __thiscall Unk_9CA620();
 
-    bool        __thiscall Unk_9CA650(uint8* pPed);
+    bool        __thiscall Unk_9CA650(CPed* pPed);
     bool        __thiscall Unk_9CA710(bool bSkipVelCheck);
     bool        __thiscall Unk_9CA8E0(CPed* pPed);
     bool        __thiscall Unk_9CA9B0();
     static bool __cdecl    Unk_9CA9E0(int32 modelIdx);
     void        __thiscall Unk_9CAA30();
-    void        __thiscall Unk_9CC990(uint8* pPed, int32 a3);
+    void        __thiscall Unk_9CC990(CPed* pPed, int32 a3);
     bool        __thiscall Unk_9D4A50();
     CVehicle*   __thiscall ScalarDeletingDtor(uint8 flags);
     void        __thiscall Unk_9D5F00();

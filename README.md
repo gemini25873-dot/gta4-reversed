@@ -59,7 +59,7 @@ See [CLASS_MAP.md](CLASS_MAP.md) for the full IDA RTTI/vtable coverage map and p
 | Game | `source/Game/Streaming.cpp` | 19 | 7 | |
 | Game | `source/Game/Timer.cpp` | 10 | 16 | |
 | Game | `source/Game/TxdStore.cpp` | 23 | 3 | |
-| Game | `source/Game/Vehicle.cpp` | 88 | 217 | |
+| Game | `source/Game/Vehicle.cpp` | 88 | 186 | |
 | Game | `source/Game/Wanted.cpp` | 10 | 8 | |
 | Game | `source/Game/WeaponInfo.cpp` | 70 | 139 | |
 | Game | `source/Game/Weather.cpp` | 5 | 9 | |
